@@ -4,88 +4,200 @@ import axios from "axios";
 import { Blocks } from "react-loader-spinner";
 
 export default function Login() {
+  // state for errors
+  const [errors, setErrors] = useState({});
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // function to handle popup when login/register clicked
   const togglePopup = (admin = false, register = false) => {
     setIsAdmin(admin);
     setIsRegister(register);
-    setIsPopupOpen(!isPopupOpen);
+
+    // If closing the popup, clear errors
+    if (!isPopupOpen) {
+      setErrors({}); // Reset errors when the popup is closed
+    }
+
+    setIsPopupOpen(!isPopupOpen); // Toggle popup state
+  };
+
+  // function to handle login input errors
+  const validateLoginForm = (fields) => {
+    let errors = {};
+
+    // Validate Username
+    if (!fields.username.trim()) {
+      errors.username = "Username is required";
+    } else if (fields.username.length < 6) {
+      errors.username = "Username must be at least 6 characters";
+    } else if (/[^a-zA-Z0-9]/.test(fields.username)) {
+      errors.username = "Username cannot contain special characters";
+    }
+
+    // Validate Password
+    if (!fields.password) {
+      errors.password = "Password is required";
+    } else if (fields.password.length < 6) {
+      errors.password = "Password must be at least 6 characters";
+    }
+
+    return errors;
+  };
+  const validateRegisterForm = (fields) => {
+    let errors = {};
+
+    // Validate Full Name
+    if (!fields.fullName.trim()) {
+      errors.fullName = "Full Name is required";
+    } else if (fields.fullName.length < 6) {
+      errors.fullName = "Full Name must be at least 6 characters";
+    } else if (/[^a-zA-Z\s]/.test(fields.fullName)) {
+      errors.fullName = "Full Name can only contain letters and spaces";
+    }
+
+    // Validate Username
+    if (!fields.username.trim()) {
+      errors.username = "Username is required";
+    } else if (fields.username.length < 6) {
+      errors.username = "Username must be at least 6 characters";
+    } else if (/[^a-zA-Z0-9]/.test(fields.username)) {
+      errors.username = "Username cannot contain special characters";
+    }
+
+    // Validate Password
+    if (!fields.password) {
+      errors.password = "Password is required";
+    } else if (fields.password.length < 6) {
+      errors.password = "Password must be at least 6 characters";
+    }
+
+    // Validate Confirm Password
+    if (fields.password !== fields.confirmPassword) {
+      errors.confirmPassword = "Passwords do not match";
+    }
+
+    // Validate Email
+    if (!fields.email) {
+      errors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(fields.email)) {
+      errors.email = "Email is invalid";
+    }
+
+    // Validate Date of Birth
+    if (!fields.dob) {
+      errors.dob = "Date of Birth is required";
+    } else {
+      const today = new Date();
+      const dob = new Date(fields.dob);
+      const age = today.getFullYear() - dob.getFullYear();
+      if (
+        age < 10 ||
+        (age === 10 &&
+          today < new Date(dob.setFullYear(dob.getFullYear() + 10)))
+      ) {
+        errors.dob = "User must be at least 10 years old";
+      }
+    }
+
+    return errors;
   };
 
   // Function to handle login
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true); // Show the loading spinner
+
     const username = e.target.username.value;
     const password = e.target.password.value;
 
-    try {
-      const response = await axios.post(
-        isAdmin
-          ? "http://localhost:5000/login/admin"
-          : "http://localhost:5000/login/user",
-        {
-          username,
-          password,
-          isAdmin,
+    // Validate the form inputs
+    const validationErrors = validateLoginForm({ username, password });
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length === 0) {
+      setLoading(true); // Set the loading state to show spinner
+      try {
+        const response = await axios.post(
+          isAdmin
+            ? "http://localhost:5000/login/admin"
+            : "http://localhost:5000/login/user",
+          {
+            username,
+            password,
+            isAdmin,
+          }
+        );
+
+        // Log the response to verify structure
+        console.log(response);
+
+        // Check if the response contains user/admin data
+        if (response.data && response.data.user) {
+          alert(`Login successful: USER: ${response.data.user.fullName}`);
+        } else if (response.data && response.data.admin) {
+          alert(`Login successful: ADMIN: ${response.data.admin.fullName}`);
+        } else {
+          throw new Error("User or Admin object not found in response");
         }
-      );
 
-      // Log the response to verify its structure
-      console.log(response);
-
-      // Check for both user and admin depending on the login type
-      if (response.data && response.data.user) {
-        alert(`Login successful: USER: ${response.data.user.fullName}`);
-      } else if (response.data && response.data.admin) {
-        alert(`Login successful: ADMIN: ${response.data.admin.fullName}`);
-      } else {
-        throw new Error("User or Admin object not found in response");
+        // Close the popup after successful login
+        setIsPopupOpen(false);
+      } catch (error) {
+        console.error("Login error:", error);
+        alert("Login failed: " + error.message);
+      } finally {
+        setLoading(false); // Reset loading state after the login process is complete
       }
-
-      setIsPopupOpen(false);
-    } catch (error) {
-      console.error("Login error:", error);
-      alert("Login failed: " + error.message);
-    } finally {
-      setLoading(false);
     }
   };
 
+  // function to handle registration
   const handleRegister = async (e) => {
     e.preventDefault();
-    setLoading(true); // Show the loading spinner
 
     const fullName = e.target.fullName.value;
     const username = e.target.username.value;
     const email = e.target.email.value;
     const password = e.target.password.value;
+    const confirmPassword = e.target.confirmPassword.value;
     const dob = e.target.dob.value;
 
-    try {
-      await axios.post(
-        isAdmin
-          ? "http://localhost:5000/register/admin"
-          : "http://localhost:5000/register/user",
-        {
-          fullName,
-          username,
-          email,
-          password,
-          dob,
-          isAdmin,
-        }
-      );
-      alert("Registration successful");
-      setIsPopupOpen(false);
-    } catch (error) {
-      console.error("Registration error:", error);
-      alert("Registration failed: " + error.response.data.message);
-    } finally {
-      setLoading(false);
+    const validationErrors = validateRegisterForm({
+      fullName,
+      username,
+      password,
+      confirmPassword,
+      email,
+      dob,
+    });
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length === 0) {
+      setLoading(true);
+      try {
+        await axios.post(
+          isAdmin
+            ? "http://localhost:5000/register/admin"
+            : "http://localhost:5000/register/user",
+          {
+            fullName,
+            username,
+            email,
+            password,
+            dob,
+            isAdmin,
+          }
+        );
+        alert("Registration successful");
+        setIsPopupOpen(false);
+      } catch (error) {
+        console.error("Registration error:", error);
+        alert("Registration failed: " + error.response.data.message);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -156,7 +268,6 @@ export default function Login() {
               </h2>
 
               {loading ? (
-                // Render spinner while loading
                 <div className="flex justify-center mb-5">
                   <Blocks
                     height="80"
@@ -176,43 +287,60 @@ export default function Login() {
                       <label htmlFor="fullName">Full Name</label>
                       <input
                         id="fullName"
+                        name="fullName" // Added name attribute
                         type="text"
                         placeholder="Full Name"
                         required
                       />
+                      {errors.fullName && (
+                        <span className="error-text">{errors.fullName}</span>
+                      )}
                     </>
                   )}
-
+                  {/* Username */}
                   <label htmlFor="username">
                     {isRegister ? "New Username" : "Username"}
                   </label>
                   <input
                     id="username"
+                    name="username" // Added name attribute
                     type="text"
                     placeholder={isRegister ? "New Username" : "Username"}
                     required
                   />
-
+                  {errors.username && (
+                    <span className="error-text">{errors.username}</span>
+                  )}
+                  {/* Password */}
                   <label htmlFor="password">
                     {isRegister ? "New Password" : "Password"}
                   </label>
                   <input
                     id="password"
+                    name="password" // Added name attribute
                     type="password"
                     placeholder={isRegister ? "New Password" : "Password"}
                     required
                   />
-
+                  {errors.password && (
+                    <span className="error-text">{errors.password}</span>
+                  )}
                   {/* Confirm Password (for registration only) */}
                   {isRegister && (
                     <>
                       <label htmlFor="confirmPassword">Confirm Password</label>
                       <input
                         id="confirmPassword"
+                        name="confirmPassword" // Added name attribute
                         type="password"
                         placeholder="Confirm Password"
                         required
                       />
+                      {errors.confirmPassword && (
+                        <span className="error-text">
+                          {errors.confirmPassword}
+                        </span>
+                      )}
                     </>
                   )}
 
@@ -222,10 +350,14 @@ export default function Login() {
                       <label htmlFor="email">Email</label>
                       <input
                         id="email"
+                        name="email" // Added name attribute
                         type="email"
                         placeholder="Email"
                         required
                       />
+                      {errors.email && (
+                        <span className="error-text">{errors.email}</span>
+                      )}
                     </>
                   )}
 
@@ -233,7 +365,15 @@ export default function Login() {
                   {isRegister && (
                     <>
                       <label htmlFor="dob">Date of Birth</label>
-                      <input id="dob" type="date" required />
+                      <input
+                        id="dob"
+                        name="dob" // Added name attribute
+                        type="date"
+                        required
+                      />
+                      {errors.dob && (
+                        <span className="error-text">{errors.dob}</span>
+                      )}
                     </>
                   )}
                 </div>

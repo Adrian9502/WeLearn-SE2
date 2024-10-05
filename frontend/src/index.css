@@ -3,13 +3,13 @@
 @tailwind utilities;
 /* FONT */
 @font-face {
-  font-family: HomeVideo;
-  src: url("../../../data/font/HomeVideo-BLG6G.ttf");
+  font-family: KodeMono;
+  src: url("../../../data/font/KodeMono.ttf");
 }
 /* custom cursor */
 * {
   cursor: url("/cursor.cur"), auto;
-  font-family: HomeVideo;
+  font-family: KodeMono;
 }
 /* BG-HOME */
 .circle-bg {

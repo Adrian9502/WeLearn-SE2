@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import "./Login.css";
+import axios from "axios";
+import { Blocks } from "react-loader-spinner";
 
 export default function Login() {
-  // State to control the visibility of the login and registration forms
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isRegister, setIsRegister] = useState(false); // New state for registration
+  const [isRegister, setIsRegister] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const togglePopup = (admin = false, register = false) => {
     setIsAdmin(admin);
@@ -13,18 +15,78 @@ export default function Login() {
     setIsPopupOpen(!isPopupOpen);
   };
 
-  const handleLogin = (e) => {
+  // Function to handle login
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // Handle login logic here
-    alert(`Logging in as ${isAdmin ? "Admin" : "User"}`);
-    setIsPopupOpen(false); // Close the popup after login
+    setLoading(true); // Show the loading spinner
+    const username = e.target.username.value;
+    const password = e.target.password.value;
+
+    try {
+      const response = await axios.post(
+        isAdmin
+          ? "http://localhost:5000/login/admin"
+          : "http://localhost:5000/login/user",
+        {
+          username,
+          password,
+          isAdmin,
+        }
+      );
+
+      // Log the response to verify its structure
+      console.log(response);
+
+      // Check for both user and admin depending on the login type
+      if (response.data && response.data.user) {
+        alert(`Login successful: USER: ${response.data.user.fullName}`);
+      } else if (response.data && response.data.admin) {
+        alert(`Login successful: ADMIN: ${response.data.admin.fullName}`);
+      } else {
+        throw new Error("User or Admin object not found in response");
+      }
+
+      setIsPopupOpen(false);
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Login failed: " + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    // Handle registration logic here
-    alert(`Registering ${isAdmin ? "admin" : "user"}`);
-    setIsPopupOpen(false); // Close the popup after registration
+    setLoading(true); // Show the loading spinner
+
+    const fullName = e.target.fullName.value;
+    const username = e.target.username.value;
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+    const dob = e.target.dob.value;
+
+    try {
+      await axios.post(
+        isAdmin
+          ? "http://localhost:5000/register/admin"
+          : "http://localhost:5000/register/user",
+        {
+          fullName,
+          username,
+          email,
+          password,
+          dob,
+          isAdmin,
+        }
+      );
+      alert("Registration successful");
+      setIsPopupOpen(false);
+    } catch (error) {
+      console.error("Registration error:", error);
+      alert("Registration failed: " + error.response.data.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -93,91 +155,92 @@ export default function Login() {
                   : "User Login"}
               </h2>
 
-              {/* Full Name (for registration only) */}
-              {isRegister && (
-                <>
-                  <label htmlFor="fullName">Full Name</label>
+              {loading ? (
+                // Render spinner while loading
+                <div className="flex justify-center mb-5">
+                  <Blocks
+                    height="80"
+                    width="80"
+                    color="yellow"
+                    ariaLabel="blocks-loading"
+                    wrapperStyle={{}}
+                    wrapperClass="blocks-wrapper"
+                    visible={true}
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col">
+                  {/* Full Name (for registration only) */}
+                  {isRegister && (
+                    <>
+                      <label htmlFor="fullName">Full Name</label>
+                      <input
+                        id="fullName"
+                        type="text"
+                        placeholder="Full Name"
+                        required
+                      />
+                    </>
+                  )}
+
+                  <label htmlFor="username">
+                    {isRegister ? "New Username" : "Username"}
+                  </label>
                   <input
-                    id="fullName"
+                    id="username"
                     type="text"
-                    placeholder="Full Name"
+                    placeholder={isRegister ? "New Username" : "Username"}
                     required
                   />
-                </>
-              )}
 
-              <label htmlFor="username">
-                {isRegister ? "New Username" : "Username"}
-              </label>
-              <input
-                id="username"
-                type="text"
-                placeholder={isRegister ? "New Username" : "Username"}
-                required
-              />
-
-              <label htmlFor="password">
-                {isRegister ? "New Password" : "Password"}
-              </label>
-              <input
-                id="password"
-                type="password"
-                placeholder={isRegister ? "New Password" : "Password"}
-                required
-              />
-
-              {/* Confirm Password (for registration only) */}
-              {isRegister && (
-                <>
-                  <label htmlFor="confirmPassword">Confirm Password</label>
+                  <label htmlFor="password">
+                    {isRegister ? "New Password" : "Password"}
+                  </label>
                   <input
-                    id="confirmPassword"
+                    id="password"
                     type="password"
-                    placeholder="Confirm Password"
+                    placeholder={isRegister ? "New Password" : "Password"}
                     required
                   />
-                </>
-              )}
 
-              {/* Email (for registration only) */}
-              {isRegister && (
-                <>
-                  <label htmlFor="email">Email</label>
-                  <input id="email" type="email" placeholder="Email" required />
-                </>
-              )}
+                  {/* Confirm Password (for registration only) */}
+                  {isRegister && (
+                    <>
+                      <label htmlFor="confirmPassword">Confirm Password</label>
+                      <input
+                        id="confirmPassword"
+                        type="password"
+                        placeholder="Confirm Password"
+                        required
+                      />
+                    </>
+                  )}
 
-              {/* Phone Number (Optional for registration) */}
-              {isRegister && (
-                <>
-                  <label htmlFor="phone">Phone Number (Optional)</label>
-                  <input id="phone" type="tel" placeholder="Phone Number" />
-                </>
-              )}
+                  {/* Email (for registration only) */}
+                  {isRegister && (
+                    <>
+                      <label htmlFor="email">Email</label>
+                      <input
+                        id="email"
+                        type="email"
+                        placeholder="Email"
+                        required
+                      />
+                    </>
+                  )}
 
-              {/* Date of Birth (for registration only) */}
-              {isRegister && (
-                <>
-                  <label htmlFor="dob">Date of Birth</label>
-                  <input id="dob" type="date" required />
-                </>
-              )}
-
-              {/* Country/Region (for registration only) */}
-              {isRegister && (
-                <>
-                  <label htmlFor="country">Country/Region</label>
-                  <input
-                    id="country"
-                    type="text"
-                    placeholder="Country/Region"
-                    required
-                  />
-                </>
+                  {/* Date of Birth (for registration only) */}
+                  {isRegister && (
+                    <>
+                      <label htmlFor="dob">Date of Birth</label>
+                      <input id="dob" type="date" required />
+                    </>
+                  )}
+                </div>
               )}
 
               <div className="flex justify-around">
-                <button type="submit">
+                <button type="submit" disabled={loading}>
                   {isRegister ? "Register" : "Login"}
                 </button>
                 <button type="button" onClick={() => setIsPopupOpen(false)}>

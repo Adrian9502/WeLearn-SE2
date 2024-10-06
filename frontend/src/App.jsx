@@ -1,9 +1,9 @@
-import Login from "./components/Login/Login";
+import Pages from "./components/Pages";
 
 function App() {
   return (
-    <main className="flex items-center justify-center min-h-screen">
-      <Login />
+    <main className="min-h-screen">
+      <Pages />
     </main>
   );
 }

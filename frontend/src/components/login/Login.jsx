@@ -2,8 +2,9 @@ import { useState } from "react";
 import "./Login.css";
 import axios from "axios";
 import { Blocks } from "react-loader-spinner";
-import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 export default function Login() {
+  const navigate = useNavigate();
   // state for errors
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState("");
@@ -137,8 +138,10 @@ export default function Login() {
         // Check if the response contains user/admin data
         if (response.data && response.data.user) {
           alert(`Login successful: USER: ${response.data.user.fullName}`);
+          navigate("/user-dashboard");
         } else if (response.data && response.data.admin) {
           alert(`Login successful: ADMIN: ${response.data.admin.fullName}`);
+          navigate("/admin-dashboard");
         } else {
           throw new Error("User or Admin object not found in response");
         }

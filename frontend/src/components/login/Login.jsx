@@ -2,10 +2,11 @@ import { useState } from "react";
 import "./Login.css";
 import axios from "axios";
 import { Blocks } from "react-loader-spinner";
-
+import Swal from "sweetalert2";
 export default function Login() {
   // state for errors
   const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState("");
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
@@ -19,6 +20,10 @@ export default function Login() {
     // If closing the popup, clear errors
     if (!isPopupOpen) {
       setErrors({}); // Reset errors when the popup is closed
+    }
+    // If closing the popup, clear errors
+    if (!isPopupOpen) {
+      setFormError(""); // Reset errors when the popup is closed
     }
 
     setIsPopupOpen(!isPopupOpen); // Toggle popup state
@@ -40,8 +45,6 @@ export default function Login() {
     // Validate Password
     if (!fields.password) {
       errors.password = "Password is required";
-    } else if (fields.password.length < 6) {
-      errors.password = "Password must be at least 6 characters";
     }
 
     return errors;
@@ -117,7 +120,8 @@ export default function Login() {
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length === 0) {
-      setLoading(true); // Set the loading state to show spinner
+      setLoading(true);
+      setFormError(""); // Clear any previous form error
       try {
         const response = await axios.post(
           isAdmin
@@ -130,9 +134,6 @@ export default function Login() {
           }
         );
 
-        // Log the response to verify structure
-        console.log(response);
-
         // Check if the response contains user/admin data
         if (response.data && response.data.user) {
           alert(`Login successful: USER: ${response.data.user.fullName}`);
@@ -142,13 +143,12 @@ export default function Login() {
           throw new Error("User or Admin object not found in response");
         }
 
-        // Close the popup after successful login
         setIsPopupOpen(false);
       } catch (error) {
         console.error("Login error:", error);
-        alert("Login failed: " + error.message);
+        setFormError("Invalid username or password. Please try again."); // Set form error
       } finally {
-        setLoading(false); // Reset loading state after the login process is complete
+        setLoading(false);
       }
     }
   };
@@ -266,7 +266,7 @@ export default function Login() {
                   ? "Admin Login"
                   : "User Login"}
               </h2>
-
+              {formError && <div className="error-text mb-2">{formError}</div>}
               {loading ? (
                 <div className="flex justify-center mb-5">
                   <Blocks
@@ -379,7 +379,7 @@ export default function Login() {
                 </div>
               )}
 
-              <div className="flex justify-around">
+              <div className="flex justify-around mt-2">
                 <button type="submit" disabled={loading}>
                   {isRegister ? "Register" : "Login"}
                 </button>

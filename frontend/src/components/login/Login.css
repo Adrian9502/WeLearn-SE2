@@ -184,7 +184,8 @@ label {
 }
 .error-text {
   font-size: 13px;
-  color: #00fcfc;
-  background-color: rgb(204, 9, 9);
+  font-weight: bold;
+  color: #fc0000;
+  background-color: yellow;
   padding-left: 0.2rem;
 }

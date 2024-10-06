@@ -137,10 +137,8 @@ export default function Login() {
 
         // Check if the response contains user/admin data
         if (response.data && response.data.user) {
-          alert(`Login successful: USER: ${response.data.user.fullName}`);
           navigate("/user-dashboard");
         } else if (response.data && response.data.admin) {
-          alert(`Login successful: ADMIN: ${response.data.admin.fullName}`);
           navigate("/admin-dashboard");
         } else {
           throw new Error("User or Admin object not found in response");
@@ -149,7 +147,7 @@ export default function Login() {
         setIsPopupOpen(false);
       } catch (error) {
         console.error("Login error:", error);
-        setFormError("Invalid username or password. Please try again."); // Set form error
+        setFormError("Invalid username or password. Please try again.");
       } finally {
         setLoading(false);
       }

@@ -21,7 +21,7 @@ const CreateQuiz = () => {
   };
 
   return (
-    <div>
+    <div className="dashboard-bg h-screen">
       <h1>Create New Quiz</h1>
       <form onSubmit={handleSubmit}>
         <label>Quiz Title:</label>

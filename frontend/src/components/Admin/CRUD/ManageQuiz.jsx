@@ -11,8 +11,8 @@ const ManageQuiz = () => {
   }, []);
 
   return (
-    <div className="bg-black flex text-white">
-      <div className="p-10">
+    <div className="circle-bg h-screen flex text-white">
+      <div className="p-10 ">
         <h1>Manage Quizzes</h1>
         <ul>
           {quizzes.map((quiz) => (

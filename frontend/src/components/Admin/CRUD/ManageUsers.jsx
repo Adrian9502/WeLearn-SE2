@@ -10,7 +10,7 @@ const ManageUsers = () => {
   }, []);
 
   return (
-    <div>
+    <div className="dashboard-bg h-screen">
       <h1>Manage Users</h1>
       <ul>
         {users.map((user) => (

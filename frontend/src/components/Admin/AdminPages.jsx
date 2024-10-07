@@ -4,12 +4,12 @@ import CreateQuiz from "./CRUD/CreateQuiz";
 import ManageQuiz from "./CRUD/ManageQuiz";
 import ManageUsers from "./CRUD/ManageUsers";
 import AdminDashboard from "./CRUD/AdminDashboard";
-
+import "../Admin/admin.css";
 export default function AdminPages() {
   return (
     <div className="bg-violet-700 flex text-white">
       <AdminSidebar />
-      <div className="flex-1 p-10">
+      <div className="flex-1">
         <Routes>
           <Route path="/" element={<AdminDashboard />} />
           <Route path="quizzes" element={<ManageQuiz />} />

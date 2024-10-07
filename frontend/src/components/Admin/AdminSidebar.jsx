@@ -1,17 +1,23 @@
 import { FaUser, FaQuestionCircle, FaPlus, FaCogs } from "react-icons/fa";
 import { Link } from "react-router-dom";
+
 export default function AdminSidebar() {
   return (
-    <aside className="h-screen w-64 bg-gray-900 text-white">
-      <div className="p-6 text-2xl font-bold">Admin Panel</div>
-      <ul className="space-y-6 mt-8">
+    <aside className="h-screen w-64 custom-border-sidebar text-white shadow-lg">
+      {/* Sidebar Header */}
+      <div className="p-6 text-2xl font-bold text-center bg-purple-400">
+        Admin Panel
+      </div>
+
+      {/* Sidebar Links */}
+      <ul className="space-y-4 mt-8">
         {/* Dashboard Overview */}
         <li>
           <Link
             to="/admin-dashboard"
-            className="flex items-center space-x-3 p-3 hover:bg-gray-700 rounded-md"
+            className="flex items-center space-x-3 p-4 rounded-md transition duration-200"
           >
-            <FaCogs />
+            <FaCogs className="text-yellow-400" />
             <span>Dashboard</span>
           </Link>
         </li>
@@ -20,9 +26,9 @@ export default function AdminSidebar() {
         <li>
           <Link
             to="/admin-dashboard/quizzes"
-            className="flex items-center space-x-3 p-3 hover:bg-gray-700 rounded-md"
+            className="flex items-center space-x-3 p-4 rounded-md transition duration-200"
           >
-            <FaQuestionCircle />
+            <FaQuestionCircle className="text-yellow-400" />
             <span>Manage Quizzes</span>
           </Link>
         </li>
@@ -31,9 +37,9 @@ export default function AdminSidebar() {
         <li>
           <Link
             to="/admin-dashboard/quizzes/new"
-            className="flex items-center space-x-3 p-3 hover:bg-gray-700 rounded-md"
+            className="flex items-center space-x-3 p-4 rounded-md transition duration-200"
           >
-            <FaPlus />
+            <FaPlus className="text-yellow-400" />
             <span>Create New Quiz</span>
           </Link>
         </li>
@@ -42,9 +48,9 @@ export default function AdminSidebar() {
         <li>
           <Link
             to="/admin-dashboard/users"
-            className="flex items-center space-x-3 p-3 hover:bg-gray-700 rounded-md"
+            className="flex items-center space-x-3 p-4  rounded-md transition duration-200"
           >
-            <FaUser />
+            <FaUser className="text-yellow-400" />
             <span>Manage Users</span>
           </Link>
         </li>

@@ -56,7 +56,7 @@
   z-index: 999;
   position: absolute;
   animation: walk 0.8s steps(6) infinite;
-  background: url("/public/bern.png") repeat-x;
+  background: url("/bern.png") repeat-x;
 }
 #bern {
   left: 30px;

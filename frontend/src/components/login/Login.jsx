@@ -83,7 +83,6 @@ const Login = () => {
           </div>
         </div>
       )}
-
       <div id="bern"></div>
       <div id="bern1"></div>
       <div className="ground">

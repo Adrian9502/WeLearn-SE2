@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
-import Login from "../components/Login/Login"; // This is our Login component!
+import Login from "../../components/Login/Login"; // This is our Login component!
 import axios from "axios"; // We're going to use axios to talk to our API!
 import { MemoryRouter } from "react-router-dom";
 jest.mock("axios"); // We pretend axios works for our tests!

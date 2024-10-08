@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Blocks } from "react-loader-spinner";
-
+import React from "react";
 const Forms = ({
   isRegister,
   isAdmin,
@@ -74,16 +74,30 @@ const Forms = ({
     } else if (fieldName === "Username" && /[^a-zA-Z0-9]/.test(value)) {
       return `${fieldName} cannot contain special characters`;
     }
-    return "";
+    return null;
   };
 
   const validateEmail = (email) => {
-    if (!email) {
+    const trimmedEmail = email.trim(); // Trim email input
+    if (!trimmedEmail) {
       return "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
+    }
+
+    // Regex to validate standard email structure
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
       return "Email is invalid";
     }
-    return "";
+
+    // Additional validation: Check if email ends with a number or special character after domain
+    const domainPart = trimmedEmail.split("@")[1]; // Get the part after '@'
+    const tld = domainPart.split(".").pop(); // Get the top-level domain part (e.g., 'com')
+
+    if (/[0-9]$/.test(tld) || /[^a-zA-Z]$/.test(tld)) {
+      return "Email cannot end with numbers or special characters";
+    }
+
+    return null; // Return null for no error
   };
 
   const validateDob = (dob) => {
@@ -100,13 +114,15 @@ const Forms = ({
     ) {
       return "User must be at least 10 years old";
     }
-    return "";
+    return null;
   };
 
   // Handle login submission
   const handleLogin = async (e) => {
     e.preventDefault();
-    const { username, password } = e.target;
+    console.log("Form Elements:", e.target.elements);
+
+    const { username, password } = e.target.elements;
 
     const validationErrors = validateLoginForm({
       username: username.value,
@@ -122,8 +138,15 @@ const Forms = ({
   // Handle registration submission
   const handleRegister = async (e) => {
     e.preventDefault();
-    const { fullName, username, email, password, confirmPassword, dob } =
-      e.target;
+    console.log("handleRegister called");
+
+    // Access form elements using e.target.elements
+    const fullName = e.target.elements.fullName;
+    const username = e.target.elements.username;
+    const email = e.target.elements.email;
+    const password = e.target.elements.password;
+    const confirmPassword = e.target.elements.confirmPassword;
+    const dob = e.target.elements.dob;
 
     const validationErrors = validateRegisterForm({
       fullName: fullName.value,
@@ -133,9 +156,17 @@ const Forms = ({
       confirmPassword: confirmPassword.value,
       dob: dob.value,
     });
+
+    console.log("Validation Errors:", validationErrors);
     setErrors(validationErrors);
 
-    if (Object.keys(validationErrors).length === 0) {
+    // Check for validation errors: look for non-null values
+    const hasErrors = Object.values(validationErrors).some(
+      (error) => error !== null
+    );
+
+    if (!hasErrors) {
+      console.log("No validation errors, proceeding to submit");
       await submitRegistration({
         fullName: fullName.value,
         username: username.value,
@@ -143,6 +174,8 @@ const Forms = ({
         password: password.value,
         dob: dob.value,
       });
+    } else {
+      console.log("Validation errors present, form not submitted");
     }
   };
 
@@ -161,7 +194,7 @@ const Forms = ({
       });
 
       if (response.data && (response.data.user || response.data.admin)) {
-        console.log("Login successful!");
+        console.log(`${isAdmin ? "Admin" : "User"}Login successful!`);
         navigate(response.data.user ? "/user-dashboard" : "/admin-dashboard");
       } else {
         throw new Error("User or Admin object not found in response");
@@ -183,12 +216,16 @@ const Forms = ({
       const endpoint = isAdmin
         ? "http://localhost:5000/register/admin"
         : "http://localhost:5000/register/user";
-      await axios.post(endpoint, { ...formData, isAdmin });
-      alert("Registration successful");
+      const response = await axios.post(endpoint, { ...formData, isAdmin });
+      console.log("Registration Response:", response); // Log the response
+      alert(`${isAdmin ? "Admin" : "User"} registration successful`);
       setIsPopupOpen(false);
     } catch (error) {
       console.error("Registration error:", error);
-      alert("Registration failed: " + error.response.data.message);
+      alert(
+        "Registration failed: " + error.response?.data?.message ||
+          "Unknown error"
+      );
     } finally {
       setLoading(false);
     }
@@ -263,7 +300,14 @@ const Forms = ({
 const renderField = (label, name, type, errorMessage) => (
   <>
     <label htmlFor={name}>{label}</label>
-    <input id={name} name={name} type={type} placeholder={label} required />
+    <input
+      data-testid={name}
+      id={name}
+      name={name}
+      type={type}
+      placeholder={label}
+      required
+    />
     {errorMessage && <span className="error-text">{errorMessage}</span>}
   </>
 );

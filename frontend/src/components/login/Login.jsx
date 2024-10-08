@@ -37,14 +37,17 @@ const Login = () => {
                 while improving your problem-solving skills. Are you ready?
               </p>
             </div>
+            {/* USER REGISTER/LOGIN */}
             <div className="flex justify-center">
               <button
                 className="btn red"
+                data-testid="user-login-button"
                 onClick={() => togglePopup(false, false)}
               >
-                LOG IN
+                Login
               </button>
               <button
+                data-testid="user-register-button"
                 className="btn blue login-button"
                 onClick={() => togglePopup(false, true)}
               >
@@ -88,13 +91,21 @@ const Login = () => {
       <div className="ground">
         <div className="grass"></div>
       </div>
-
+      {/* ADMIN LOGIN/REGISTER */}
       <div className="m-2 absolute flex flex-col items-center justify-center top-0 right-0">
         <h2 className="text-yellow-400">Admin</h2>
-        <button className="btn-admin" onClick={() => togglePopup(true, false)}>
+        <button
+          data-testid="admin-login-button"
+          className="btn-admin"
+          onClick={() => togglePopup(true, false)}
+        >
           Login
         </button>
-        <button className="btn-admin" onClick={() => togglePopup(true, true)}>
+        <button
+          className="btn-admin"
+          data-testid="admin-register-button"
+          onClick={() => togglePopup(true, true)}
+        >
           Register
         </button>
       </div>

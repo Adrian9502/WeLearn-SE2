@@ -4,7 +4,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
+const connectDB = require("./db");
 // Initialize express app
 const app = express();
 
@@ -20,10 +20,7 @@ app.use(cors());
 app.use(express.json());
 
 // ---------MONGODB CONNECTION----------------
-mongoose
-  .connect(process.env.MONGO_URI, {})
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log(err));
+connectDB();
 
 // ---------- IMPORT ROUTES ------------------
 const registerRoutes = require("./API/registerRoutes");

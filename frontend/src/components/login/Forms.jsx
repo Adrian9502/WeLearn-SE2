@@ -15,6 +15,10 @@ const Forms = ({
 }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [registrationMessage, setRegistrationMessage] = useState("");
+  const [loginMessage, setLoginMessage] = useState("");
+  const [successfulRegistration, setSuccessfulRegistration] = useState(false);
+  const [successfulLogin, setSuccessfulLogin] = useState(false);
 
   // Validation functions
   const validateLoginForm = (fields) => {
@@ -120,7 +124,6 @@ const Forms = ({
   // Handle login submission
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Form Elements:", e.target.elements);
 
     const { username, password } = e.target.elements;
 
@@ -138,7 +141,6 @@ const Forms = ({
   // Handle registration submission
   const handleRegister = async (e) => {
     e.preventDefault();
-    console.log("handleRegister called");
 
     // Access form elements using e.target.elements
     const fullName = e.target.elements.fullName;
@@ -157,7 +159,6 @@ const Forms = ({
       dob: dob.value,
     });
 
-    console.log("Validation Errors:", validationErrors);
     setErrors(validationErrors);
 
     // Check for validation errors: look for non-null values
@@ -166,7 +167,6 @@ const Forms = ({
     );
 
     if (!hasErrors) {
-      console.log("No validation errors, proceeding to submit");
       await submitRegistration({
         fullName: fullName.value,
         username: username.value,
@@ -194,13 +194,23 @@ const Forms = ({
       });
 
       if (response.data && (response.data.user || response.data.admin)) {
-        console.log(`${isAdmin ? "Admin" : "User"}Login successful!`);
-        navigate(response.data.user ? "/user-dashboard" : "/admin-dashboard");
+        setLoginMessage(
+          `${isAdmin ? "Admin" : "User"} Login successful! Redirecting...`
+        );
+        // Hide the form fields after a successful login
+        setSuccessfulLogin(true);
+        // Optionally, delay navigation to show the message for a brief period
+        setTimeout(() => {
+          navigate(response.data.user ? "/user-dashboard" : "/admin-dashboard");
+        }, 2000); // Delay by 2 seconds
       } else {
         throw new Error("User or Admin object not found in response");
       }
 
-      setIsPopupOpen(false);
+      // Optional: Delay form closure
+      setTimeout(() => {
+        setIsPopupOpen(false); // Close form after 3 seconds
+      }, 3000);
     } catch (error) {
       console.error("Login error:", error);
       setFormError("Invalid username or password. Please try again.");
@@ -216,15 +226,24 @@ const Forms = ({
       const endpoint = isAdmin
         ? "http://localhost:5000/register/admin"
         : "http://localhost:5000/register/user";
-      const response = await axios.post(endpoint, { ...formData, isAdmin });
-      console.log("Registration Response:", response); // Log the response
-      alert(`${isAdmin ? "Admin" : "User"} registration successful`);
-      setIsPopupOpen(false);
+      await axios.post(endpoint, { ...formData, isAdmin });
+
+      // Set success state to true and show success message
+      setSuccessfulRegistration(true);
+      setRegistrationMessage(
+        `${isAdmin ? "Admin" : "User"} registration successful! Please login.`
+      );
+
+      // Optional: Close form after a delay if desired
+      setTimeout(() => {
+        setIsPopupOpen(false); // Close form after 3 seconds
+      }, 2000); // Delay by 3 seconds (optional)
     } catch (error) {
       console.error("Registration error:", error);
-      alert(
-        "Registration failed: " + error.response?.data?.message ||
-          "Unknown error"
+
+      setRegistrationMessage(
+        "Registration failed: " +
+          (error.response?.data?.message || "Unknown error occurred")
       );
     } finally {
       setLoading(false);
@@ -245,52 +264,87 @@ const Forms = ({
           ? "Admin Login"
           : "User Login"}
       </h2>
+
+      {/* Display error message if there's any */}
       {formError && <div className="error-text mb-2">{formError}</div>}
-      {loading ? (
-        <div className="flex justify-center mb-5">
-          <Blocks
-            height="80"
-            width="80"
-            color="#FFFF00"
-            ariaLabel="blocks-loading"
-            visible={true}
-          />
-        </div>
-      ) : (
-        <div className="flex flex-col">
-          {isRegister &&
-            renderField("Full Name", "fullName", "text", errors.fullName)}
-          {renderField(
-            isRegister ? "New Username" : "Username",
-            "username",
-            "text",
-            errors.username
-          )}
-          {renderField(
-            isRegister ? "New Password" : "Password",
-            "password",
-            "password",
-            errors.password
-          )}
-          {isRegister &&
-            renderField(
-              "Confirm Password",
-              "confirmPassword",
-              "password",
-              errors.confirmPassword
-            )}
-          {isRegister && renderField("Email", "email", "email", errors.email)}
-          {isRegister &&
-            renderField("Date of Birth", "dob", "date", errors.dob)}
+
+      {/* Display registration message */}
+      {registrationMessage && (
+        <div
+          className={`mb-2 text-center text-lg ${
+            registrationMessage.toLowerCase().includes("failed")
+              ? "error-text"
+              : "success-text"
+          }`}
+        >
+          {registrationMessage}
         </div>
       )}
+
+      {/* Display login message */}
+      {loginMessage && (
+        <div className="mb-2 text-center text-lg success-text">
+          {loginMessage}
+        </div>
+      )}
+
+      {/* Conditionally render the form fields only if registration is not successful */}
+      {!successfulLogin && !successfulRegistration && (
+        <>
+          {loading ? (
+            <div className="flex justify-center mb-5">
+              <Blocks
+                height="80"
+                width="80"
+                color="#FFFF00"
+                ariaLabel="blocks-loading"
+                visible={true}
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col">
+              {isRegister &&
+                renderField("Full Name", "fullName", "text", errors.fullName)}
+              {renderField(
+                isRegister ? "New Username" : "Username",
+                "username",
+                "text",
+                errors.username
+              )}
+              {renderField(
+                isRegister ? "New Password" : "Password",
+                "password",
+                "password",
+                errors.password
+              )}
+              {isRegister &&
+                renderField(
+                  "Confirm Password",
+                  "confirmPassword",
+                  "password",
+                  errors.confirmPassword
+                )}
+              {isRegister &&
+                renderField("Email", "email", "email", errors.email)}
+              {isRegister &&
+                renderField("Date of Birth", "dob", "date", errors.dob)}
+            </div>
+          )}
+        </>
+      )}
+
       <div className="flex justify-around mt-2">
-        <button type="submit" disabled={loading}>
-          {isRegister ? "Register" : "Login"}
-        </button>
-        <button type="button" onClick={() => setIsPopupOpen(false)}>
-          Close
-        </button>
+        {/* Hide buttons if registration is successful */}
+        {!successfulLogin && !successfulRegistration && (
+          <>
+            <button type="submit" disabled={loading}>
+              {isRegister ? "Register" : "Login"}
+            </button>
+            <button type="button" onClick={() => setIsPopupOpen(false)}>
+              Close
+            </button>
+          </>
+        )}
       </div>
     </form>
   );

@@ -5,7 +5,7 @@ export default function AdminSidebar() {
   return (
     <aside className="h-screen w-64 custom-border-sidebar text-white shadow-lg">
       {/* Sidebar Header */}
-      <div className="p-6 text-2xl font-bold text-center bg-purple-400">
+      <div className="p-6 text-3xl border custom-border font-bold text-center text-yellow-400">
         Admin Panel
       </div>
 
@@ -14,7 +14,7 @@ export default function AdminSidebar() {
         {/* Dashboard Overview */}
         <li>
           <Link
-            to="/admin-dashboard"
+            to="/admin-dashboard/dashboard"
             className="flex items-center space-x-3 p-4 rounded-md transition duration-200"
           >
             <FaCogs className="text-yellow-400" />
@@ -25,11 +25,32 @@ export default function AdminSidebar() {
         {/* Manage Quizzes */}
         <li>
           <Link
-            to="/admin-dashboard/quizzes"
+            to="/admin-dashboard/manage-quizzes"
             className="flex items-center space-x-3 p-4 rounded-md transition duration-200"
           >
             <FaQuestionCircle className="text-yellow-400" />
             <span>Manage Quizzes</span>
+          </Link>
+        </li>
+        {/* Manage Users */}
+        <li>
+          <Link
+            to="/admin-dashboard/manage-users"
+            className="flex items-center space-x-3 p-4  rounded-md transition duration-200"
+          >
+            <FaUser className="text-yellow-400" />
+            <span>Manage Users</span>
+          </Link>
+        </li>
+
+        {/* Manage Admins */}
+        <li>
+          <Link
+            to="/admin-dashboard/manage-admins"
+            className="flex items-center space-x-3 p-4  rounded-md transition duration-200"
+          >
+            <FaUser className="text-yellow-400" />
+            <span>Manage Admins</span>
           </Link>
         </li>
 
@@ -41,17 +62,6 @@ export default function AdminSidebar() {
           >
             <FaPlus className="text-yellow-400" />
             <span>Create New Quiz</span>
-          </Link>
-        </li>
-
-        {/* Manage Users */}
-        <li>
-          <Link
-            to="/admin-dashboard/users"
-            className="flex items-center space-x-3 p-4  rounded-md transition duration-200"
-          >
-            <FaUser className="text-yellow-400" />
-            <span>Manage Users</span>
           </Link>
         </li>
       </ul>

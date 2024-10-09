@@ -69,7 +69,7 @@ const Modal = ({ isOpen, onClose, onSubmit, type }) => {
   );
 };
 
-const ManageUsers = () => {
+const ManageAdmins = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState("create");
 
@@ -91,7 +91,7 @@ const ManageUsers = () => {
   return (
     <div className="circle-bg p-20 flex flex-col gap-20 h-screen">
       <div className="flex items-center justify-between">
-        <span className="text-3xl w-fit custom-border p-4">Manage Users</span>
+        <span className="text-3xl w-fit custom-border p-4">Manage Admins</span>
         <div className="flex gap-10 text-lg">
           <button
             className="p-2 bg-purple-700 transition-colors hover:bg-purple-800 custom-border-no-bg yellow-text"
@@ -159,4 +159,4 @@ const ManageUsers = () => {
   );
 };
 
-export default ManageUsers;
+export default ManageAdmins;

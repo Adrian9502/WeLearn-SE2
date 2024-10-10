@@ -201,7 +201,11 @@ const Forms = ({
         setSuccessfulLogin(true);
         // Optionally, delay navigation to show the message for a brief period
         setTimeout(() => {
-          navigate(response.data.user ? "/user-dashboard" : "/admin-dashboard");
+          navigate(
+            response.data.user
+              ? "/user-dashboard"
+              : "/admin-dashboard/dashboard"
+          );
         }, 2000); // Delay by 2 seconds
       } else {
         throw new Error("User or Admin object not found in response");

@@ -64,6 +64,17 @@ export default function AdminSidebar() {
             <span>Create New Quiz</span>
           </Link>
         </li>
+
+        {/* Log out */}
+        <li>
+          <Link
+            to="/admin-dashboard/quizzes/new"
+            className="flex items-center space-x-3 p-4 rounded-md transition duration-200"
+          >
+            <FaPlus className="text-yellow-400" />
+            <span>Log out</span>
+          </Link>
+        </li>
       </ul>
     </aside>
   );

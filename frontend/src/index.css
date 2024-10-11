@@ -1,16 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-/* FONT */
-@font-face {
-  font-family: KodeMono;
-  src: url("../../../data/font/KodeMono.ttf");
-}
-/* custom cursor */
-* {
-  cursor: url("/cursor.cur"), auto;
-  font-family: KodeMono;
-}
+
 /* BG-HOME */
 .circle-bg {
   background-color: #0f0b16;

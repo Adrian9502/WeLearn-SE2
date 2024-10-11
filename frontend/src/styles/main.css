@@ -1,11 +1,3 @@
-@font-face {
-  font-family: Retro Gaming;
-  src: url("/frontend/data/font/Retro\ Gaming.ttf");
-}
-/* @font-face {
-  font-family: Retro Gaming;
-  src: url("../data/font/KodeMono.ttf");
-} */
 @keyframes movementLeft {
   0% {
     background-position: 0% 0%;

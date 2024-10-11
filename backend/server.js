@@ -37,7 +37,8 @@ app.use("/login", loginRoutes);
 app.use("/api/users", userRoutes);
 // use admin routes --this route will get all the admins data
 app.use("/api/admins", adminRoutes);
-app.use("/api/create-quiz", quizRoutes);
+// use create quiz routes
+app.use("/api/quizzes", quizRoutes);
 
 // --------------------------------------
 // Sample route - for testing

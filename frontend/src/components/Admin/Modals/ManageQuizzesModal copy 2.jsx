@@ -1,6 +1,6 @@
 import React from "react";
 
-const Modal = ({
+const ManageQuizzesModal = ({
   isOpen,
   onClose,
   handleUpdate,
@@ -171,4 +171,4 @@ const Modal = ({
   );
 };
 
-export default Modal;
+export default ManageQuizzesModal;

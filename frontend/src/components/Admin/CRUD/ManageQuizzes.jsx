@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
-import Modal from "./Modal";
+import { useState, useEffect, useCallback } from "react";
+import ManageQuizzesModal from "../Modals/ManageQuizzesModal";
 import ManageAll from "./ManageAll";
 import axios from "axios";
+import { Blocks } from "react-loader-spinner";
 
 const ManageQuizzes = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,57 +20,60 @@ const ManageQuizzes = () => {
     setIsModalOpen(false);
   };
 
-  const handleCreate = (e) => {
-    e.preventDefault();
-    console.log("Create Quiz");
-    handleCloseModal();
-  };
-
-  const handleUpdate = (e) => {
-    e.preventDefault();
-    console.log("Update Quiz");
-    handleCloseModal();
-  };
-
-  const handleDelete = (e) => {
-    e.preventDefault();
-    console.log("Delete Quiz");
-    handleCloseModal();
-  };
-
   // Function to fetch quiz data from the API
-  const fetchQuizData = async () => {
+  const fetchQuizData = useCallback(async () => {
+    setLoading(true);
     try {
-      const response = await axios.get("http://localhost:5000/api/create-quiz");
-      // Transform the data into the format required for the table
+      const response = await axios.get("http://localhost:5000/api/quizzes");
       const transformedData = response.data.map((quiz) => ({
         ID: quiz._id,
         Title: quiz.title,
         Instructions: quiz.instruction,
-        Questions: quiz.questions
-          .map((question) => question.question)
-          .join(", "), // Join questions with a comma
-        Answer: quiz.questions.map((question) => question.answer).join(", "), // Join answers with a comma
+        Questions: quiz.question,
+        Answer: quiz.answer,
       }));
-      setQuizData(transformedData); // Set transformed data
+      setQuizData(transformedData);
     } catch (err) {
-      setError("Failed to fetch: ", err);
+      setError("Failed to fetch: " + err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchQuizData();
-  }, []);
+  }, [fetchQuizData]);
 
-  // Show loading indicator or error message while fetching
+  // Callback functions for CRUD operations
+  const handleQuizCreated = useCallback(() => {
+    fetchQuizData();
+  }, [fetchQuizData]);
+
+  const handleQuizUpdated = useCallback(() => {
+    fetchQuizData();
+  }, [fetchQuizData]);
+
+  const handleQuizDeleted = useCallback(() => {
+    fetchQuizData();
+  }, [fetchQuizData]);
+
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center mb-5">
+        <Blocks
+          height="80"
+          width="80"
+          color="#FFFF00"
+          ariaLabel="blocks-loading"
+          visible={true}
+        />
+      </div>
+    );
   }
   if (error) {
     return <div>Error: {error}</div>;
   }
+
   return (
     <>
       <ManageAll
@@ -78,14 +82,14 @@ const ManageQuizzes = () => {
         tableColumns={["ID", "Title", "Instructions", "Questions", "Answer"]}
         tableRows={quizData}
       />
-
-      <Modal
+      <ManageQuizzesModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        handleCreate={handleCreate}
-        handleUpdate={handleUpdate}
-        handleDelete={handleDelete}
+        handleCloseModal={handleCloseModal}
         type={modalType}
+        onQuizCreated={handleQuizCreated}
+        onQuizUpdated={handleQuizUpdated}
+        onQuizDeleted={handleQuizDeleted}
       />
     </>
   );

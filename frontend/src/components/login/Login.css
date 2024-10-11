@@ -1,3 +1,8 @@
+@font-face {
+  font-family: "HomeVideo";
+  src: url("../../data/font/Pixellari.ttf") format("truetype");
+}
+
 .main-container {
   background: rgba(64, 11, 99, 0.897);
   border-bottom: 6px inset rgba(0, 0, 0, 0.5);

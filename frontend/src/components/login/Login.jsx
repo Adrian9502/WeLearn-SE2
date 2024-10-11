@@ -20,7 +20,10 @@ const Login = () => {
   };
 
   return (
-    <main className="circle-bg relative flex items-center justify-center min-h-screen">
+    <main
+      style={{ fontFamily: "HomeVideo, Arial, Helvetica, sans-serif" }}
+      className="circle-bg relative flex items-center justify-center min-h-screen"
+    >
       <div
         className="flex items-center main-container justify-center w-[60%] flex-wrap p-8"
         id="main-wrapper"

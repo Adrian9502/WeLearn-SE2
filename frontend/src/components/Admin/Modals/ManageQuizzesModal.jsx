@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Blocks } from "react-loader-spinner";
+import Swal from "sweetalert2";
+import { ProgressBar } from "react-loader-spinner";
 const ManageQuizzesModal = ({
   isOpen,
   onClose,
@@ -10,21 +11,28 @@ const ManageQuizzesModal = ({
   onQuizUpdated,
   onQuizDeleted,
 }) => {
-  if (!isOpen) return null;
-
   const [quizId, setQuizId] = useState("");
   const [title, setTitle] = useState("");
   const [instruction, setInstruction] = useState("");
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
-  const [popupMessage, setPopupMessage] = useState("");
-  const [showPopup, setShowPopup] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(isOpen);
   const [loading, setLoading] = useState(false);
+
   // Close modal when isOpen prop changes
   useEffect(() => {
     setIsModalOpen(isOpen);
   }, [isOpen]);
+  if (!isOpen) return null;
+
+  const sweetAlert = ({ title, text, icon }) => {
+    Swal.fire({
+      title: title, // Pass the title directly
+      text: text, // Pass the text directly
+      icon: icon, // Pass the icon directly
+    });
+  };
+
   // reset form
   const resetForm = () => {
     setQuizId("");
@@ -33,32 +41,28 @@ const ManageQuizzesModal = ({
     setQuestion("");
     setAnswer("");
   };
-  // show error pop up
-  const showErrorPopup = (message) => {
-    setPopupMessage(message);
-    setShowPopup(true);
-    setTimeout(() => {
-      setShowPopup(false);
-      setIsModalOpen(true); // Reopen modal after 1 second
-    }, 1000);
-  };
-  // show success pop up
-  const showSuccessPopup = (message) => {
-    setPopupMessage(message);
-    setShowPopup(true);
-    setTimeout(() => {
-      setShowPopup(false);
-      handleCloseModal();
-    }, 1000);
-  };
   // create,read,update
   const handleCreate = async (e) => {
     e.preventDefault();
-    if (!title || !instruction || !question || !answer) {
-      showErrorPopup("All fields are required.");
-      setIsModalOpen(false); // Temporarily close the modal
+    if (
+      !title ||
+      title.length < 5 ||
+      !instruction ||
+      instruction.length < 10 ||
+      !question ||
+      question.length < 10 ||
+      !answer ||
+      answer.length < 5
+    ) {
+      sweetAlert({
+        title: "Error",
+        text: "All fields are required and must be at least 10 characters long.",
+        icon: "error",
+      });
+      resetForm();
       return;
     }
+
     setLoading(true);
 
     try {
@@ -69,15 +73,27 @@ const ManageQuizzesModal = ({
         answer,
       });
       console.log("Quiz created:", response.data);
+      // pop up alert
+      sweetAlert({
+        title: "Success!",
+        text: response.data.message,
+        icon: "success",
+      });
       onQuizCreated();
+      handleCloseModal();
       resetForm();
-      showSuccessPopup("Quiz created successfully!");
     } catch (error) {
       console.error(
         "Error creating quiz:",
         error.response?.data || error.message
       );
-      showErrorPopup("Failed to create quiz. Please try again.");
+      // pop up alert
+      sweetAlert({
+        title: "Error",
+        text: error.message,
+        icon: "error",
+      });
+
       setIsModalOpen(false);
     } finally {
       setLoading(false);
@@ -86,9 +102,22 @@ const ManageQuizzesModal = ({
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    if (!quizId || !title || !instruction || !question || !answer) {
-      showErrorPopup("All fields are required.");
-      setIsModalOpen(false);
+    if (
+      !title ||
+      title.length < 5 ||
+      !instruction ||
+      instruction.length < 10 ||
+      !question ||
+      question.length < 10 ||
+      !answer ||
+      answer.length < 5
+    ) {
+      sweetAlert({
+        title: "Error",
+        text: "All fields are required and must be at least 10 characters long.",
+        icon: "error",
+      });
+      resetForm();
       return;
     }
     setLoading(true);
@@ -102,17 +131,24 @@ const ManageQuizzesModal = ({
           answer,
         }
       );
-      console.log("Quiz updated:", response.data);
+      // pop up alert
+      sweetAlert({
+        title: "Success!",
+        text: response.data.message,
+        icon: "success",
+      });
       onQuizUpdated();
       resetForm();
-      showSuccessPopup("Quiz updated successfully!");
-    } catch (error) {
-      console.error(
-        "Error updating quiz:",
-        error.response?.data || error.message
-      );
-      showErrorPopup("Failed to update quiz. Please try again.");
-      setIsModalOpen(false);
+      handleCloseModal();
+    } catch {
+      // pop up alert
+      sweetAlert({
+        title: "Error",
+        text: "Cannot update, invalid ID",
+        icon: "error",
+      });
+      // handleCloseModal();
+      resetForm();
     } finally {
       setLoading(false); // Stop loading
     }
@@ -120,27 +156,30 @@ const ManageQuizzesModal = ({
 
   const handleDelete = async (e) => {
     e.preventDefault();
-    if (!quizId) {
-      showErrorPopup("Quiz ID is required.");
-      setIsModalOpen(false);
-      return;
-    }
+    // set loading to true
     setLoading(true);
     try {
       const response = await axios.delete(
         `http://localhost:5000/api/quizzes/${quizId}`
       );
-      console.log("Quiz deleted:", response.data);
+
+      // pop up alert
+      sweetAlert({
+        title: "Success!",
+        text: response.data.message,
+        icon: "success",
+      });
+      handleCloseModal();
       onQuizDeleted();
       resetForm();
-      showSuccessPopup("Quiz deleted successfully!");
     } catch (error) {
-      console.error(
-        "Error deleting quiz:",
-        error.response?.data || error.message
-      );
-      showErrorPopup("Failed to delete quiz. Please try again.");
-      setIsModalOpen(false);
+      // pop up alert
+      sweetAlert({
+        title: "Error",
+        text: `Invalid ID or ID does not exist`,
+        icon: "error",
+      });
+      resetForm();
     } finally {
       setLoading(false);
     }
@@ -148,14 +187,9 @@ const ManageQuizzesModal = ({
 
   return (
     <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
-      {showPopup && (
-        <div className="fixed top-0 left-0 right-0 bg-blue-500 text-white text-center p-3">
-          {popupMessage}
-        </div>
-      )}
       {isModalOpen && (
-        <div className="custom-border p-8 w-96">
-          <h2 className="text-3xl yellow-text text-center font-bold mb-4">
+        <div className="rounded-lg bg-violet-700 p-8 w-96">
+          <h2 className="text-3xl text-center font-bold mb-4">
             {type === "create" && "Create Quiz"}
             {type === "update" && "Update Quiz"}
             {type === "delete" && "Delete Quiz"}
@@ -163,12 +197,14 @@ const ManageQuizzesModal = ({
           {loading && (
             <div className="text-center my-4">
               <div className="flex justify-center mb-5">
-                <Blocks
+                <ProgressBar
+                  visible={true}
                   height="80"
                   width="80"
-                  color="#FFFF00"
-                  ariaLabel="blocks-loading"
-                  visible={true}
+                  color="#4fa94d"
+                  ariaLabel="progress-bar-loading"
+                  wrapperStyle={{}}
+                  wrapperClass=""
                 />
               </div>
             </div>
@@ -185,7 +221,7 @@ const ManageQuizzesModal = ({
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="text-gray-900 border-input w-full p-2 focus:outline-none"
+                    className="text-gray-900 rounded-md focus:shadow-lg w-full p-2 focus:outline-none"
                     placeholder="Enter new quiz title"
                     required
                   />
@@ -197,7 +233,7 @@ const ManageQuizzesModal = ({
                   <textarea
                     value={instruction}
                     onChange={(e) => setInstruction(e.target.value)}
-                    className="text-gray-900 resize-none border-input w-full p-2 focus:outline-none"
+                    className="text-gray-900 rounded-md focus:shadow-lg resize-none  w-full p-2 focus:outline-none"
                     placeholder="Enter new quiz instructions"
                     required
                   ></textarea>
@@ -209,7 +245,7 @@ const ManageQuizzesModal = ({
                   <textarea
                     value={question}
                     onChange={(e) => setQuestion(e.target.value)}
-                    className="text-gray-900 resize-none border-input w-full p-2 focus:outline-none"
+                    className="text-gray-900 rounded-md focus:shadow-lg resize-none w-full p-2 focus:outline-none"
                     placeholder="Enter new quiz question"
                     required
                   ></textarea>
@@ -221,22 +257,22 @@ const ManageQuizzesModal = ({
                   <textarea
                     value={answer}
                     onChange={(e) => setAnswer(e.target.value)}
-                    className="text-gray-900 resize-none border-input w-full p-2 focus:outline-none"
+                    className="text-gray-900 rounded-md focus:shadow-lg resize-none  w-full p-2 focus:outline-none"
                     placeholder="Enter answer"
                     required
                   ></textarea>
                 </div>
               </div>
-              <div className="flex justify-between mb-4">
+              <div className="flex justify-around mb-4">
                 <button
                   type="submit"
-                  className="text-white custom-border-no-bg px-4 py-2 bg-green-600 hover:bg-green-700 transition-colors"
+                  className="text-white px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md transition-colors"
                 >
                   Create
                 </button>
                 <button
                   onClick={onClose}
-                  className="text-white custom-border py-2 px-4 bg-gray-600 hover:bg-gray-700 transition-colors"
+                  className="text-white rounded-md py-2 px-4 bg-gray-600 hover:bg-gray-700 transition-colors"
                 >
                   Close
                 </button>
@@ -256,7 +292,7 @@ const ManageQuizzesModal = ({
                     type="text"
                     value={quizId}
                     onChange={(e) => setQuizId(e.target.value)}
-                    className="text-gray-900 border-input w-full p-2 focus:outline-none"
+                    className="text-gray-900 rounded-md focus:shadow-lg  w-full p-2 focus:outline-none"
                     placeholder="Enter quiz id to update"
                     required
                   />
@@ -269,7 +305,7 @@ const ManageQuizzesModal = ({
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="text-gray-900 border-input w-full p-2 focus:outline-none"
+                    className="text-gray-900 rounded-md focus:shadow-lg  w-full p-2 focus:outline-none"
                     placeholder="Enter quiz title"
                   />
                 </div>
@@ -280,7 +316,7 @@ const ManageQuizzesModal = ({
                   <textarea
                     value={instruction}
                     onChange={(e) => setInstruction(e.target.value)}
-                    className="text-gray-900 resize-none border-input w-full p-2 focus:outline-none"
+                    className="text-gray-900 rounded-md focus:shadow-lg resize-none  w-full p-2 focus:outline-none"
                     placeholder="Enter instructions"
                   ></textarea>
                 </div>
@@ -291,7 +327,7 @@ const ManageQuizzesModal = ({
                   <textarea
                     value={question}
                     onChange={(e) => setQuestion(e.target.value)}
-                    className="text-gray-900 resize-none border-input w-full p-2 focus:outline-none"
+                    className="text-gray-900 rounded-md focus:shadow-lg resize-none  w-full p-2 focus:outline-none"
                     placeholder="Enter quiz question"
                   ></textarea>
                 </div>
@@ -302,21 +338,21 @@ const ManageQuizzesModal = ({
                   <textarea
                     value={answer}
                     onChange={(e) => setAnswer(e.target.value)}
-                    className="text-gray-900 resize-none border-input w-full p-2 focus:outline-none"
+                    className="text-gray-900 rounded-md focus:shadow-lg resize-none  w-full p-2 focus:outline-none"
                     placeholder="Enter answer"
                   ></textarea>
                 </div>
               </div>
-              <div className="flex justify-between mb-4">
+              <div className="flex justify-around mb-4">
                 <button
                   type="submit"
-                  className="text-white custom-border-no-bg px-4 py-2 bg-green-600 hover:bg-green-700 transition-colors"
+                  className="text-white rounded-md px-4 py-2 bg-green-600 hover:bg-green-700 transition-colors"
                 >
                   Update
                 </button>
                 <button
                   onClick={onClose}
-                  className="text-white custom-border py-2 px-4 bg-gray-600 hover:bg-gray-700 transition-colors"
+                  className="text-white rounded-md py-2 px-4 bg-gray-600 hover:bg-gray-700 transition-colors"
                 >
                   Close
                 </button>
@@ -335,21 +371,21 @@ const ManageQuizzesModal = ({
                   type="text"
                   value={quizId}
                   onChange={(e) => setQuizId(e.target.value)}
-                  className="text-gray-900 border-input w-full p-2 focus:outline-none"
+                  className="text-gray-900 rounded-md focus:shadow-lg w-full p-2 focus:outline-none"
                   placeholder="Enter quiz id to delete"
                   required
                 />
               </div>
-              <div className="flex justify-between mb-4">
+              <div className="flex justify-around mb-4">
                 <button
                   type="submit"
-                  className="custom-border py-2 px-4 bg-red-600 text-white hover:bg-red-700 transition-colors"
+                  className="rounded-md py-2 px-4 bg-red-600 text-white hover:bg-red-700 transition-colors"
                 >
                   Delete
                 </button>
                 <button
                   onClick={onClose}
-                  className="custom-border py-2 px-4 bg-gray-600 text-white hover:bg-gray-700 transition-colors"
+                  className="rounded-md py-2 px-4 bg-gray-600 text-white hover:bg-gray-700 transition-colors"
                 >
                   Close
                 </button>

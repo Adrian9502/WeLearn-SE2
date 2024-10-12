@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import ManageQuizzesModal from "../Modals/ManageQuizzesModal";
 import ManageAll from "./ManageAll";
 import axios from "axios";
-import { Blocks } from "react-loader-spinner";
+import { ProgressBar } from "react-loader-spinner";
 
 const ManageQuizzes = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -59,13 +59,15 @@ const ManageQuizzes = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center mb-5">
-        <Blocks
+      <div className="flex bg-neutral-800 h-screen items-center justify-center mb-5">
+        <ProgressBar
+          visible={true}
           height="80"
           width="80"
-          color="#FFFF00"
-          ariaLabel="blocks-loading"
-          visible={true}
+          color="#4fa94d"
+          ariaLabel="progress-bar-loading"
+          wrapperStyle={{}}
+          wrapperClass=""
         />
       </div>
     );

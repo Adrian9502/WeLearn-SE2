@@ -4,12 +4,11 @@ import {
   FaClipboardList,
   FaQuestionCircle,
 } from "react-icons/fa";
-import "./admin.css";
 export default function AdminDashboard() {
   return (
-    <div className="min-h-screen p-8 bg-indigo-50">
+    <div className="min-h-screen p-8 bg-white">
       {/* Dashboard Title */}
-      <h1 className="text-4xl border-b-2 border-indigo-600 p-4 font-bold text-indigo-800 mb-8">
+      <h1 className="text-4xl border-b-2 border-indigo-600 p-4 font-bold text-indigo-500 mb-8">
         Admin Dashboard
       </h1>
 

@@ -4,11 +4,10 @@ import CreateQuiz from "./CRUD/CreateQuiz";
 import ManageQuizzes from "./CRUD/ManageQuizzes";
 import ManageUsers from "./CRUD/ManageUsers";
 import AdminDashboard from "./AdminDashboard";
-import "../Admin/admin.css";
 import ManageAdmins from "./CRUD/ManageAdmins";
 export default function AdminPages() {
   return (
-    <div className="bg-violet-700 flex text-white">
+    <div className="flex text-white">
       <AdminSidebar />
       <div className="flex-1">
         <Routes>

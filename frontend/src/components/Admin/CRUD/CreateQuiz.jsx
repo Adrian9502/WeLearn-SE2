@@ -76,7 +76,7 @@ const CreateQuiz = () => {
 
   return (
     <div className="circle-bg flex justify-center items-center h-screen border">
-      <div className="shadow-lg custom-border px-8 w-full max-w-3xl">
+      <div className="shadow-lg px-8 w-full max-w-3xl">
         <h1 className="text-3xl uppercase yellow-text font-bold my-4 text-center">
           Create New Quiz
         </h1>
@@ -89,7 +89,7 @@ const CreateQuiz = () => {
               type="text"
               value={quizTitle}
               onChange={(e) => setQuizTitle(e.target.value)}
-              className="w-full custom-border-no-bg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter quiz title"
             />
             {errors.quizTitle && (
@@ -104,7 +104,7 @@ const CreateQuiz = () => {
             <textarea
               value={quizInstruction}
               onChange={(e) => setQuizInstruction(e.target.value)}
-              className="w-full resize-none custom-border-no-bg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full resize-none p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter quiz instructions"
             ></textarea>
             {errors.quizInstruction && (
@@ -113,10 +113,7 @@ const CreateQuiz = () => {
           </div>
 
           {questions.map((q, index) => (
-            <div
-              key={index}
-              className="mb-6 p-3 custom-border-no-bg bg-blue-600 text-white"
-            >
+            <div key={index} className="mb-6 p-3 bg-blue-600 text-white">
               <h2 className="text-lg font-semibold mb-4">
                 Question {index + 1}
               </h2>
@@ -132,7 +129,7 @@ const CreateQuiz = () => {
                   newQuestions[index].question = e.target.value;
                   setQuestions(newQuestions);
                 }}
-                className="w-full custom-border-no-bg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter the question"
               />
               {errors[`question_${index}`] && (
@@ -152,7 +149,7 @@ const CreateQuiz = () => {
                   newQuestions[index].answer = e.target.value;
                   setQuestions(newQuestions);
                 }}
-                className="w-full custom-border-no-bg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter the correct answer"
               />
               {errors[`answer_${index}`] && (
@@ -167,14 +164,14 @@ const CreateQuiz = () => {
             <button
               type="button"
               onClick={handleAddQuestion}
-              className="px-4 py-2 bg-blue-600 text-white font-semibold custom-border-no-bg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 bg-blue-600 text-white font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               Add Another Question
             </button>
 
             <button
               type="submit"
-              className="px-6 py-2 bg-green-700 text-white font-semibold custom-border-no-bg hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="px-6 py-2 bg-green-700 text-white font-semibold hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               SUBMIT
             </button>

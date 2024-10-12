@@ -3,11 +3,12 @@ import { Link } from "react-router-dom";
 
 export default function AdminSidebar() {
   return (
-    <aside className="h-screen w-64 custom-border-sidebar text-white shadow-lg">
+    <aside
+      style={{ fontFamily: "Lexend" }}
+      className="h-screen bg-violet-700 w-64 text-white shadow-lg"
+    >
       {/* Sidebar Header */}
-      <div className="p-6 text-3xl border custom-border font-bold text-center text-yellow-400">
-        Admin Panel
-      </div>
+      <div className="p-6 text-3xl font-bold text-center">Admin Panel</div>
 
       {/* Sidebar Links */}
       <ul className="space-y-4 mt-8">
@@ -15,9 +16,9 @@ export default function AdminSidebar() {
         <li>
           <Link
             to="/admin-dashboard/dashboard"
-            className="flex items-center space-x-3 p-4 rounded-md transition duration-200"
+            className="flex items-center space-x-3 p-4 hover:bg-violet-800 rounded-md transition duration-200"
           >
-            <FaCogs className="text-yellow-400" />
+            <FaCogs size={25} />
             <span>Dashboard</span>
           </Link>
         </li>
@@ -26,9 +27,9 @@ export default function AdminSidebar() {
         <li>
           <Link
             to="/admin-dashboard/manage-quizzes"
-            className="flex items-center space-x-3 p-4 rounded-md transition duration-200"
+            className="flex items-center space-x-3 p-4 hover:bg-violet-800 rounded-md transition duration-200"
           >
-            <FaQuestionCircle className="text-yellow-400" />
+            <FaQuestionCircle size={25} />
             <span>Manage Quizzes</span>
           </Link>
         </li>
@@ -36,9 +37,9 @@ export default function AdminSidebar() {
         <li>
           <Link
             to="/admin-dashboard/manage-users"
-            className="flex items-center space-x-3 p-4  rounded-md transition duration-200"
+            className="flex items-center space-x-3 p-4 hover:bg-violet-800 rounded-md transition duration-200"
           >
-            <FaUser className="text-yellow-400" />
+            <FaUser size={25} />
             <span>Manage Users</span>
           </Link>
         </li>
@@ -47,9 +48,9 @@ export default function AdminSidebar() {
         <li>
           <Link
             to="/admin-dashboard/manage-admins"
-            className="flex items-center space-x-3 p-4  rounded-md transition duration-200"
+            className="flex items-center space-x-3 p-4 hover:bg-violet-800 rounded-md transition duration-200"
           >
-            <FaUser className="text-yellow-400" />
+            <FaUser size={25} />
             <span>Manage Admins</span>
           </Link>
         </li>
@@ -58,9 +59,9 @@ export default function AdminSidebar() {
         <li>
           <Link
             to="/admin-dashboard/quizzes/new"
-            className="flex items-center space-x-3 p-4 rounded-md transition duration-200"
+            className="flex items-center space-x-3 hover:bg-violet-800 p-4 rounded-md transition duration-200"
           >
-            <FaPlus className="text-yellow-400" />
+            <FaPlus size={25} />
             <span>Create New Quiz</span>
           </Link>
         </li>
@@ -69,9 +70,9 @@ export default function AdminSidebar() {
         <li>
           <Link
             to="/admin-dashboard/quizzes/new"
-            className="flex items-center space-x-3 p-4 rounded-md transition duration-200"
+            className="flex items-center hover:bg-violet-800 space-x-3 p-4 rounded-md transition duration-200"
           >
-            <FaPlus className="text-yellow-400" />
+            <FaPlus size={25} />
             <span>Log out</span>
           </Link>
         </li>

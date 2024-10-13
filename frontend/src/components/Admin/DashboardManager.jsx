@@ -1,8 +1,9 @@
 import React from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { FaCopy } from "react-icons/fa";
-import { FiRefreshCw } from "react-icons/fi";
-export default function ManageAll({
+
+// This component contains Title of dashboard, CRUD buttons and the table
+export default function DashboardManager({
   title,
   handleOpenModal,
   tableColumns = [],
@@ -11,7 +12,7 @@ export default function ManageAll({
   return (
     <div
       style={{ fontFamily: "Lexend" }}
-      className="bg-neutral-800 p-20 flex flex-col gap-20 h-screen"
+      className="bg-neutral-800 p-10  flex flex-col gap-20 min-h-screen"
     >
       <div className="flex items-center justify-between">
         <span className="text-4xl w-fit p-4 border-b-2 text-violet-900 border-violet-900 font-bold">
@@ -38,13 +39,13 @@ export default function ManageAll({
           </button>
         </div>
       </div>
-
-      <div className="flex">
-        <table className="min-w-full bg-slate-900 table-auto">
+      {/* table */}
+      <div className="flex border">
+        <table className="max-w-full w-full bg-slate-900 table-auto">
           <thead className="bg-violet-800">
             <tr>
               {tableColumns.map((column, index) => (
-                <th key={index} className="px-4 py-2">
+                <th key={index} className="px-4 border py-2">
                   {column.charAt(0).toUpperCase() + column.slice(1)}
                 </th>
               ))}
@@ -55,14 +56,17 @@ export default function ManageAll({
               tableRows.map((row, index) => (
                 <tr key={index}>
                   {tableColumns.map((column) => (
-                    <td key={column} className="px-4 py-2 border-b border-r">
+                    <td
+                      key={column}
+                      className="px-4 py-2 border max-w-xs break-words"
+                    >
                       {column === "ID" ? (
                         <div className="flex items-center justify-between">
                           <span>{row[column]}</span>
                           <CopyToClipboard text={row[column]}>
                             <button
                               className="ml-2 p-1 bg-violet-700 rounded hover:bg-violet-800 
-                            transition-colors"
+                      transition-colors"
                             >
                               <FaCopy size={16} />
                             </button>

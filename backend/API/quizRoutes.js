@@ -1,5 +1,6 @@
 const express = require("express");
 const quizModel = require("../models/quizModel");
+const mongoose = require("mongoose");
 
 const router = express.Router();
 
@@ -90,14 +91,20 @@ router.put("/:id", async (req, res) => {
       return res.status(400).json({ message: "No fields to update" });
     }
 
+    // Check if the provided ID is a valid MongoDB ObjectID
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Invalid quiz ID format" });
+    }
+
     const updatedQuiz = await quizModel.findByIdAndUpdate(
       req.params.id,
       { title, instruction, question, answer },
       { new: true } // Return the updated document
     );
 
+    // If no quiz was found with the provided ID
     if (!updatedQuiz) {
-      return res.status(404).json({ message: "Quiz not found" });
+      return res.status(404).json({ message: "Quiz ID does not exist" });
     }
 
     res.status(200).json({
@@ -119,16 +126,24 @@ router.put("/:id", async (req, res) => {
 // DELETE route to delete a quiz by ID
 router.delete("/:id", async (req, res) => {
   try {
-    const deletedQuiz = await quizModel.findByIdAndDelete(req.params.id);
-
-    if (!deletedQuiz) {
-      return res.status(404).json({ message: "Quiz not found" });
+    // Check if the provided ID is a valid MongoDB ObjectID
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Invalid quiz ID format" });
     }
 
+    // Attempt to find and delete the quiz by ID
+    const deletedQuiz = await quizModel.findByIdAndDelete(req.params.id);
+
+    // If no quiz was found with the provided ID
+    if (!deletedQuiz) {
+      return res.status(404).json({ message: "Quiz ID does not exist" });
+    }
+
+    // If quiz was successfully deleted
     res.status(200).json({ message: "Quiz deleted successfully" });
   } catch (error) {
     console.error("Error deleting quiz:", error);
-    res.status(500).json({ message: "Invalid ID" });
+    res.status(500).json({ message: "Server error" });
   }
 });
 

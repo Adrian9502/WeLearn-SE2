@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import ManageQuizzesModal from "../Modals/ManageQuizzesModal";
-import ManageAll from "./ManageAll";
+import ManageQuizzesModal from "./ManageQuizzesModal";
+import DashboardManager from "../DashboardManager";
 import axios from "axios";
 import { ProgressBar } from "react-loader-spinner";
 
@@ -78,7 +78,7 @@ const ManageQuizzes = () => {
 
   return (
     <>
-      <ManageAll
+      <DashboardManager
         title="Manage Quizzes"
         handleOpenModal={handleOpenModal}
         tableColumns={["ID", "Title", "Instructions", "Questions", "Answer"]}
@@ -96,5 +96,4 @@ const ManageQuizzes = () => {
     </>
   );
 };
-
 export default ManageQuizzes;

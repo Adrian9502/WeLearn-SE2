@@ -5,7 +5,7 @@ export default function AdminSidebar() {
   return (
     <aside
       style={{ fontFamily: "Lexend" }}
-      className="h-screen bg-violet-700 w-64 text-white shadow-lg"
+      className="min-h-screen bg-violet-700 w-64 text-white shadow-lg"
     >
       {/* Sidebar Header */}
       <div className="p-6 text-3xl font-bold text-center">Admin Panel</div>

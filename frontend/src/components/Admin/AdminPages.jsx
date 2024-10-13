@@ -1,7 +1,7 @@
 import AdminSidebar from "./AdminSidebar";
 import { Routes, Route } from "react-router-dom";
 import ManageQuizzes from "./ManageQuiz/ManageQuizzes";
-
+import ManageUsers from "./ManageUsers/ManageUsers";
 import AdminDashboard from "./AdminDashboard";
 
 export default function AdminPages() {
@@ -13,8 +13,8 @@ export default function AdminPages() {
           <Route path="/" element={<AdminDashboard />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="manage-quizzes" element={<ManageQuizzes />} />
-          {/* <Route path="manage-users" element={< />} />
-          <Route path="manage-admins" element={< />} /> */}
+          <Route path="manage-users" element={<ManageUsers />} />
+          {/* <Route path="manage-admins" element={< />} /> */}
         </Routes>
       </div>
     </div>

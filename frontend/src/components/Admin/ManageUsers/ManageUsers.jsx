@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
-import ManageQuizzesModal from "./ManageQuizzesModal";
-import DashboardManager from "../CRUD/DashboardManager";
+import ManageUsersModal from "./ManageUsersModal";
+import DashboardManager from "../DashboardManager";
 import axios from "axios";
 import { ProgressBar } from "react-loader-spinner";
 
-const ManageQuizzes = () => {
+const ManageUsers = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState("create");
-  const [quizData, setQuizData] = useState([]);
+  const [userData, setUserData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -20,19 +20,24 @@ const ManageQuizzes = () => {
     setIsModalOpen(false);
   };
 
-  // Function to fetch quiz data from the API
-  const fetchQuizData = useCallback(async () => {
+  // Function to fetch user data from the API
+  const fetchUserData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:5000/api/quizzes");
-      const transformedData = response.data.map((quiz) => ({
-        ID: quiz._id,
-        Title: quiz.title,
-        Instructions: quiz.instruction,
-        Questions: quiz.question,
-        Answer: quiz.answer,
+      const response = await axios.get("http://localhost:5000/api/users");
+      const transformedData = response.data.map((user) => ({
+        ID: user._id,
+        Name: user.fullName,
+        Username: user.username,
+        Email: user.email,
+        DOB: new Date(user.dob).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }),
+        Role: user.isAdmin ? "Admin" : "User",
       }));
-      setQuizData(transformedData);
+      setUserData(transformedData);
     } catch (err) {
       setError("Failed to fetch: " + err.message);
     } finally {
@@ -41,21 +46,21 @@ const ManageQuizzes = () => {
   }, []);
 
   useEffect(() => {
-    fetchQuizData();
-  }, [fetchQuizData]);
+    fetchUserData();
+  }, [fetchUserData]);
 
   // Callback functions for CRUD operations
-  const handleQuizCreated = useCallback(() => {
-    fetchQuizData();
-  }, [fetchQuizData]);
+  const handleUserCreated = useCallback(() => {
+    fetchUserData();
+  }, [fetchUserData]);
 
-  const handleQuizUpdated = useCallback(() => {
-    fetchQuizData();
-  }, [fetchQuizData]);
+  const handleUserUpdated = useCallback(() => {
+    fetchUserData();
+  }, [fetchUserData]);
 
-  const handleQuizDeleted = useCallback(() => {
-    fetchQuizData();
-  }, [fetchQuizData]);
+  const handleUserDeleted = useCallback(() => {
+    fetchUserData();
+  }, [fetchUserData]);
 
   if (loading) {
     return (
@@ -79,21 +84,21 @@ const ManageQuizzes = () => {
   return (
     <>
       <DashboardManager
-        title="Manage Quizzes"
+        title="Manage Users"
         handleOpenModal={handleOpenModal}
-        tableColumns={["ID", "Title", "Instructions", "Questions", "Answer"]}
-        tableRows={quizData}
+        tableColumns={["ID", "Name", "Username", "Email", "DOB", "Role"]}
+        tableRows={userData}
       />
-      <ManageQuizzesModal
+      <ManageUsersModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         handleCloseModal={handleCloseModal}
         type={modalType}
-        onQuizCreated={handleQuizCreated}
-        onQuizUpdated={handleQuizUpdated}
-        onQuizDeleted={handleQuizDeleted}
+        onUserCreated={handleUserCreated}
+        onUserUpdated={handleUserUpdated}
+        onUserDeleted={handleUserDeleted}
       />
     </>
   );
 };
-export default ManageQuizzes;
+export default ManageUsers;

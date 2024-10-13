@@ -25,7 +25,7 @@ connectDB();
 // ---------- IMPORT ROUTES ------------------
 const registerRoutes = require("./API/registerRoutes");
 const loginRoutes = require("./API/loginRoutes");
-const userRoutes = require("./API/getUsersRoutes");
+const userRoutes = require("./API/usersRoutes");
 const adminRoutes = require("./API/getAdminsRoutes");
 const quizRoutes = require("./API/quizRoutes");
 // ---------- API ROUTING --------------------

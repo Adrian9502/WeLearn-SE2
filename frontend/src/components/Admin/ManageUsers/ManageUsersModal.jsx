@@ -3,7 +3,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { ProgressBar } from "react-loader-spinner";
 
-const API_BASE_URL = "http://localhost:5000/api/quizzes";
+const API_BASE_URL = "http://localhost:5000/api/users";
 
 const InputField = ({
   label,
@@ -30,23 +30,6 @@ const InputField = ({
   </div>
 );
 
-const TextAreaField = ({ label, name, value, onChange, placeholder }) => (
-  <div className="my-2">
-    <label htmlFor={name} className="block text-lg font-semibold mb-2">
-      {label}
-    </label>
-    <textarea
-      id={name}
-      name={name}
-      value={value}
-      onChange={onChange}
-      className="text-gray-900 rounded-md focus:shadow-lg resize-none w-full p-2 focus:outline-none"
-      placeholder={placeholder}
-      required
-    />
-  </div>
-);
-
 const Button = ({ onClick, type, className, children }) => (
   <button
     onClick={onClick}
@@ -62,20 +45,21 @@ const sweetAlert = ({ title, text, icon }) => {
 };
 
 const validateForm = (formData) => {
-  const { title, instruction, question, answer } = formData;
+  const { fullName, username, email, password, dob } = formData;
   if (
-    !title ||
-    title.length < 5 ||
-    !instruction ||
-    instruction.length < 10 ||
-    !question ||
-    question.length < 10 ||
-    !answer ||
-    answer.length < 5
+    !fullName ||
+    fullName.length < 5 ||
+    !username ||
+    username.length < 5 ||
+    !email ||
+    email.length < 5 ||
+    !password ||
+    password.length < 5 ||
+    !dob
   ) {
     sweetAlert({
       title: "Error",
-      text: "All fields are required and must be at least 5-10 characters long.",
+      text: "All fields are required and must be at least 5 characters long.",
       icon: "error",
     });
     return false;
@@ -115,30 +99,32 @@ const fetchData = async ({
   }
 };
 
-const ManageQuizzesModal = ({
+const ManageUsersModal = ({
   isOpen,
   onClose,
   type,
-  onQuizCreated,
-  onQuizUpdated,
-  onQuizDeleted,
+  onUserCreated,
+  onUserUpdated,
+  onUserDeleted,
 }) => {
   const [formData, setFormData] = useState({
-    quizId: "",
-    title: "",
-    instruction: "",
-    question: "",
-    answer: "",
+    userId: "",
+    fullName: "",
+    username: "",
+    email: "",
+    password: "",
+    dob: "",
   });
   const [loading, setLoading] = useState(false);
 
   const resetForm = () => {
     setFormData({
-      quizId: "",
-      title: "",
-      instruction: "",
-      question: "",
-      answer: "",
+      userId: "",
+      fullName: "",
+      username: "",
+      email: "",
+      password: "",
+      dob: "",
     });
   };
   useEffect(() => {
@@ -162,17 +148,17 @@ const ManageQuizzesModal = ({
       create: {
         method: "POST",
         endpoint: API_BASE_URL,
-        callback: onQuizCreated,
+        callback: onUserCreated,
       },
       update: {
         method: "PUT",
-        endpoint: `${API_BASE_URL}/${formData.quizId}`,
-        callback: onQuizUpdated,
+        endpoint: `${API_BASE_URL}/${formData.userId}`,
+        callback: onUserUpdated,
       },
       delete: {
         method: "DELETE",
-        endpoint: `${API_BASE_URL}/${formData.quizId}`,
-        callback: onQuizDeleted,
+        endpoint: `${API_BASE_URL}/${formData.userId}`,
+        callback: onUserDeleted,
       },
     };
 
@@ -198,52 +184,67 @@ const ManageQuizzesModal = ({
         return (
           <>
             {type === "update" && (
+              // user id
               <InputField
-                label="Quiz ID:"
-                name="quizId"
-                value={formData.quizId}
+                label="User ID:"
+                name="userId"
+                value={formData.userId}
                 onChange={handleInputChange}
-                placeholder="Enter existing quiz id"
+                placeholder="Enter existing user id"
               />
             )}
+            {/* full name */}
             <InputField
-              label="Title:"
-              name="title"
-              value={formData.title}
+              label="Full Name:"
+              name="fullName"
+              value={formData.fullName}
               onChange={handleInputChange}
-              placeholder="Enter quiz title"
+              placeholder="Enter full name"
             />
-            <TextAreaField
-              label="Instructions:"
-              name="instruction"
-              value={formData.instruction}
+            {/* username */}
+            <InputField
+              label="Username:"
+              name="username"
+              value={formData.username}
               onChange={handleInputChange}
-              placeholder="Enter quiz instructions"
+              placeholder="Enter full name"
             />
-            <TextAreaField
-              label="Question:"
-              name="question"
-              value={formData.question}
+            {/* email */}
+            <InputField
+              label="Email:"
+              name="email"
+              type="email"
+              value={formData.email}
               onChange={handleInputChange}
-              placeholder="Enter quiz question"
+              placeholder="Enter email"
             />
-            <TextAreaField
-              label="Answer:"
-              name="answer"
-              value={formData.answer}
+            {/* password */}
+            <InputField
+              label="Password:"
+              name="password"
+              type="password"
+              value={formData.password}
               onChange={handleInputChange}
-              placeholder="Enter quiz answer"
+              placeholder="Enter password"
+            />
+            {/* birthday */}
+            <InputField
+              label="Birthday:"
+              name="dob"
+              type="date"
+              value={formData.dob}
+              onChange={handleInputChange}
             />
           </>
         );
       case "delete":
         return (
           <InputField
-            label="Quiz ID:"
-            name="quizId"
-            value={formData.quizId}
+            label="User ID:"
+            name="userId"
+            value={formData.userId}
             onChange={handleInputChange}
-            placeholder="Enter quiz id to delete"
+            placeholder="Enter user id to delete"
           />
         );
       default:
@@ -255,7 +256,7 @@ const ManageQuizzesModal = ({
     <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
       <div className="rounded-lg bg-violet-700 p-8 w-96">
         <h2 className="text-3xl text-center font-bold mb-4">
-          {type.charAt(0).toUpperCase() + type.slice(1)} Quiz
+          {type.charAt(0).toUpperCase() + type.slice(1)} User
         </h2>
         {loading ? (
           <div className="text-center my-4">
@@ -297,4 +298,4 @@ const ManageQuizzesModal = ({
   );
 };
 
-export default ManageQuizzesModal;
+export default ManageUsersModal;

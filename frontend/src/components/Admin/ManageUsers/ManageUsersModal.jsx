@@ -207,7 +207,7 @@ const ManageUsersModal = ({
               name="username"
               value={formData.username}
               onChange={handleInputChange}
-              placeholder="Enter full name"
+              placeholder="Enter username"
             />
             {/* email */}
             <InputField

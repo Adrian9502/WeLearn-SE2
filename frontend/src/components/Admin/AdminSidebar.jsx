@@ -55,17 +55,6 @@ export default function AdminSidebar() {
           </Link>
         </li>
 
-        {/* Add New Quiz */}
-        <li>
-          <Link
-            to="/admin-dashboard/quizzes/new"
-            className="flex items-center space-x-3 hover:bg-violet-800 p-4 rounded-md transition duration-200"
-          >
-            <FaPlus size={25} />
-            <span>Create New Quiz</span>
-          </Link>
-        </li>
-
         {/* Log out */}
         <li>
           <Link

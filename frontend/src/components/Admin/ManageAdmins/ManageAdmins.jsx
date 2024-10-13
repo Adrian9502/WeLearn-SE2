@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
-import ManageUsersModal from "./ManageUsersModal";
+import ManageAdminsModal from "./ManageAdminsModal";
 import DashboardManager from "../DashboardManager";
 import axios from "axios";
 import { ProgressBar } from "react-loader-spinner";
 
-const ManageUsers = () => {
+const ManageAdmins = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState("create");
-  const [userData, setUserData] = useState([]);
+  const [adminData, setAdminData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -20,24 +20,24 @@ const ManageUsers = () => {
     setIsModalOpen(false);
   };
 
-  // Function to fetch user data from the API
-  const fetchUserData = useCallback(async () => {
+  // Function to fetch admin data from the API
+  const fetchAdminData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:5000/api/users");
-      const transformedData = response.data.map((user) => ({
-        ID: user._id,
-        Name: user.fullName,
-        Username: user.username,
-        Email: user.email,
-        DOB: new Date(user.dob).toLocaleDateString("en-US", {
+      const response = await axios.get("http://localhost:5000/api/admins");
+      const transformedData = response.data.map((admin) => ({
+        ID: admin._id,
+        Name: admin.fullName,
+        Username: admin.username,
+        Email: admin.email,
+        DOB: new Date(admin.dob).toLocaleDateString("en-US", {
           year: "numeric",
           month: "long",
           day: "numeric",
         }),
-        Role: user.isAdmin ? "Admin" : "User",
+        Role: admin.isAdmin ? "Admin" : "admin",
       }));
-      setUserData(transformedData);
+      setAdminData(transformedData);
     } catch (err) {
       setError("Failed to fetch: " + err.message);
     } finally {
@@ -46,21 +46,21 @@ const ManageUsers = () => {
   }, []);
 
   useEffect(() => {
-    fetchUserData();
-  }, [fetchUserData]);
+    fetchAdminData();
+  }, [fetchAdminData]);
 
   // Callback functions for CRUD operations
-  const handleUserCreated = useCallback(() => {
-    fetchUserData();
-  }, [fetchUserData]);
+  const handleAdminCreated = useCallback(() => {
+    fetchAdminData();
+  }, [fetchAdminData]);
 
-  const handleUserUpdated = useCallback(() => {
-    fetchUserData();
-  }, [fetchUserData]);
+  const handleAdminUpdated = useCallback(() => {
+    fetchAdminData();
+  }, [fetchAdminData]);
 
-  const handleUserDeleted = useCallback(() => {
-    fetchUserData();
-  }, [fetchUserData]);
+  const handleAdminDeleted = useCallback(() => {
+    fetchAdminData();
+  }, [fetchAdminData]);
 
   if (loading) {
     return (
@@ -84,21 +84,21 @@ const ManageUsers = () => {
   return (
     <>
       <DashboardManager
-        title="Manage Users"
+        title="Manage Admins"
         handleOpenModal={handleOpenModal}
         tableColumns={["ID", "Name", "Username", "Email", "DOB", "Role"]}
-        tableRows={userData}
+        tableRows={adminData}
       />
-      <ManageUsersModal
+      <ManageAdminsModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         handleCloseModal={handleCloseModal}
         type={modalType}
-        onUserCreated={handleUserCreated}
-        onUserUpdated={handleUserUpdated}
-        onUserDeleted={handleUserDeleted}
+        onAdminCreated={handleAdminCreated}
+        onAdminUpdated={handleAdminUpdated}
+        onAdminDeleted={handleAdminDeleted}
       />
     </>
   );
 };
-export default ManageUsers;
+export default ManageAdmins;

@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import ManageQuizzes from "./ManageQuiz/ManageQuizzes";
 import ManageUsers from "./ManageUsers/ManageUsers";
 import AdminDashboard from "./AdminDashboard";
+import ManageAdmins from "./ManageAdmins/ManageAdmins";
 
 export default function AdminPages() {
   return (
@@ -14,7 +15,7 @@ export default function AdminPages() {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="manage-quizzes" element={<ManageQuizzes />} />
           <Route path="manage-users" element={<ManageUsers />} />
-          {/* <Route path="manage-admins" element={< />} /> */}
+          <Route path="manage-admins" element={<ManageAdmins />} />
         </Routes>
       </div>
     </div>

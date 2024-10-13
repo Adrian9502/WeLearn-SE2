@@ -26,18 +26,13 @@ connectDB();
 const registerRoutes = require("./API/registerRoutes");
 const loginRoutes = require("./API/loginRoutes");
 const userRoutes = require("./API/usersRoutes");
-const adminRoutes = require("./API/getAdminsRoutes");
+const adminRoutes = require("./API/adminsRoutes");
 const quizRoutes = require("./API/quizRoutes");
 // ---------- API ROUTING --------------------
-// Use register routes
 app.use("/register", registerRoutes);
-// Use login routes
 app.use("/login", loginRoutes);
-// Use user routes --this route will get all the users data
 app.use("/api/users", userRoutes);
-// use admin routes --this route will get all the admins data
 app.use("/api/admins", adminRoutes);
-// use create quiz routes
 app.use("/api/quizzes", quizRoutes);
 
 // --------------------------------------

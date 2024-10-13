@@ -1,26 +1,27 @@
 const express = require("express");
-const userModel = require("../models/userModel"); // Adjust path as necessary
+const adminModel = require("../models/adminModel");
 const router = express.Router();
 
-// GET ALL USERS DATA
+// GET ALL ADMIN DATA
 router.get("/", async (req, res) => {
   try {
-    const users = await userModel.find(); // Use userModel to find all users
-    res.status(200).json(users); // Respond with the list of users
+    const admins = await adminModel.find();
+    res.status(200).json(admins);
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Error fetching users", error: error.message }); // Handle any errors
+      .json({ message: "Error fetching admins", error: error.message });
   }
 });
-// GET A SINGLE USER BY ID
+
+// GET A SINGLE ADMIN BY ID
 router.get("/:id", async (req, res) => {
   try {
-    const user = await adminModel.findById(req.params.id);
-    if (!user) {
+    const admin = await adminModel.findById(req.params.id);
+    if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
     }
-    res.status(200).json(user);
+    res.status(200).json(admin);
   } catch (error) {
     res
       .status(500)
@@ -28,25 +29,24 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// CREATE A NEW USER
+// CREATE A NEW ADMIN
 router.post("/", async (req, res) => {
-  const { username, email } = req.body; // Destructure username and email from the request body
+  const { username, email } = req.body;
 
   try {
     // Check if the username or email already exists
-    const existingUser = await userModel.findOne({
+    const existingUser = await adminModel.findOne({
       $or: [{ username }, { email }],
     });
 
     if (existingUser) {
-      // If a user with the same username or email is found, return an error
       return res.status(400).json({
         message: "Username or email already exists",
       });
     }
 
     // If the username and email are unique, proceed with creating the new user
-    const newUser = new userModel(req.body);
+    const newUser = new adminModel(req.body);
     const savedUser = await newUser.save();
 
     res.status(201).json(savedUser); // Respond with the created user
@@ -57,14 +57,14 @@ router.post("/", async (req, res) => {
   }
 });
 
-// UPDATE A USER BY ID
+// UPDATE AN ADMIN BY ID
 router.put("/:id", async (req, res) => {
   const { username, email } = req.body; // Destructure username and email from the request body
   const userId = req.params.id;
 
   try {
     // Check if the username or email already exists, excluding the current user
-    const existingUser = await userModel.findOne({
+    const existingUser = await adminModel.findOne({
       $or: [{ username }, { email }],
       _id: { $ne: userId }, // Exclude the current user from the check
     });
@@ -77,7 +77,7 @@ router.put("/:id", async (req, res) => {
     }
 
     // If no conflict is found, proceed with updating the user
-    const updatedUser = await userModel.findByIdAndUpdate(userId, req.body, {
+    const updatedUser = await adminModel.findByIdAndUpdate(userId, req.body, {
       new: true,
     });
 
@@ -93,18 +93,18 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// DELETE A USER BY ID
+// DELETE AN ADMIN BY ID
 router.delete("/:id", async (req, res) => {
   try {
-    const deletedUser = await userModel.findByIdAndDelete(req.params.id); // Delete the user by ID
-    if (!deletedUser) {
-      return res.status(404).json({ message: "User not found" }); // Handle case where user is not found
+    const deletedAdmin = await adminModel.findByIdAndDelete(req.params.id);
+    if (!deletedAdmin) {
+      return res.status(404).json({ message: "Admin not found" });
     }
-    res.status(200).json({ message: "User deleted successfully" }); // Respond with success message
+    res.status(200).json({ message: "Admin deleted successfully" });
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Error deleting user", error: error.message }); // Handle any errors
+      .json({ message: "Error deleting admin", error: error.message });
   }
 });
 

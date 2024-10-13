@@ -3,7 +3,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { ProgressBar } from "react-loader-spinner";
 
-const API_BASE_URL = "http://localhost:5000/api/users";
+const API_BASE_URL = "http://localhost:5000/api/admins";
 
 const InputField = ({
   label,
@@ -99,16 +99,16 @@ const fetchData = async ({
   }
 };
 
-const ManageUsersModal = ({
+const ManageAdminsModal = ({
   isOpen,
   onClose,
   type,
-  onUserCreated,
-  onUserUpdated,
-  onUserDeleted,
+  onAdminCreated,
+  onAdminUpdated,
+  onAdminDeleted,
 }) => {
   const [formData, setFormData] = useState({
-    userId: "",
+    adminId: "",
     fullName: "",
     username: "",
     email: "",
@@ -119,7 +119,7 @@ const ManageUsersModal = ({
 
   const resetForm = () => {
     setFormData({
-      userId: "",
+      adminId: "",
       fullName: "",
       username: "",
       email: "",
@@ -148,17 +148,17 @@ const ManageUsersModal = ({
       create: {
         method: "POST",
         endpoint: API_BASE_URL,
-        callback: onUserCreated,
+        callback: onAdminCreated,
       },
       update: {
         method: "PUT",
-        endpoint: `${API_BASE_URL}/${formData.userId}`,
-        callback: onUserUpdated,
+        endpoint: `${API_BASE_URL}/${formData.adminId}`,
+        callback: onAdminUpdated,
       },
       delete: {
         method: "DELETE",
-        endpoint: `${API_BASE_URL}/${formData.userId}`,
-        callback: onUserDeleted,
+        endpoint: `${API_BASE_URL}/${formData.adminId}`,
+        callback: onAdminDeleted,
       },
     };
 
@@ -186,11 +186,11 @@ const ManageUsersModal = ({
             {type === "update" && (
               // user id
               <InputField
-                label="User ID:"
-                name="userId"
-                value={formData.userId}
+                label="Admin ID:"
+                name="adminId"
+                value={formData.adminId}
                 onChange={handleInputChange}
-                placeholder="Enter existing user id"
+                placeholder="Enter existing admin id"
               />
             )}
             {/* full name */}
@@ -207,7 +207,7 @@ const ManageUsersModal = ({
               name="username"
               value={formData.username}
               onChange={handleInputChange}
-              placeholder="Enter full name"
+              placeholder="Enter username"
             />
             {/* email */}
             <InputField
@@ -240,11 +240,11 @@ const ManageUsersModal = ({
       case "delete":
         return (
           <InputField
-            label="User ID:"
-            name="userId"
-            value={formData.userId}
+            label="Admin ID:"
+            name="adminId"
+            value={formData.adminId}
             onChange={handleInputChange}
-            placeholder="Enter user id to delete"
+            placeholder="Enter admin id to delete"
           />
         );
       default:
@@ -256,7 +256,7 @@ const ManageUsersModal = ({
     <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
       <div className="rounded-lg bg-violet-700 p-8 w-96">
         <h2 className="text-3xl text-center font-bold mb-4">
-          {type.charAt(0).toUpperCase() + type.slice(1)} User
+          {type.charAt(0).toUpperCase() + type.slice(1)} Admin
         </h2>
         {loading ? (
           <div className="text-center my-4">
@@ -298,4 +298,4 @@ const ManageUsersModal = ({
   );
 };
 
-export default ManageUsersModal;
+export default ManageAdminsModal;

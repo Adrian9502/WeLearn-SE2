@@ -22,8 +22,16 @@ Button.propTypes = {
 const TableRow = ({ row, columns }) => (
   <tr>
     {columns.map((column) => (
-      <td key={column} className="px-4 py-2 border max-w-xs break-words">
-        {column === "ID" ? <CopyableID value={row[column]} /> : row[column]}
+      <td key={column} className="px-4 py-2 border break-words">
+        {column === "ID" ? (
+          <CopyableID value={row[column]} />
+        ) : column === "Questions" ? (
+          <code className="jetbrains text-start whitespace-pre-wrap text-nowrap text-sm">
+            {row[column]}
+          </code>
+        ) : (
+          row[column]
+        )}
       </td>
     ))}
   </tr>
@@ -84,7 +92,7 @@ Table.propTypes = {
 };
 
 // Main DashboardManager component
-const DashboardManager = ({
+const QuizDashboardManager = ({
   title,
   handleOpenModal,
   tableColumns = [],
@@ -108,11 +116,11 @@ const DashboardManager = ({
   </div>
 );
 
-DashboardManager.propTypes = {
+QuizDashboardManager.propTypes = {
   title: PropTypes.string.isRequired,
   handleOpenModal: PropTypes.func.isRequired,
   tableColumns: PropTypes.arrayOf(PropTypes.string),
   tableRows: PropTypes.arrayOf(PropTypes.object),
 };
 
-export default DashboardManager;
+export default QuizDashboardManager;

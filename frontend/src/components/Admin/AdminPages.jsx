@@ -12,7 +12,7 @@ export default function AdminPages() {
       <div className="flex-1">
         <Routes>
           <Route path="/" element={<AdminDashboard />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
+
           <Route path="manage-quizzes" element={<ManageQuizzes />} />
           <Route path="manage-users" element={<ManageUsers />} />
           <Route path="manage-admins" element={<ManageAdmins />} />

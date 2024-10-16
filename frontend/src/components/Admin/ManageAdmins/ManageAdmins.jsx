@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import ManageAdminsModal from "./ManageAdminsModal";
 import DashboardManager from "../DashboardManager";
 import axios from "axios";
-import { ProgressBar } from "react-loader-spinner";
+import { ThreeDots } from "react-loader-spinner";
 
 const ManageAdmins = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -64,13 +64,14 @@ const ManageAdmins = () => {
 
   if (loading) {
     return (
-      <div className="flex bg-neutral-800 h-screen items-center justify-center mb-5">
-        <ProgressBar
+      <div className="flex h-screen items-center justify-center mb-5">
+        <ThreeDots
           visible={true}
           height="80"
           width="80"
-          color="#4fa94d"
-          ariaLabel="progress-bar-loading"
+          color="#6d28d9"
+          radius="9"
+          ariaLabel="three-dots-loading"
           wrapperStyle={{}}
           wrapperClass=""
         />
@@ -78,7 +79,12 @@ const ManageAdmins = () => {
     );
   }
   if (error) {
-    return <div>Error: {error}</div>;
+    return (
+      <div className="flex flex-col text-2xl font-semibold text-slate-800 h-screen items-center justify-center mb-5">
+        <h2>Something went wrong.</h2>
+        <h2>{error}</h2>
+      </div>
+    );
   }
 
   return (

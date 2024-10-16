@@ -1,7 +1,41 @@
-import { FaUser, FaQuestionCircle, FaPlus, FaCogs } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import React from "react";
+import { FaUser, FaQuestionCircle, FaCogs } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
+import { RiLogoutBoxLine } from "react-icons/ri";
 
-export default function AdminSidebar() {
+const AdminSidebar = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Clear the authentication token from localStorage
+    localStorage.removeItem("authToken");
+    // Redirect to the login page
+    navigate("/");
+  };
+
+  const links = [
+    {
+      path: "/admin-dashboard/",
+      icon: <FaCogs size={25} />,
+      label: "Dashboard",
+    },
+    {
+      path: "/admin-dashboard/manage-quizzes",
+      icon: <FaQuestionCircle size={25} />,
+      label: "Manage Quizzes",
+    },
+    {
+      path: "/admin-dashboard/manage-users",
+      icon: <FaUser size={25} />,
+      label: "Manage Users",
+    },
+    {
+      path: "/admin-dashboard/manage-admins",
+      icon: <FaUser size={25} />,
+      label: "Manage Admins",
+    },
+  ];
+
   return (
     <aside
       style={{ fontFamily: "Lexend" }}
@@ -12,60 +46,29 @@ export default function AdminSidebar() {
 
       {/* Sidebar Links */}
       <ul className="space-y-4 mt-8">
-        {/* Dashboard Overview */}
+        {links.map(({ path, icon, label }, index) => (
+          <li key={index}>
+            <Link
+              to={path}
+              className="flex items-center space-x-3 p-4 hover:bg-violet-800 rounded-md transition duration-200"
+            >
+              {icon}
+              <span>{label}</span>
+            </Link>
+          </li>
+        ))}
         <li>
-          <Link
-            to="/admin-dashboard/dashboard"
-            className="flex items-center space-x-3 p-4 hover:bg-violet-800 rounded-md transition duration-200"
+          <button
+            onClick={handleLogout}
+            className="flex items-center space-x-3 p-4 hover:bg-violet-800 rounded-md transition duration-200 w-full"
           >
-            <FaCogs size={25} />
-            <span>Dashboard</span>
-          </Link>
-        </li>
-
-        {/* Manage Quizzes */}
-        <li>
-          <Link
-            to="/admin-dashboard/manage-quizzes"
-            className="flex items-center space-x-3 p-4 hover:bg-violet-800 rounded-md transition duration-200"
-          >
-            <FaQuestionCircle size={25} />
-            <span>Manage Quizzes</span>
-          </Link>
-        </li>
-        {/* Manage Users */}
-        <li>
-          <Link
-            to="/admin-dashboard/manage-users"
-            className="flex items-center space-x-3 p-4 hover:bg-violet-800 rounded-md transition duration-200"
-          >
-            <FaUser size={25} />
-            <span>Manage Users</span>
-          </Link>
-        </li>
-
-        {/* Manage Admins */}
-        <li>
-          <Link
-            to="/admin-dashboard/manage-admins"
-            className="flex items-center space-x-3 p-4 hover:bg-violet-800 rounded-md transition duration-200"
-          >
-            <FaUser size={25} />
-            <span>Manage Admins</span>
-          </Link>
-        </li>
-
-        {/* Log out */}
-        <li>
-          <Link
-            to="/admin-dashboard/quizzes/new"
-            className="flex items-center hover:bg-violet-800 space-x-3 p-4 rounded-md transition duration-200"
-          >
-            <FaPlus size={25} />
+            <RiLogoutBoxLine size={25} />
             <span>Log out</span>
-          </Link>
+          </button>
         </li>
       </ul>
     </aside>
   );
-}
+};
+
+export default AdminSidebar;

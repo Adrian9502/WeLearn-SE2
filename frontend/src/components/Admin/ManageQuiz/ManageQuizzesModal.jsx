@@ -60,9 +60,8 @@ const Button = ({ onClick, type, className, children }) => (
 const sweetAlert = ({ title, text, icon }) => {
   Swal.fire({ title, text, icon });
 };
-
 const validateForm = (formData) => {
-  const { title, instruction, question, answer } = formData;
+  const { title, instruction, question, answer, category } = formData;
   if (
     !title ||
     title.length < 5 ||
@@ -71,11 +70,12 @@ const validateForm = (formData) => {
     !question ||
     question.length < 10 ||
     !answer ||
-    answer.length < 5
+    answer.length < 5 ||
+    !category
   ) {
     sweetAlert({
       title: "Error",
-      text: "All fields are required and must be at least 5-10 characters long.",
+      text: "All fields are required. Title and answer must be at least 5 characters long. Instruction and question must be at least 10 characters long.",
       icon: "error",
     });
     return false;
@@ -129,6 +129,7 @@ const ManageQuizzesModal = ({
     instruction: "",
     question: "",
     answer: "",
+    category: "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -139,8 +140,10 @@ const ManageQuizzesModal = ({
       instruction: "",
       question: "",
       answer: "",
+      category: "",
     });
   };
+
   useEffect(() => {
     if (!isOpen) {
       resetForm();
@@ -234,17 +237,39 @@ const ManageQuizzesModal = ({
               onChange={handleInputChange}
               placeholder="Enter quiz answer"
             />
+            <div className="my-2">
+              <label
+                htmlFor="category"
+                className="block text-lg font-semibold mb-2"
+              >
+                Category:
+              </label>
+              <select
+                id="category"
+                name="category"
+                value={formData.category}
+                onChange={handleInputChange}
+                className="text-gray-900 rounded-md focus:shadow-lg w-full p-2 focus:outline-none"
+                required
+              >
+                <option value="">Select a category</option>
+                <option value="Sorting Algorithm">Sorting Algorithm</option>
+                <option value="Binary Algorithm">Binary Algorithm</option>
+              </select>
+            </div>
           </>
         );
       case "delete":
         return (
-          <InputField
-            label="Quiz ID:"
-            name="quizId"
-            value={formData.quizId}
-            onChange={handleInputChange}
-            placeholder="Enter quiz id to delete"
-          />
+          <>
+            <InputField
+              label="Quiz ID:"
+              name="quizId"
+              value={formData.quizId}
+              onChange={handleInputChange}
+              placeholder="Enter quiz id to delete"
+            />
+          </>
         );
       default:
         return null;

@@ -197,21 +197,20 @@ const Forms = ({
         setLoginMessage(
           `${isAdmin ? "Admin" : "User"} Login successful! Redirecting...`
         );
-        // Hide the form fields after a successful login
+
+        // Save token to localStorage upon successful login
+        localStorage.setItem("authToken", response.data.token);
+
         setSuccessfulLogin(true);
-        // Optionally, delay navigation to show the message for a brief period
         setTimeout(() => {
           navigate(
-            response.data.user
-              ? "/user-dashboard"
-              : "/admin-dashboard/dashboard"
+            response.data.user ? "/user-dashboard" : "/admin-dashboard/"
           );
         }, 2000); // Delay by 2 seconds
       } else {
         throw new Error("User or Admin object not found in response");
       }
 
-      // Optional: Delay form closure
       setTimeout(() => {
         setIsPopupOpen(false); // Close form after 3 seconds
       }, 3000);

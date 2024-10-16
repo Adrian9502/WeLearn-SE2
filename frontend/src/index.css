@@ -81,4 +81,8 @@
     background-position: 100% 0;
   }
 }
-/* BUTTONS */
+
+/* font */
+.jetbrains {
+  font-family: "JetBrains Mono", monospace;
+}

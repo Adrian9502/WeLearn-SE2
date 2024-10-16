@@ -1,37 +1,37 @@
 const express = require("express");
-const quizModel = require("../models/quizModel");
+const Quiz = require("../models/quizModel");
 const mongoose = require("mongoose");
 
 const router = express.Router();
 
+// Helper function to validate required fields
+const validateQuizFields = (title, instruction, question, answer, category) => {
+  return title && instruction && question && answer && category;
+};
+
 // POST route to create a new quiz
 router.post("/", async (req, res) => {
   try {
-    const { title, instruction, question, answer } = req.body;
+    const { title, instruction, question, answer, category } = req.body;
 
     // Validation check
-    if (!title || !instruction || !question || !answer) {
+    if (!validateQuizFields(title, instruction, question, answer, category)) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    const newQuiz = new quizModel({
+    const newQuiz = new Quiz({
       title,
       instruction,
       question,
       answer,
+      category,
     });
 
     await newQuiz.save();
 
     res.status(201).json({
       message: "Quiz created successfully",
-      quiz: {
-        _id: newQuiz._id,
-        title: newQuiz.title,
-        instruction: newQuiz.instruction,
-        question: newQuiz.question,
-        answer: newQuiz.answer,
-      },
+      quiz: newQuiz,
     });
   } catch (error) {
     console.error("Error creating quiz:", error);
@@ -39,21 +39,13 @@ router.post("/", async (req, res) => {
   }
 });
 
-// GET route to fetch all quizzes
+// GET route to fetch all quizzes (optionally filter by category)
 router.get("/", async (req, res) => {
   try {
-    const quizzes = await quizModel.find();
-
-    // Format the response
-    const formattedQuizzes = quizzes.map((quiz) => ({
-      _id: quiz._id,
-      title: quiz.title,
-      instruction: quiz.instruction,
-      question: quiz.question,
-      answer: quiz.answer,
-    }));
-
-    res.status(200).json(formattedQuizzes);
+    const { category } = req.query;
+    const query = category ? { category } : {};
+    const quizzes = await Quiz.find(query);
+    res.status(200).json(quizzes);
   } catch (error) {
     console.error("Error fetching quizzes:", error);
     res.status(500).json({ message: "Server error" });
@@ -63,18 +55,11 @@ router.get("/", async (req, res) => {
 // GET route to fetch a quiz by ID
 router.get("/:id", async (req, res) => {
   try {
-    const quiz = await quizModel.findById(req.params.id);
+    const quiz = await Quiz.findById(req.params.id);
     if (!quiz) {
       return res.status(404).json({ message: "Quiz not found" });
     }
-
-    res.status(200).json({
-      _id: quiz._id,
-      title: quiz.title,
-      instruction: quiz.instruction,
-      question: quiz.question,
-      answer: quiz.answer,
-    });
+    res.status(200).json(quiz);
   } catch (error) {
     console.error("Error fetching quiz:", error);
     res.status(500).json({ message: "Server error" });
@@ -84,38 +69,29 @@ router.get("/:id", async (req, res) => {
 // PUT route to update a quiz by ID
 router.put("/:id", async (req, res) => {
   try {
-    const { title, instruction, question, answer } = req.body;
+    const { title, instruction, question, answer, category } = req.body;
 
-    // Check if at least one field is provided
-    if (!title && !instruction && !question && !answer) {
+    if (!title && !instruction && !question && !answer && !category) {
       return res.status(400).json({ message: "No fields to update" });
     }
 
-    // Check if the provided ID is a valid MongoDB ObjectID
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: "Invalid quiz ID format" });
     }
 
-    const updatedQuiz = await quizModel.findByIdAndUpdate(
+    const updatedQuiz = await Quiz.findByIdAndUpdate(
       req.params.id,
-      { title, instruction, question, answer },
-      { new: true } // Return the updated document
+      { title, instruction, question, answer, category },
+      { new: true }
     );
 
-    // If no quiz was found with the provided ID
     if (!updatedQuiz) {
       return res.status(404).json({ message: "Quiz ID does not exist" });
     }
 
     res.status(200).json({
       message: "Quiz updated successfully",
-      quiz: {
-        _id: updatedQuiz._id,
-        title: updatedQuiz.title,
-        instruction: updatedQuiz.instruction,
-        question: updatedQuiz.question,
-        answer: updatedQuiz.answer,
-      },
+      quiz: updatedQuiz,
     });
   } catch (error) {
     console.error("Error updating quiz:", error);
@@ -126,20 +102,16 @@ router.put("/:id", async (req, res) => {
 // DELETE route to delete a quiz by ID
 router.delete("/:id", async (req, res) => {
   try {
-    // Check if the provided ID is a valid MongoDB ObjectID
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: "Invalid quiz ID format" });
     }
 
-    // Attempt to find and delete the quiz by ID
-    const deletedQuiz = await quizModel.findByIdAndDelete(req.params.id);
+    const deletedQuiz = await Quiz.findByIdAndDelete(req.params.id);
 
-    // If no quiz was found with the provided ID
     if (!deletedQuiz) {
       return res.status(404).json({ message: "Quiz ID does not exist" });
     }
 
-    // If quiz was successfully deleted
     res.status(200).json({ message: "Quiz deleted successfully" });
   } catch (error) {
     console.error("Error deleting quiz:", error);

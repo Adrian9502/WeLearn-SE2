@@ -28,6 +28,7 @@ const ManageUsers = () => {
       const transformedData = response.data.map((user) => ({
         ID: user._id,
         Name: user.fullName,
+        Coins: user.coins,
         Username: user.username,
         Email: user.email,
         DOB: new Date(user.dob).toLocaleDateString("en-US", {
@@ -92,7 +93,15 @@ const ManageUsers = () => {
       <DashboardManager
         title="Manage Users"
         handleOpenModal={handleOpenModal}
-        tableColumns={["ID", "Name", "Username", "Email", "DOB", "Role"]}
+        tableColumns={[
+          "ID",
+          "Name",
+          "Coins",
+          "Username",
+          "Email",
+          "DOB",
+          "Role",
+        ]}
         tableRows={userData}
       />
       <ManageUsersModal

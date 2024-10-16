@@ -13,10 +13,11 @@ router.get("/", async (req, res) => {
       .json({ message: "Error fetching users", error: error.message }); // Handle any errors
   }
 });
+
 // GET A SINGLE USER BY ID
 router.get("/:id", async (req, res) => {
   try {
-    const user = await adminModel.findById(req.params.id);
+    const user = await userModel.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ message: "Admin not found" });
     }
@@ -46,7 +47,10 @@ router.post("/", async (req, res) => {
     }
 
     // If the username and email are unique, proceed with creating the new user
-    const newUser = new userModel(req.body);
+    const newUser = new userModel({
+      ...req.body,
+      coins: 600, // Set starting coins to 600
+    });
     const savedUser = await newUser.save();
 
     res.status(201).json(savedUser); // Respond with the created user

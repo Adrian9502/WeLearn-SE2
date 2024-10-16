@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   isAdmin: { type: Boolean, default: false },
   dob: { type: Date, required: true },
+  coins: { type: Number, default: 600, required: true },
 });
 
 // Hash password before saving
@@ -21,6 +22,22 @@ userSchema.pre("save", async function (next) {
 // Check if entered password matches the hashed password
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Method to increase coins
+userSchema.methods.addCoins = function (amount) {
+  this.coins += amount;
+  return this.save();
+};
+
+// Method to spend coins
+userSchema.methods.spendCoins = function (amount) {
+  if (this.coins >= amount) {
+    this.coins -= amount;
+    return this.save();
+  } else {
+    throw new Error("Insufficient coins");
+  }
 };
 
 module.exports = mongoose.model("User", userSchema);

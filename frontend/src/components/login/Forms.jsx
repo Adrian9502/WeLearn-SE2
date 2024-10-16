@@ -184,9 +184,11 @@ const Forms = ({
     setFormError(""); // Clear any previous form error
 
     try {
+      // Define the correct endpoint based on whether it's an admin login
       const endpoint = isAdmin
         ? "http://localhost:5000/login/admin"
         : "http://localhost:5000/login/user";
+
       const response = await axios.post(endpoint, {
         username,
         password,
@@ -198,10 +200,13 @@ const Forms = ({
           `${isAdmin ? "Admin" : "User"} Login successful! Redirecting...`
         );
 
-        // Save token to localStorage upon successful login
+        // Save both the auth token and user role to localStorage upon successful login
         localStorage.setItem("authToken", response.data.token);
+        localStorage.setItem("userRole", isAdmin ? "admin" : "user"); // Save role
 
         setSuccessfulLogin(true);
+
+        // Redirect to the appropriate dashboard
         setTimeout(() => {
           navigate(
             response.data.user ? "/user-dashboard" : "/admin-dashboard/"

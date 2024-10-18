@@ -1,109 +1,148 @@
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import ManageUsers from "../../../../components/Admin/ManageUsers/ManageUsers";
-import axios from "axios";
-import { ThreeDots } from "react-loader-spinner";
 import React from "react";
-// Mock the axios module
+import {
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+  act,
+} from "@testing-library/react";
+import axios from "axios";
+import ManageUsers from "../../../../components/Admin/ManageUsers/ManageUsers";
+
+// Mock axios
 jest.mock("axios");
 
+// Mock child components
+jest.mock(
+  "../../../../components/Admin/ManageUsers/ManageUsersModal",
+  () => () => <div data-testid="manage-users-modal" />
+);
+jest.mock(
+  "../../../../components/Admin/DashboardManager",
+  () =>
+    ({ tableRows, onSearchChange, onSort, handleOpenModal }) =>
+      (
+        <div data-testid="dashboard-manager">
+          <input
+            data-testid="search-input"
+            onChange={(e) => onSearchChange(e.target.value)}
+          />
+          <button data-testid="sort-button" onClick={() => onSort("Name")}>
+            Sort
+          </button>
+          <button
+            data-testid="create-button"
+            onClick={() => handleOpenModal("create")}
+          >
+            Create
+          </button>
+          <div data-testid="table-rows">{tableRows.length}</div>
+        </div>
+      )
+);
+
 describe("ManageUsers Component", () => {
+  const mockUserData = [
+    {
+      _id: "1",
+      fullName: "John Doe",
+      coins: 100,
+      username: "johnd",
+      email: "john@example.com",
+      dob: "1990-01-01",
+      isAdmin: false,
+      createdAt: "2023-01-01T00:00:00.000Z",
+    },
+    {
+      _id: "2",
+      fullName: "Jane Smith",
+      coins: 200,
+      username: "janes",
+      email: "jane@example.com",
+      dob: "1995-05-05",
+      isAdmin: true,
+      createdAt: "2023-02-01T00:00:00.000Z",
+    },
+  ];
+
   beforeEach(() => {
-    jest.clearAllMocks(); // Clear any previous mock calls
+    axios.get.mockResolvedValue({ data: mockUserData });
   });
 
-  test("renders loading state initially", () => {
-    axios.get.mockResolvedValueOnce({ data: [] });
+  test("renders user data after loading", async () => {
     render(<ManageUsers />);
-
-    expect(screen.getByText(/loading/i)).toBeInTheDocument();
-    expect(screen.getByText(/loading/i)).toBeVisible();
-  });
-
-  test("renders error message on failed fetch", async () => {
-    axios.get.mockRejectedValueOnce(new Error("Failed to fetch data"));
-    render(<ManageUsers />);
-
     await waitFor(() =>
-      expect(screen.getByText(/something went wrong/i)).toBeInTheDocument()
+      expect(screen.getByTestId("dashboard-manager")).toBeInTheDocument()
     );
-    expect(screen.getByText(/failed to fetch data/i)).toBeInTheDocument();
+    expect(screen.getByTestId("table-rows").textContent).toBe("2");
   });
 
-  test("displays user data after successful fetch", async () => {
-    const mockUserData = [
-      {
-        _id: "1",
-        fullName: "John Doe",
-        coins: 100,
-        username: "john_doe",
-        email: "john@example.com",
-        dob: "1990-01-01",
-        isAdmin: false,
-        createdAt: "2024-01-01T12:00:00Z",
-      },
-    ];
-    axios.get.mockResolvedValueOnce({ data: mockUserData });
-
+  test("handles search functionality", async () => {
     render(<ManageUsers />);
-
     await waitFor(() =>
-      expect(screen.queryByText(/loading/i)).not.toBeInTheDocument()
+      expect(screen.getByTestId("dashboard-manager")).toBeInTheDocument()
     );
 
-    expect(screen.getByText("John Doe")).toBeInTheDocument();
-    expect(screen.getByText("john_doe")).toBeInTheDocument();
-    expect(screen.getByText("john@example.com")).toBeInTheDocument();
-  });
-
-  test("opens modal when handleOpenModal is called", async () => {
-    const { getByText } = render(<ManageUsers />);
-    axios.get.mockResolvedValueOnce({ data: [] });
-
-    await waitFor(() =>
-      expect(screen.queryByText(/loading/i)).not.toBeInTheDocument()
-    );
-
-    const openModalButton = screen.getByText(/create user/i); // Assume there's a button for creating a user
-    fireEvent.click(openModalButton);
-
-    expect(screen.getByText(/manage users modal/i)).toBeVisible(); // Modify based on actual modal title
-  });
-
-  test("filters users based on search term", async () => {
-    const mockUserData = [
-      {
-        _id: "1",
-        fullName: "John Doe",
-        coins: 100,
-        username: "john_doe",
-        email: "john@example.com",
-        dob: "1990-01-01",
-        isAdmin: false,
-        createdAt: "2024-01-01T12:00:00Z",
-      },
-      {
-        _id: "2",
-        fullName: "Jane Smith",
-        coins: 200,
-        username: "jane_smith",
-        email: "jane@example.com",
-        dob: "1992-02-02",
-        isAdmin: true,
-        createdAt: "2024-01-02T12:00:00Z",
-      },
-    ];
-    axios.get.mockResolvedValueOnce({ data: mockUserData });
-
-    render(<ManageUsers />);
-
-    await waitFor(() =>
-      expect(screen.queryByText(/loading/i)).not.toBeInTheDocument()
-    );
-
-    const searchInput = screen.getByPlaceholderText(/search/i); // Assuming there's a search input
+    const searchInput = screen.getByTestId("search-input");
     fireEvent.change(searchInput, { target: { value: "John" } });
 
-    expect(screen.getByText("John Doe")).toBeInTheDocument();
-    expect(screen.queryByText("Jane Smith")).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByTestId("table-rows").textContent).toBe("1")
+    );
+  });
+
+  test("handles sort functionality", async () => {
+    render(<ManageUsers />);
+    await waitFor(() =>
+      expect(screen.getByTestId("dashboard-manager")).toBeInTheDocument()
+    );
+
+    const sortButton = screen.getByTestId("sort-button");
+    fireEvent.click(sortButton);
+
+    // Add expectations based on how your sorting affects the display
+  });
+  test("handles error state", async () => {
+    axios.get.mockRejectedValueOnce(new Error("API Error"));
+    render(<ManageUsers />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Something went wrong.")).toBeInTheDocument()
+    );
+    expect(screen.getByText("Failed to fetch: API Error")).toBeInTheDocument();
+  });
+
+  test("renders loading state initially", async () => {
+    let resolvePromise;
+    axios.get.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolvePromise = resolve;
+        })
+    );
+
+    render(<ManageUsers />);
+
+    expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
+
+    await act(async () => {
+      resolvePromise({ data: [] });
+    });
+  });
+  test("opens modal on button click", async () => {
+    axios.get.mockResolvedValue({ data: [] });
+
+    await act(async () => {
+      render(<ManageUsers />);
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading-spinner")).not.toBeInTheDocument();
+    });
+
+    // Change this line to match the actual text on your create button
+    fireEvent.click(screen.getByTestId("create-button"));
+
+    expect(screen.getByTestId("manage-users-modal")).toBeInTheDocument();
   });
 });

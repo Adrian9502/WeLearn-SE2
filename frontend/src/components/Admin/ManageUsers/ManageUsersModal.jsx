@@ -305,6 +305,7 @@ const ManageUsersModal = ({
         {loading ? (
           <div className="flex items-center justify-center">
             <ThreeDots
+              data-testid="loading-spinner"
               visible={true}
               height="80"
               width="80"

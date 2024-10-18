@@ -158,6 +158,7 @@ const DashboardManager = ({
 }) => {
   return (
     <div
+      data-testid="dashboard-manager"
       style={{ fontFamily: "Lexend" }}
       className="bg-slate-200 p-10 flex flex-col gap-20 min-h-screen"
     >

@@ -1,16 +1,33 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
+const { body, validationResult } = require("express-validator");
 const userModel = require("../models/userModel"); // Adjust path as necessary
 const router = express.Router();
+
+// Constants
+const SALT_ROUNDS = 10; // Number of rounds to use when generating a salt
 
 // GET ALL USERS DATA
 router.get("/", async (req, res) => {
   try {
-    const users = await userModel.find(); // Use userModel to find all users
-    res.status(200).json(users); // Respond with the list of users
+    const { sortBy = "username", order = "asc" } = req.query;
+    const sortOrder = order === "desc" ? -1 : 1;
+
+    const validSortFields = ["username", "email", "coins", "createdAt"];
+    if (!validSortFields.includes(sortBy)) {
+      return res.status(400).json({ message: "Invalid sort field" });
+    }
+
+    const users = await userModel.find().sort({ [sortBy]: sortOrder });
+    const formattedUsers = users.map((user) => ({
+      ...user.toObject(),
+      createdAt: user.createdAt.toISOString(),
+    }));
+    res.status(200).json(formattedUsers);
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Error fetching users", error: error.message }); // Handle any errors
+      .json({ message: "Error fetching users", error: error.message });
   }
 });
 
@@ -30,72 +47,149 @@ router.get("/:id", async (req, res) => {
 });
 
 // CREATE A NEW USER
-router.post("/", async (req, res) => {
-  const { username, email } = req.body; // Destructure username and email from the request body
-
-  try {
-    // Check if the username or email already exists
-    const existingUser = await userModel.findOne({
-      $or: [{ username }, { email }],
-    });
-
-    if (existingUser) {
-      // If a user with the same username or email is found, return an error
-      return res.status(400).json({
-        message: "Username or email already exists",
-      });
+router.post(
+  "/",
+  [
+    body("username")
+      .trim()
+      .escape()
+      .isString()
+      .notEmpty()
+      .withMessage("Username is required"),
+    body("email")
+      .trim()
+      .escape()
+      .isEmail()
+      .withMessage("Valid email is required"),
+    body("password")
+      .isLength({ min: 6 })
+      .withMessage("Password must be at least 6 characters long"),
+    body("fullName")
+      .trim()
+      .escape()
+      .isString()
+      .notEmpty()
+      .withMessage("Full name is required"),
+    body("dob")
+      .isISO8601()
+      .toDate()
+      .withMessage("Valid date of birth is required"),
+    body("isAdmin")
+      .optional()
+      .isBoolean()
+      .withMessage("isAdmin must be a boolean"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
     }
 
-    // If the username and email are unique, proceed with creating the new user
-    const newUser = new userModel({
-      ...req.body,
-      coins: 600, // Set starting coins to 600
-    });
-    const savedUser = await newUser.save();
+    const { username, email, password, fullName, dob, isAdmin } = req.body;
 
-    res.status(201).json(savedUser); // Respond with the created user
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error creating user", error: error.message }); // Handle any other errors
+    try {
+      const existingUser = await userModel.findOne({
+        $or: [{ username }, { email }],
+      });
+      if (existingUser) {
+        return res.status(400).json({
+          message: "Username or email already exists",
+        });
+      }
+
+      const newUser = new userModel({
+        username,
+        email,
+        password,
+        fullName,
+        dob,
+        isAdmin: isAdmin || false,
+        coins: 600,
+        // createdAt will be set automatically
+      });
+
+      const savedUser = await newUser.save();
+      res.status(201).json(savedUser);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({
+        message: "Error creating user",
+        error: error.message,
+      });
+    }
   }
-});
+);
 
 // UPDATE A USER BY ID
-router.put("/:id", async (req, res) => {
-  const { username, email } = req.body; // Destructure username and email from the request body
-  const userId = req.params.id;
+router.put(
+  "/:id",
+  [
+    body("username")
+      .trim()
+      .escape()
+      .isString()
+      .notEmpty()
+      .withMessage("Username is required"),
+    body("email")
+      .trim()
+      .escape()
+      .isEmail()
+      .withMessage("Valid email is required"),
+    body("password")
+      .optional()
+      .isLength({ min: 6 })
+      .withMessage("Password must be at least 6 characters long"),
+  ],
+  async (req, res) => {
+    // Validate and sanitize input
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
 
-  try {
-    // Check if the username or email already exists, excluding the current user
-    const existingUser = await userModel.findOne({
-      $or: [{ username }, { email }],
-      _id: { $ne: userId }, // Exclude the current user from the check
-    });
+    const { fullName, username, email, password, dob, isAdmin } = req.body;
+    const userId = req.params.id;
 
-    if (existingUser) {
-      // If another user with the same username or email is found, return an error
-      return res.status(400).json({
-        message: "Username or email already exists",
+    try {
+      // Check if the username or email already exists, excluding the current user
+      const existingUser = await userModel.findOne({
+        $or: [{ username }, { email }],
+        _id: { $ne: userId }, // Exclude the current user from the check
       });
+
+      if (existingUser) {
+        return res.status(400).json({
+          message: "Username or email already exists",
+        });
+      }
+
+      // Prepare updated data
+      const updatedData = { fullName, username, email, dob, isAdmin }; // Include fullName, dob, and isAdmin
+      if (password) {
+        updatedData.password = await bcrypt.hash(password, SALT_ROUNDS); // Hash the new password if provided
+      }
+
+      // Update the user
+      const updatedUser = await userModel.findByIdAndUpdate(
+        userId,
+        updatedData,
+        {
+          new: true, // Return the updated document
+        }
+      );
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.status(200).json(updatedUser);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Error updating user", error: error.message });
     }
-
-    // If no conflict is found, proceed with updating the user
-    const updatedUser = await userModel.findByIdAndUpdate(userId, req.body, {
-      new: true,
-    });
-
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" }); // Handle case where user is not found
-    }
-
-    res.status(200).json(updatedUser); // Respond with the updated user
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error updating user", error: error.message }); // Handle any other errors
   }
-});
+);
 
 // DELETE A USER BY ID
 router.delete("/:id", async (req, res) => {

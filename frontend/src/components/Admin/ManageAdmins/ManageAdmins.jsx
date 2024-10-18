@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import ManageAdminsModal from "./ManageAdminsModal";
 import DashboardManager from "../DashboardManager";
 import axios from "axios";
@@ -10,7 +10,11 @@ const ManageAdmins = () => {
   const [adminData, setAdminData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState({
+    key: "Name",
+    direction: "asc",
+  });
   const handleOpenModal = (type) => {
     setModalType(type);
     setIsModalOpen(true);
@@ -20,7 +24,6 @@ const ManageAdmins = () => {
     setIsModalOpen(false);
   };
 
-  // Function to fetch admin data from the API
   const fetchAdminData = useCallback(async () => {
     setLoading(true);
     try {
@@ -28,15 +31,25 @@ const ManageAdmins = () => {
       const transformedData = response.data.map((admin) => ({
         ID: admin._id,
         Name: admin.fullName,
+        Coins: admin.coins,
         Username: admin.username,
         Email: admin.email,
-        DOB: new Date(admin.dob).toLocaleDateString("en-US", {
+        "Date of birth": new Date(admin.dob).toLocaleDateString("en-US", {
           year: "numeric",
           month: "long",
           day: "numeric",
         }),
-        Role: admin.isAdmin ? "Admin" : "admin",
+        Role: admin.isAdmin ? "Admin" : "User",
+        "Date created": new Date(admin.createdAt).toLocaleString("en-US", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
       }));
+
       setAdminData(transformedData);
     } catch (err) {
       setError("Failed to fetch: " + err.message);
@@ -49,7 +62,6 @@ const ManageAdmins = () => {
     fetchAdminData();
   }, [fetchAdminData]);
 
-  // Callback functions for CRUD operations
   const handleAdminCreated = useCallback(() => {
     fetchAdminData();
   }, [fetchAdminData]);
@@ -61,6 +73,50 @@ const ManageAdmins = () => {
   const handleAdminDeleted = useCallback(() => {
     fetchAdminData();
   }, [fetchAdminData]);
+
+  const filteredData = useMemo(() => {
+    return adminData.filter((admin) =>
+      Object.values(admin).some((value) =>
+        value
+          ? value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+          : false
+      )
+    );
+  }, [adminData, searchTerm]);
+
+  // Sorting Algorithm
+  const sortedData = useMemo(() => {
+    let sortableItems = [...filteredData];
+    if (sortConfig.key !== null) {
+      sortableItems.sort((a, b) => {
+        const aValue = a[sortConfig.key].toString().toLowerCase();
+        const bValue = b[sortConfig.key].toString().toLowerCase();
+
+        if (aValue < bValue) {
+          return sortConfig.direction === "asc" ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === "asc" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredData, sortConfig]);
+
+  const handleSearch = useCallback((term) => {
+    setSearchTerm(term);
+  }, []);
+
+  const handleSort = useCallback((key) => {
+    setSortConfig((prevConfig) => ({
+      key,
+      direction:
+        prevConfig.key === key && prevConfig.direction === "asc"
+          ? "desc"
+          : "asc",
+    }));
+  }, []);
 
   if (loading) {
     return (
@@ -92,8 +148,20 @@ const ManageAdmins = () => {
       <DashboardManager
         title="Manage Admins"
         handleOpenModal={handleOpenModal}
-        tableColumns={["ID", "Name", "Username", "Email", "DOB", "Role"]}
-        tableRows={adminData}
+        tableColumns={[
+          "ID",
+          "Name",
+          "Username",
+          "Email",
+          "Date of birth",
+          "Role",
+          "Date created",
+        ]}
+        tableRows={sortedData}
+        searchTerm={searchTerm}
+        onSearchChange={handleSearch}
+        sortConfig={sortConfig}
+        onSort={handleSort}
       />
       <ManageAdminsModal
         isOpen={isModalOpen}
@@ -107,4 +175,5 @@ const ManageAdmins = () => {
     </>
   );
 };
+
 export default ManageAdmins;

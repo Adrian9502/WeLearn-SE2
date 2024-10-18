@@ -8,7 +8,14 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   isAdmin: { type: Boolean, default: false },
   dob: { type: Date, required: true },
-  coins: { type: Number, default: 600, required: true },
+  coins: { type: Number, default: 600 },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
+// Prevent changing createdAt on updates
+userSchema.pre("save", function (next) {
+  this.updatedAt = Date.now(); // Set updatedAt to the current date
+  next();
 });
 
 // Hash password before saving

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { ProgressBar } from "react-loader-spinner";
+import { ThreeDots } from "react-loader-spinner";
+import PropTypes from "prop-types";
 
 const API_BASE_URL = "http://localhost:5000/api/admins";
 
@@ -14,7 +15,7 @@ const InputField = ({
   type = "text",
 }) => (
   <div className="my-2">
-    <label htmlFor={name} className="block text-lg font-semibold mb-2">
+    <label htmlFor={name} className="block mb-2">
       {label}
     </label>
     <input
@@ -39,7 +40,12 @@ const Button = ({ onClick, type, className, children }) => (
     {children}
   </button>
 );
-
+Button.propTypes = {
+  onClick: PropTypes.func,
+  type: PropTypes.oneOf(["button", "submit", "reset"]),
+  className: PropTypes.string,
+  children: PropTypes.node.isRequired,
+};
 const sweetAlert = ({ title, text, icon }) => {
   Swal.fire({ title, text, icon });
 };
@@ -67,38 +73,6 @@ const validateForm = (formData) => {
   return true;
 };
 
-const fetchData = async ({
-  validateForm,
-  formData,
-  resetForm,
-  apiEndpoint,
-  method = "POST",
-  callback,
-  handleCloseModal,
-}) => {
-  if (!validateForm(formData)) {
-    return;
-  }
-
-  try {
-    const response = await axios({ method, url: apiEndpoint, data: formData });
-    sweetAlert({
-      title: "Success!",
-      text: response.data.message,
-      icon: "success",
-    });
-    callback();
-    handleCloseModal();
-    resetForm();
-  } catch (error) {
-    sweetAlert({
-      title: "Error",
-      text: error.response?.data.message || "An error occurred",
-      icon: "error",
-    });
-  }
-};
-
 const ManageAdminsModal = ({
   isOpen,
   onClose,
@@ -116,6 +90,75 @@ const ManageAdminsModal = ({
     dob: "",
   });
   const [loading, setLoading] = useState(false);
+
+  // Fetch data
+  const fetchData = async ({
+    validateForm,
+    formData,
+    resetForm,
+    apiEndpoint,
+    method = "POST",
+    callback,
+    handleCloseModal,
+  }) => {
+    // Validate the form before making the request
+    if (!validateForm(formData)) {
+      return;
+    }
+    setLoading(true);
+    try {
+      // Make the API request
+      const response = await axios({
+        method,
+        url: apiEndpoint,
+        data: formData,
+      });
+
+      // Show success message
+      sweetAlert({
+        title: "Success!",
+        text: response.data.message,
+        icon: "success",
+      });
+
+      // Call the callback to refresh the data or perform any other actions
+      callback();
+      handleCloseModal();
+      resetForm();
+    } catch (error) {
+      // Check if there's a response and handle the error accordingly
+      if (error.response) {
+        const errors = error.response.data.errors;
+        // Get the message for the password error or use a fallback message
+        const passwordError = errors.find((err) => err.path === "password");
+        const errorMessage = passwordError
+          ? passwordError.msg
+          : "An error occurred";
+
+        sweetAlert({
+          title: "Error",
+          text: errorMessage,
+          icon: "error",
+        });
+      } else if (error.request) {
+        // The request was made but no response was received
+        sweetAlert({
+          title: "Error",
+          text: "No response from the server. Please try again later.",
+          icon: "error",
+        });
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        sweetAlert({
+          title: "Error",
+          text: "An unexpected error occurred: " + error.message,
+          icon: "error",
+        });
+      }
+    } finally {
+      setLoading(true);
+    }
+  };
 
   const resetForm = () => {
     setFormData({
@@ -142,7 +185,6 @@ const ManageAdminsModal = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
 
     const apiActions = {
       create: {
@@ -173,8 +215,6 @@ const ManageAdminsModal = ({
       callback: action.callback,
       handleCloseModal: onClose,
     });
-
-    setLoading(false);
   };
 
   const renderForm = () => {
@@ -184,7 +224,7 @@ const ManageAdminsModal = ({
         return (
           <>
             {type === "update" && (
-              // user id
+              // admin id
               <InputField
                 label="Admin ID:"
                 name="adminId"
@@ -253,22 +293,27 @@ const ManageAdminsModal = ({
   };
 
   return (
-    <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
+    <div
+      style={{ fontFamily: "Lexend" }}
+      className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50"
+    >
       <div className="rounded-lg bg-violet-700 p-8 w-96">
-        <h2 className="text-3xl text-center font-bold mb-4">
+        <h2 className="text-3xl text-center font-semibold mb-4">
           {type.charAt(0).toUpperCase() + type.slice(1)} Admin
         </h2>
+
         {loading ? (
-          <div className="text-center my-4">
-            <div className="flex justify-center mb-5">
-              <ProgressBar
-                visible={true}
-                height="80"
-                width="80"
-                color="#4fa94d"
-                ariaLabel="progress-bar-loading"
-              />
-            </div>
+          <div className="flex items-center justify-center">
+            <ThreeDots
+              visible={true}
+              height="80"
+              width="80"
+              color="#6d28d9"
+              radius="9"
+              ariaLabel="three-dots-loading"
+              wrapperStyle={{}}
+              wrapperClass=""
+            />
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
@@ -297,5 +342,12 @@ const ManageAdminsModal = ({
     </div>
   );
 };
-
+ManageAdminsModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  type: PropTypes.oneOf(["create", "update", "delete"]).isRequired,
+  onAdminCreated: PropTypes.func,
+  onAdminUpdated: PropTypes.func,
+  onAdminDeleted: PropTypes.func,
+};
 export default ManageAdminsModal;

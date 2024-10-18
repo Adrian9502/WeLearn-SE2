@@ -216,7 +216,6 @@ const ManageAdminsModal = ({
       handleCloseModal: onClose,
     });
   };
-
   const renderForm = () => {
     switch (type) {
       case "create":

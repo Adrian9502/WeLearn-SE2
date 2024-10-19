@@ -3,7 +3,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { ThreeDots } from "react-loader-spinner";
 import PropTypes from "prop-types";
-
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 const API_BASE_URL = "http://localhost:5000/api/users";
 
 const InputField = ({
@@ -13,21 +13,39 @@ const InputField = ({
   onChange,
   placeholder,
   type = "text",
+  showPassword,
+  toggleShowPassword,
 }) => (
   <div className="my-2">
     <label htmlFor={name} className="block mb-2">
       {label}
     </label>
-    <input
-      id={name}
-      name={name}
-      type={type}
-      value={value}
-      onChange={onChange}
-      className="text-gray-900 rounded-md focus:shadow-lg w-full p-2 focus:outline-none"
-      placeholder={placeholder}
-      required
-    />
+    <div className="relative">
+      <input
+        id={name}
+        name={name}
+        type={name === "password" && showPassword ? "text" : type}
+        value={value}
+        onChange={onChange}
+        className="text-gray-900 rounded-md focus:shadow-lg w-full p-2 focus:outline-none"
+        placeholder={placeholder}
+        required
+        data-testid={name}
+      />
+      {name === "password" && (
+        <button
+          type="button"
+          onClick={toggleShowPassword}
+          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+        >
+          {showPassword ? (
+            <FaEyeSlash className="h-5 w-5 text-purple-700" />
+          ) : (
+            <FaEye className="h-5 w-5 text-purple-700" />
+          )}
+        </button>
+      )}
+    </div>
   </div>
 );
 
@@ -40,37 +58,24 @@ const Button = ({ onClick, type, className, children }) => (
     {children}
   </button>
 );
-Button.propTypes = {
-  onClick: PropTypes.func.isRequired,
-  type: PropTypes.oneOf(["button", "submit", "reset"]), // on
-  className: PropTypes.string,
-  children: PropTypes.node.isRequired,
-};
+
 const sweetAlert = ({ title, text, icon }) => {
   Swal.fire({ title, text, icon });
 };
 
 const validateForm = (formData) => {
-  const { fullName, username, email, password, dob } = formData;
+  const { fullName, username, email, password } = formData;
+
   if (
-    !fullName ||
     fullName.length < 5 ||
-    !username ||
     username.length < 5 ||
-    !email ||
-    email.length < 5 ||
-    !password ||
     password.length < 5 ||
-    !dob
+    !email.includes("@")
   ) {
-    sweetAlert({
-      title: "Error",
-      text: "All fields are required and must be at least 5 characters long.",
-      icon: "error",
-    });
-    return false;
+    return false; // Invalid
   }
-  return true;
+
+  return true; // Valid
 };
 
 const ManageUsersModal = ({
@@ -90,7 +95,10 @@ const ManageUsersModal = ({
     dob: "",
   });
   const [loading, setLoading] = useState(false);
-
+  const [showPassword, setShowPassword] = useState(false);
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
   // Fetch data
   const fetchData = async ({
     validateForm,
@@ -185,7 +193,35 @@ const ManageUsersModal = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // const formData = {
+    //   userId,
+    //   fullName,
+    //   username,
+    //   email,
+    //   password,
+    //   dob,
+    // };
 
+    console.log("Form submitted");
+    console.log("Validating form data:", formData);
+
+    const isValid = validateForm(formData);
+    console.log("Is form valid:", isValid);
+
+    if (!isValid) {
+      console.error("Validation failed, showing error");
+      // Show SweetAlert or any error message here
+      sweetAlert({
+        title: "Error",
+        text: "All fields are required and must be at least 5 characters long.",
+        icon: "error",
+      });
+
+      return; // Exit the function if the form is invalid
+    }
+
+    // Proceed with the form submission (e.g., API call)
+    console.log("Form data is valid. Submitting...", formData);
     const apiActions = {
       create: {
         method: "POST",
@@ -205,6 +241,7 @@ const ManageUsersModal = ({
     };
 
     const action = apiActions[type];
+    console.log("Action:", action);
 
     await fetchData({
       validateForm: type === "delete" ? () => true : validateForm,
@@ -228,6 +265,7 @@ const ManageUsersModal = ({
               <InputField
                 label="User ID:"
                 name="userId"
+                data-testid="userId"
                 value={formData.userId}
                 onChange={handleInputChange}
                 placeholder="Enter existing user id"
@@ -266,6 +304,8 @@ const ManageUsersModal = ({
               value={formData.password}
               onChange={handleInputChange}
               placeholder="Enter password"
+              showPassword={showPassword}
+              toggleShowPassword={toggleShowPassword}
             />
             {/* birthday */}
             <InputField
@@ -317,7 +357,7 @@ const ManageUsersModal = ({
             />
           </div>
         ) : (
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} data-testid="modal-form">
             <div className="mb-4">{renderForm()}</div>
             <div className="flex justify-around mb-4">
               <Button
@@ -350,5 +390,11 @@ ManageUsersModal.propTypes = {
   onUserCreated: PropTypes.func,
   onUserUpdated: PropTypes.func,
   onUserDeleted: PropTypes.func,
+};
+Button.propTypes = {
+  onClick: PropTypes.func,
+  type: PropTypes.oneOf(["button", "submit", "reset"]),
+  className: PropTypes.string,
+  children: PropTypes.node.isRequired,
 };
 export default ManageUsersModal;

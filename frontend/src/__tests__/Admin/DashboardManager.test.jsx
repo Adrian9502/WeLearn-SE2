@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import DashboardManager from "../../../components/Admin/DashboardManager";
+import DashboardManager from "../../components/Admin/DashboardManager";
 
 // Mock data for testing
 const columns = ["ID", "Name", "Age"];

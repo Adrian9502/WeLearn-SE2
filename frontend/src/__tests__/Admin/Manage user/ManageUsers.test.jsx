@@ -7,18 +7,18 @@ import {
   act,
 } from "@testing-library/react";
 import axios from "axios";
-import ManageUsers from "../../../../components/Admin/ManageUsers/ManageUsers";
+import ManageUsers from "../../../components/Admin/ManageUsers/ManageUsers";
 
 // Mock axios
 jest.mock("axios");
 
 // Mock child components
 jest.mock(
-  "../../../../components/Admin/ManageUsers/ManageUsersModal",
+  "../../../components/Admin/ManageUsers/ManageUsersModal",
   () => () => <div data-testid="manage-users-modal" />
 );
 jest.mock(
-  "../../../../components/Admin/DashboardManager",
+  "../../../components/Admin/DashboardManager",
   () =>
     ({ tableRows, onSearchChange, onSort, handleOpenModal }) =>
       (

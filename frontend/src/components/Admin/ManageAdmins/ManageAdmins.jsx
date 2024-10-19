@@ -4,6 +4,7 @@ import DashboardManager from "../DashboardManager";
 import axios from "axios";
 import { ThreeDots } from "react-loader-spinner";
 
+// MAIN COMPONENT
 const ManageAdmins = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState("create");
@@ -23,7 +24,7 @@ const ManageAdmins = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
-
+  // FETCH DATA TO DISPLAY IN TABLE
   const fetchAdminData = useCallback(async () => {
     setLoading(true);
     try {
@@ -31,7 +32,6 @@ const ManageAdmins = () => {
       const transformedData = response.data.map((admin) => ({
         ID: admin._id,
         Name: admin.fullName,
-        Coins: admin.coins,
         Username: admin.username,
         Email: admin.email,
         "Date of birth": new Date(admin.dob).toLocaleDateString("en-US", {
@@ -84,7 +84,7 @@ const ManageAdmins = () => {
     );
   }, [adminData, searchTerm]);
 
-  // Sorting Algorithm
+  // SORTING ALGORITHM TO SORT DATA ASCENDING OR DESCENDING
   const sortedData = useMemo(() => {
     let sortableItems = [...filteredData];
     if (sortConfig.key !== null) {
@@ -104,10 +104,11 @@ const ManageAdmins = () => {
     return sortableItems;
   }, [filteredData, sortConfig]);
 
+  // HANDLE SEARCH FUNCTION
   const handleSearch = useCallback((term) => {
     setSearchTerm(term);
   }, []);
-
+  // HANDLE SORT FUNCTION
   const handleSort = useCallback((key) => {
     setSortConfig((prevConfig) => ({
       key,
@@ -117,7 +118,7 @@ const ManageAdmins = () => {
           : "asc",
     }));
   }, []);
-
+  // LOADING STATE
   if (loading) {
     return (
       <div
@@ -137,6 +138,7 @@ const ManageAdmins = () => {
       </div>
     );
   }
+  // ERROR STATE
   if (error) {
     return (
       <div className="flex flex-col text-2xl font-semibold text-slate-800 h-screen items-center justify-center mb-5">

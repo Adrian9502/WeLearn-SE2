@@ -77,8 +77,10 @@ const ManageUsers = () => {
 
   const filteredData = useMemo(() => {
     return userData.filter((user) =>
-      Object.values(user).some((value) =>
-        value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+      Object.values(user).some(
+        (value) =>
+          value !== undefined && // Check if value is defined
+          value.toString().toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
   }, [userData, searchTerm]);

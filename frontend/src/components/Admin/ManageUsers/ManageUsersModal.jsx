@@ -414,6 +414,6 @@ InputField.propTypes = {
   placeholder: PropTypes.string,
   type: PropTypes.string,
   showPassword: PropTypes.bool,
-  toggleShowPassword: PropTypes.func.isRequired,
+  toggleShowPassword: PropTypes.func,
 };
 export default ManageUsersModal;

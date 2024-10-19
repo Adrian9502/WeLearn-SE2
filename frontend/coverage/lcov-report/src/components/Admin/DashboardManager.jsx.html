@@ -308,11 +308,8 @@
 <a name='L243'></a><a href='#L243'>243</a>
 <a name='L244'></a><a href='#L244'>244</a>
 <a name='L245'></a><a href='#L245'>245</a>
-<a name='L246'></a><a href='#L246'>246</a>
-<a name='L247'></a><a href='#L247'>247</a>
-<a name='L248'></a><a href='#L248'>248</a>
-<a name='L249'></a><a href='#L249'>249</a>
-<a name='L250'></a><a href='#L250'>250</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L246'></a><a href='#L246'>246</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -399,6 +396,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -520,7 +518,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -530,6 +527,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -539,14 +538,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -566,7 +558,8 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 import { FaCopy } from "react-icons/fa";
 import { BiSortDown, BiSortUp } from "react-icons/bi";
 import React, { useState } from "react";
-// Search and sort buttons components
+&nbsp;
+// SEARCH AND SORT BUTTON COMPONENT
 const SortButton = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >({</span> label, action, active }) =&gt; (</span>
 <span class="cstat-no" title="statement not covered" >  &lt;button</span>
     className={`flex items-center justify-center gap-2 p-2 ${
@@ -577,7 +570,7 @@ const SortButton = <span class="cstat-no" title="statement not covered" ><span c
     {label}
   &lt;/button&gt;
 );
-&nbsp;
+// SEARCH AND SORT BUTTON COMPONENT - SEARCH INPUT AND SORT BUTTON
 const SearchAndSort = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >({</span></span>
   searchTerm = <span class="branch-0 cbranch-no" title="branch not covered" >"",</span>
   onSearchChange = <span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >()</span> =&gt; {},</span>
@@ -617,7 +610,7 @@ const SearchAndSort = <span class="cstat-no" title="statement not covered" ><spa
   );
 };
 &nbsp;
-// Reusable Button component
+// BUTTON COMPONENT
 const Button = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >({</span> label, action }) =&gt; (</span>
 <span class="cstat-no" title="statement not covered" >  &lt;button</span>
     className="p-2 bg-violet-700 rounded-lg transition-colors hover:bg-violet-800"
@@ -672,6 +665,7 @@ const CopyableID = <span class="cstat-no" title="statement not covered" ><span c
 };
 &nbsp;
 // Table component to display columns and rows
+// EVERY CLICK ON COLUMN IT SORT ASC AND DESC
 const Table = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >({</span> columns, rows, onSort, sortConfig }) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >  return (</span>
     &lt;table className="min-w-full border bg-slate-950"&gt;
@@ -769,7 +763,6 @@ const DashboardManager = <span class="cstat-no" title="statement not covered" ><
   }).isRequired,
   onSort: PropTypes.func.isRequired,
 };
-&nbsp;
 <span class="cstat-no" title="statement not covered" >Table.propTypes = {</span>
   columns: PropTypes.arrayOf(PropTypes.string).isRequired,
   rows: PropTypes.arrayOf(PropTypes.object).isRequired,
@@ -779,21 +772,17 @@ const DashboardManager = <span class="cstat-no" title="statement not covered" ><
     direction: PropTypes.string,
   }).isRequired, // Updated to required
 };
-&nbsp;
 <span class="cstat-no" title="statement not covered" >CopyableID.propTypes = {</span>
   value: PropTypes.string.isRequired,
 };
-&nbsp;
 <span class="cstat-no" title="statement not covered" >TableRow.propTypes = {</span>
   row: PropTypes.object.isRequired,
   columns: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
-&nbsp;
 <span class="cstat-no" title="statement not covered" >Button.propTypes = {</span>
   label: PropTypes.any.isRequired,
   action: PropTypes.func.isRequired,
 };
-&nbsp;
 <span class="cstat-no" title="statement not covered" >SearchAndSort.propTypes = {</span>
   searchTerm: PropTypes.string,
   onSearchChange: PropTypes.func,
@@ -803,7 +792,6 @@ const DashboardManager = <span class="cstat-no" title="statement not covered" ><
   }),
   onSort: PropTypes.func,
 };
-&nbsp;
 <span class="cstat-no" title="statement not covered" >SortButton.propTypes = {</span>
   label: PropTypes.oneOfType([PropTypes.string, PropTypes.element]).isRequired,
   action: PropTypes.func.isRequired,
@@ -817,7 +805,7 @@ export default DashboardManager;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2024-10-19T05:55:32.518Z
+                at 2024-10-19T07:42:23.285Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

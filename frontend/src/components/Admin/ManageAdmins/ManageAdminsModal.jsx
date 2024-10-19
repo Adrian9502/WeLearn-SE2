@@ -155,8 +155,27 @@ const ManageAdminsModal = ({
             icon: "error",
           });
         } else if (error.response) {
-          const errorMessage =
-            error.response.data.message || JSON.stringify(error.response.data);
+          let errorMessage = "";
+
+          // Check if the response contains multiple validation errors (e.g., an array of errors)
+          if (
+            error.response.data.errors &&
+            Array.isArray(error.response.data.errors)
+          ) {
+            // Extract the error messages from the errors array and join them into a single string
+            errorMessage = error.response.data.errors
+              .map((err) => err.msg)
+              .join(", ");
+          } else {
+            // Fallback to using a single message or stringify the entire response if no message is provided
+            errorMessage =
+              error.response.data.message ||
+              JSON.stringify(error.response.data);
+          }
+
+          console.log(errorMessage); // For debugging purposes
+
+          // Show SweetAlert with the extracted error message
           sweetAlert({
             title: "Error",
             text: errorMessage,
@@ -171,8 +190,6 @@ const ManageAdminsModal = ({
           const errorMessage = passwordError
             ? passwordError.msg
             : "An error occurred";
-
-          console.log();
 
           sweetAlert({
             title: "Error",
@@ -357,7 +374,7 @@ const ManageAdminsModal = ({
     >
       <div className="rounded-lg bg-violet-700 p-8 w-96">
         <h2 className="text-3xl text-center font-semibold mb-4">
-          {type.charAt(0).toUpperCase() + type.slice(1)} User
+          {type.charAt(0).toUpperCase() + type.slice(1)} Admin
         </h2>
 
         {loading ? (

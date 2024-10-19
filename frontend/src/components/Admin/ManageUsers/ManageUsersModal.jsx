@@ -6,6 +6,7 @@ import PropTypes from "prop-types";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 const API_BASE_URL = "http://localhost:5000/api/users";
 
+// INPUT FIELD COMPONENT
 const InputField = ({
   label,
   name,
@@ -48,7 +49,7 @@ const InputField = ({
     </div>
   </div>
 );
-
+// BUTTON COMPONENT
 const Button = ({ onClick, type, className, children }) => (
   <button
     onClick={onClick}
@@ -58,11 +59,11 @@ const Button = ({ onClick, type, className, children }) => (
     {children}
   </button>
 );
-
+// SWEET ALERT FUNCTION
 const sweetAlert = ({ title, text, icon }) => {
   Swal.fire({ title, text, icon });
 };
-
+// FORM VALIDATION
 const validateForm = (formData) => {
   const { fullName, username, email, password } = formData;
 
@@ -77,7 +78,7 @@ const validateForm = (formData) => {
 
   return true; // Valid
 };
-
+// MAIN COMPONENT
 const ManageUsersModal = ({
   isOpen,
   onClose,
@@ -99,7 +100,7 @@ const ManageUsersModal = ({
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
-  // Fetch data
+  // FETCH DATA USING AXIOS
   const fetchData = async ({
     validateForm,
     formData,
@@ -136,18 +137,38 @@ const ManageUsersModal = ({
     } catch (error) {
       // Check if there's a response and handle the error accordingly
       if (error.response) {
-        const errors = error.response.data.errors;
-        // Get the message for the password error or use a fallback message
-        const passwordError = errors.find((err) => err.path === "password");
-        const errorMessage = passwordError
-          ? passwordError.msg
-          : "An error occurred";
+        // If response is available, handle the error based on the response status
+        const { status, data } = error.response;
 
-        sweetAlert({
-          title: "Error",
-          text: errorMessage,
-          icon: "error",
-        });
+        // If status is 404, it means the resource was not found
+        if (status === 404) {
+          sweetAlert({
+            title: "Error",
+            text: data.message || "User not found. Please check the ID.",
+            icon: "error",
+          });
+        } else if (status === 500) {
+          sweetAlert({
+            title: "Error",
+            text: "Invalid ID format. Please check the ID.",
+            icon: "error",
+          });
+        } else {
+          // Handle other status codes and extract error messages
+          const errors = data.errors;
+          const passwordError = errors
+            ? errors.find((err) => err.path === "password")
+            : null;
+          const errorMessage = passwordError
+            ? passwordError.msg
+            : "An error occurred";
+
+          sweetAlert({
+            title: "Error",
+            text: errorMessage,
+            icon: "error",
+          });
+        }
       } else if (error.request) {
         // The request was made but no response was received
         sweetAlert({
@@ -164,10 +185,10 @@ const ManageUsersModal = ({
         });
       }
     } finally {
-      setLoading(true);
+      setLoading(false); // Set loading to false after request completion
     }
   };
-
+  // RESET FORM FUNCTION
   const resetForm = () => {
     setFormData({
       userId: "",
@@ -186,30 +207,18 @@ const ManageUsersModal = ({
 
   if (!isOpen) return null;
 
+  // INPUT CHANGE FUNCTION
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
+  // SUBMIT FORM FUNCTION
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // const formData = {
-    //   userId,
-    //   fullName,
-    //   username,
-    //   email,
-    //   password,
-    //   dob,
-    // };
 
-    console.log("Form submitted");
-    console.log("Validating form data:", formData);
-
-    const isValid = validateForm(formData);
-    console.log("Is form valid:", isValid);
+    const isValid = type === "delete" || validateForm(formData); // Only validate if not deleting
 
     if (!isValid) {
-      console.error("Validation failed, showing error");
       // Show SweetAlert or any error message here
       sweetAlert({
         title: "Error",
@@ -220,8 +229,6 @@ const ManageUsersModal = ({
       return; // Exit the function if the form is invalid
     }
 
-    // Proceed with the form submission (e.g., API call)
-    console.log("Form data is valid. Submitting...", formData);
     const apiActions = {
       create: {
         method: "POST",
@@ -241,7 +248,6 @@ const ManageUsersModal = ({
     };
 
     const action = apiActions[type];
-    console.log("Action:", action);
 
     await fetchData({
       validateForm: type === "delete" ? () => true : validateForm,
@@ -254,6 +260,7 @@ const ManageUsersModal = ({
     });
   };
 
+  // RENDER FORM INPUTS
   const renderForm = () => {
     switch (type) {
       case "create":
@@ -383,6 +390,8 @@ const ManageUsersModal = ({
     </div>
   );
 };
+
+// Prop types
 ManageUsersModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
@@ -396,5 +405,15 @@ Button.propTypes = {
   type: PropTypes.oneOf(["button", "submit", "reset"]),
   className: PropTypes.string,
   children: PropTypes.node.isRequired,
+};
+InputField.propTypes = {
+  label: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  placeholder: PropTypes.string,
+  type: PropTypes.string,
+  showPassword: PropTypes.bool,
+  toggleShowPassword: PropTypes.func.isRequired,
 };
 export default ManageUsersModal;

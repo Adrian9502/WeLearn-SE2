@@ -4,6 +4,7 @@ import DashboardManager from "../DashboardManager";
 import axios from "axios";
 import { ThreeDots } from "react-loader-spinner";
 
+// MAIN COMPONENT
 const ManageUsers = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState("create");
@@ -23,7 +24,7 @@ const ManageUsers = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
-
+  // FETCH DATA TO DISPLAY IN TABLE
   const fetchUserData = useCallback(async () => {
     setLoading(true);
     try {
@@ -82,7 +83,7 @@ const ManageUsers = () => {
     );
   }, [userData, searchTerm]);
 
-  // Sorting Algorithm
+  // SORTING ALGORITHM TO SORT DATA ASCENDING OR DESCENDING
   const sortedData = useMemo(() => {
     let sortableItems = [...filteredData];
     if (sortConfig.key !== null) {
@@ -102,10 +103,11 @@ const ManageUsers = () => {
     return sortableItems;
   }, [filteredData, sortConfig]);
 
+  // HANDLE SEARCH FUNCTION
   const handleSearch = useCallback((term) => {
     setSearchTerm(term);
   }, []);
-
+  // HANDLE SORT FUNCTION
   const handleSort = useCallback((key) => {
     setSortConfig((prevConfig) => ({
       key,
@@ -115,7 +117,7 @@ const ManageUsers = () => {
           : "asc",
     }));
   }, []);
-
+  // LOADING STATE
   if (loading) {
     return (
       <div
@@ -135,6 +137,7 @@ const ManageUsers = () => {
       </div>
     );
   }
+  // ERROR STATE
   if (error) {
     return (
       <div className="flex flex-col text-2xl font-semibold text-slate-800 h-screen items-center justify-center mb-5">

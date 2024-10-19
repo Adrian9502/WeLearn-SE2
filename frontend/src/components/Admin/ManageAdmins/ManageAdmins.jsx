@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import ManageAdminsModal from "./ManageAdminsModal";
 import DashboardManager from "../DashboardManager";
 import axios from "axios";
@@ -76,10 +76,10 @@ const ManageAdmins = () => {
 
   const filteredData = useMemo(() => {
     return adminData.filter((admin) =>
-      Object.values(admin).some((value) =>
-        value
-          ? value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-          : false
+      Object.values(admin).some(
+        (value) =>
+          value !== undefined && // Check if value is defined
+          value.toString().toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
   }, [adminData, searchTerm]);
@@ -120,7 +120,10 @@ const ManageAdmins = () => {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center mb-5">
+      <div
+        className="flex h-screen items-center justify-center mb-5"
+        data-testid="loading-spinner"
+      >
         <ThreeDots
           visible={true}
           height="80"

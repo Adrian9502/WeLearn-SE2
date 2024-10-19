@@ -3,6 +3,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { ThreeDots } from "react-loader-spinner";
 import PropTypes from "prop-types";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const API_BASE_URL = "http://localhost:5000/api/admins";
 
@@ -13,21 +14,39 @@ const InputField = ({
   onChange,
   placeholder,
   type = "text",
+  showPassword,
+  toggleShowPassword,
 }) => (
   <div className="my-2">
     <label htmlFor={name} className="block mb-2">
       {label}
     </label>
-    <input
-      id={name}
-      name={name}
-      type={type}
-      value={value}
-      onChange={onChange}
-      className="text-gray-900 rounded-md focus:shadow-lg w-full p-2 focus:outline-none"
-      placeholder={placeholder}
-      required
-    />
+    <div className="relative">
+      <input
+        id={name}
+        name={name}
+        type={name === "password" && showPassword ? "text" : type}
+        value={value}
+        onChange={onChange}
+        className="text-gray-900 rounded-md focus:shadow-lg w-full p-2 focus:outline-none"
+        placeholder={placeholder}
+        required
+        data-testid={name}
+      />
+      {name === "password" && (
+        <button
+          type="button"
+          onClick={toggleShowPassword}
+          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+        >
+          {showPassword ? (
+            <FaEyeSlash className="h-5 w-5 text-purple-700" />
+          ) : (
+            <FaEye className="h-5 w-5 text-purple-700" />
+          )}
+        </button>
+      )}
+    </div>
   </div>
 );
 
@@ -40,37 +59,24 @@ const Button = ({ onClick, type, className, children }) => (
     {children}
   </button>
 );
-Button.propTypes = {
-  onClick: PropTypes.func,
-  type: PropTypes.oneOf(["button", "submit", "reset"]),
-  className: PropTypes.string,
-  children: PropTypes.node.isRequired,
-};
+
 const sweetAlert = ({ title, text, icon }) => {
   Swal.fire({ title, text, icon });
 };
 
 const validateForm = (formData) => {
-  const { fullName, username, email, password, dob } = formData;
+  const { fullName, username, email, password } = formData;
+
   if (
-    !fullName ||
     fullName.length < 5 ||
-    !username ||
     username.length < 5 ||
-    !email ||
-    email.length < 5 ||
-    !password ||
     password.length < 5 ||
-    !dob
+    !email.includes("@")
   ) {
-    sweetAlert({
-      title: "Error",
-      text: "All fields are required and must be at least 5 characters long.",
-      icon: "error",
-    });
-    return false;
+    return false; // Invalid
   }
-  return true;
+
+  return true; // Valid
 };
 
 const ManageAdminsModal = ({
@@ -90,7 +96,10 @@ const ManageAdminsModal = ({
     dob: "",
   });
   const [loading, setLoading] = useState(false);
-
+  const [showPassword, setShowPassword] = useState(false);
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
   // Fetch data
   const fetchData = async ({
     validateForm,
@@ -186,6 +195,19 @@ const ManageAdminsModal = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const isValid = validateForm(formData);
+
+    if (!isValid) {
+      sweetAlert({
+        title: "Error",
+        text: "All fields are required and must be at least 5 characters long.",
+        icon: "error",
+      });
+
+      return; // Exit the function if the form is invalid
+    }
+
+    // Proceed with the form submission (e.g., API call)
     const apiActions = {
       create: {
         method: "POST",
@@ -216,6 +238,7 @@ const ManageAdminsModal = ({
       handleCloseModal: onClose,
     });
   };
+
   const renderForm = () => {
     switch (type) {
       case "create":
@@ -227,6 +250,7 @@ const ManageAdminsModal = ({
               <InputField
                 label="Admin ID:"
                 name="adminId"
+                data-testid="adminId"
                 value={formData.adminId}
                 onChange={handleInputChange}
                 placeholder="Enter existing admin id"
@@ -265,6 +289,8 @@ const ManageAdminsModal = ({
               value={formData.password}
               onChange={handleInputChange}
               placeholder="Enter password"
+              showPassword={showPassword}
+              toggleShowPassword={toggleShowPassword}
             />
             {/* birthday */}
             <InputField
@@ -304,6 +330,7 @@ const ManageAdminsModal = ({
         {loading ? (
           <div className="flex items-center justify-center">
             <ThreeDots
+              data-testid="loading-spinner"
               visible={true}
               height="80"
               width="80"
@@ -315,7 +342,7 @@ const ManageAdminsModal = ({
             />
           </div>
         ) : (
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} data-testid="modal-form">
             <div className="mb-4">{renderForm()}</div>
             <div className="flex justify-around mb-4">
               <Button
@@ -348,5 +375,11 @@ ManageAdminsModal.propTypes = {
   onAdminCreated: PropTypes.func,
   onAdminUpdated: PropTypes.func,
   onAdminDeleted: PropTypes.func,
+};
+Button.propTypes = {
+  onClick: PropTypes.func,
+  type: PropTypes.oneOf(["button", "submit", "reset"]),
+  className: PropTypes.string,
+  children: PropTypes.node.isRequired,
 };
 export default ManageAdminsModal;

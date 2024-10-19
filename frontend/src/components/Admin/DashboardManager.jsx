@@ -3,7 +3,8 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 import { FaCopy } from "react-icons/fa";
 import { BiSortDown, BiSortUp } from "react-icons/bi";
 import React, { useState } from "react";
-// Search and sort buttons components
+
+// SEARCH AND SORT BUTTON COMPONENT
 const SortButton = ({ label, action, active }) => (
   <button
     className={`flex items-center justify-center gap-2 p-2 ${
@@ -14,7 +15,7 @@ const SortButton = ({ label, action, active }) => (
     {label}
   </button>
 );
-
+// SEARCH AND SORT BUTTON COMPONENT - SEARCH INPUT AND SORT BUTTON
 const SearchAndSort = ({
   searchTerm = "",
   onSearchChange = () => {},
@@ -54,7 +55,7 @@ const SearchAndSort = ({
   );
 };
 
-// Reusable Button component
+// BUTTON COMPONENT
 const Button = ({ label, action }) => (
   <button
     className="p-2 bg-violet-700 rounded-lg transition-colors hover:bg-violet-800"
@@ -109,6 +110,7 @@ const CopyableID = ({ value }) => {
 };
 
 // Table component to display columns and rows
+// EVERY CLICK ON COLUMN IT SORT ASC AND DESC
 const Table = ({ columns, rows, onSort, sortConfig }) => {
   return (
     <table className="min-w-full border bg-slate-950">
@@ -206,7 +208,6 @@ DashboardManager.propTypes = {
   }).isRequired,
   onSort: PropTypes.func.isRequired,
 };
-
 Table.propTypes = {
   columns: PropTypes.arrayOf(PropTypes.string).isRequired,
   rows: PropTypes.arrayOf(PropTypes.object).isRequired,
@@ -216,21 +217,17 @@ Table.propTypes = {
     direction: PropTypes.string,
   }).isRequired, // Updated to required
 };
-
 CopyableID.propTypes = {
   value: PropTypes.string.isRequired,
 };
-
 TableRow.propTypes = {
   row: PropTypes.object.isRequired,
   columns: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
-
 Button.propTypes = {
   label: PropTypes.any.isRequired,
   action: PropTypes.func.isRequired,
 };
-
 SearchAndSort.propTypes = {
   searchTerm: PropTypes.string,
   onSearchChange: PropTypes.func,
@@ -240,7 +237,6 @@ SearchAndSort.propTypes = {
   }),
   onSort: PropTypes.func,
 };
-
 SortButton.propTypes = {
   label: PropTypes.oneOfType([PropTypes.string, PropTypes.element]).isRequired,
   action: PropTypes.func.isRequired,

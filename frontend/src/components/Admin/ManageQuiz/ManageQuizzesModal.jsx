@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { ProgressBar } from "react-loader-spinner";
-
+import PropTypes from "prop-types";
 const API_BASE_URL = "http://localhost:5000/api/quizzes";
 
 const InputField = ({
@@ -323,3 +323,35 @@ const ManageQuizzesModal = ({
 };
 
 export default ManageQuizzesModal;
+
+ManageQuizzesModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  type: PropTypes.oneOf(["create", "update", "delete"]).isRequired,
+  onQuizCreated: PropTypes.func,
+  onQuizUpdated: PropTypes.func,
+  onQuizDeleted: PropTypes.func,
+};
+TextAreaField.propTypes = {
+  label: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  placeholder: PropTypes.string,
+};
+InputField.propTypes = {
+  label: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  placeholder: PropTypes.string,
+  type: PropTypes.string,
+  showPassword: PropTypes.bool,
+  toggleShowPassword: PropTypes.func,
+};
+Button.propTypes = {
+  onClick: PropTypes.func,
+  type: PropTypes.oneOf(["button", "submit", "reset"]),
+  className: PropTypes.string,
+  children: PropTypes.node.isRequired,
+};

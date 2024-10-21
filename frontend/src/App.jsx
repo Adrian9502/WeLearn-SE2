@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import AdminPages from "./components/Admin/AdminPages";
 import Login from "./components/login/Login";
 import ProtectedRoute from "./ProtectedRoute";
-import UserDashboard from "./components/User/UserDashboard";
+import UserPages from "./components/User/UserPages";
 
 function App() {
   return (
@@ -21,10 +21,10 @@ function App() {
 
       {/* Protecting the user dashboard route for regular users only */}
       <Route
-        path="/user-dashboard"
+        path="/user-dashboard/*"
         element={
           <ProtectedRoute allowedRoles={["user"]}>
-            <UserDashboard />
+            <UserPages />
           </ProtectedRoute>
         }
       />

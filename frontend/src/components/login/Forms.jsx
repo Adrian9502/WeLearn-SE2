@@ -209,7 +209,7 @@ const Forms = ({
         // Redirect to the appropriate dashboard
         setTimeout(() => {
           navigate(
-            response.data.user ? "/user-dashboard" : "/admin-dashboard/"
+            response.data.user ? "/user-dashboard/home" : "/admin-dashboard/"
           );
         }, 2000); // Delay by 2 seconds
       } else {

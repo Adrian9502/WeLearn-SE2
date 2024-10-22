@@ -22,10 +22,7 @@
     opacity: 0;
   }
 }
-@font-face {
-  font-family: Retro Gaming;
-  src: url("../data/font/Retro\ Gaming.ttf");
-}
+
 .slide-out-top {
   -webkit-animation: slide-out-top 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53)
     both;

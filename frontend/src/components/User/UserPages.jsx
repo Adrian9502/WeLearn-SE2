@@ -1,8 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import UserDashboard from "./UserDashboard";
-
-import SortingAlgo from "./SortingAlgo";
+import SortingAlgo from "./Sorting Algo/SortingAlgo";
 import BinaryAlgo from "./BinaryAlgo";
 
 export default function UserPages() {

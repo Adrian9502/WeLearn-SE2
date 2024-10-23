@@ -62,20 +62,10 @@ const sweetAlert = ({ title, text, icon }) => {
 };
 const validateForm = (formData) => {
   const { title, instruction, question, answer, category } = formData;
-  if (
-    !title ||
-    title.length < 5 ||
-    !instruction ||
-    instruction.length < 10 ||
-    !question ||
-    question.length < 10 ||
-    !answer ||
-    answer.length < 5 ||
-    !category
-  ) {
+  if (!title || !instruction || !question || !answer || !category) {
     sweetAlert({
       title: "Error",
-      text: "All fields are required. Title and answer must be at least 5 characters long. Instruction and question must be at least 10 characters long.",
+      text: "All fields are required.",
       icon: "error",
     });
     return false;
@@ -277,8 +267,8 @@ const ManageQuizzesModal = ({
   };
 
   return (
-    <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
-      <div className="rounded-lg bg-violet-700 p-8 w-96">
+    <div className="fixed inset-0 flex justify-center items-center z-30 bg-black bg-opacity-50">
+      <div className="rounded-lg  bg-violet-700 p-8 w-96">
         <h2 className="text-3xl text-center font-bold mb-4">
           {type.charAt(0).toUpperCase() + type.slice(1)} Quiz
         </h2>

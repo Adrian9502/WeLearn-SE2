@@ -1,29 +1,86 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-export default function SortingAlgoSidebar() {
-  const [quizzes, setQuizzes] = useState([]);
-  const [isExpanded, setIsExpanded] = useState(false);
+export default function SortingAlgoSidebar({ onQuizSelect }) {
+  const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [coins, setCoins] = useState(0);
+  const [filteredQuizzes, setFilteredQuizzes] = useState({
+    bubble: [],
+    merge: [],
+    insertion: [],
+    selection: [],
+  });
+  const [isExpanded, setIsExpanded] = useState({
+    bubble: false,
+    merge: false,
+    insertion: false,
+    selection: false,
+  });
+
   useEffect(() => {
     fetchQuizzes();
   }, []);
-  const toggleQuizzes = () => {
-    setIsExpanded(!isExpanded);
+
+  const toggleQuizzes = (type) => {
+    setIsExpanded((prevState) => ({
+      ...prevState,
+      [type]: !prevState[type],
+    }));
   };
+  // FETCH QUIZZES
   const fetchQuizzes = async () => {
     try {
       const response = await fetch("http://localhost:5000/api/quizzes");
       const data = await response.json();
 
-      // Filter quizzes by category
-      const sortingQuizzes = data.filter(
-        (quiz) => quiz.category === "Sorting Algorithm"
+      const bubbleSortQuizzes = data.filter((quiz) =>
+        quiz.title.includes("Bubble Sort")
       );
-      setQuizzes(sortingQuizzes);
-      console.log(quizzes);
+      const mergeSortQuizzes = data.filter((quiz) =>
+        quiz.title.includes("Merge Sort")
+      );
+      const insertionSortQuizzes = data.filter((quiz) =>
+        quiz.title.includes("Insertion Sort")
+      );
+      const selectionSortQuizzes = data.filter((quiz) =>
+        quiz.title.includes("Selection Sort")
+      );
+
+      setFilteredQuizzes({
+        bubble: bubbleSortQuizzes,
+        merge: mergeSortQuizzes,
+        insertion: insertionSortQuizzes,
+        selection: selectionSortQuizzes,
+      });
     } catch (error) {
       console.error("Error fetching quizzes:", error);
     }
+  };
+  // FETCH USER DATA
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    const storedCoins = localStorage.getItem("coins");
+
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+
+    if (storedCoins) {
+      setCoins(Number(storedCoins)); // Convert coins to a number
+    }
+  }, []);
+
+  // HANDLE LOG OUT
+  const handleLogout = () => {
+    // Remove specific user-related items from localStorage
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("username");
+    localStorage.removeItem("coins");
+
+    // Redirect to the login page
+    navigate("/");
   };
 
   return (
@@ -31,20 +88,22 @@ export default function SortingAlgoSidebar() {
       <div className="sidebar-icons">
         <Link to={"/user-dashboard/home"}>
           <div title="Home">
-            <img src="/home.png" alt="" />
+            <img src="/home.png" alt="Home" />
           </div>
         </Link>
         <div title="Reset Score" id="reset">
-          <img src="/bin.png" alt="" />
+          <img src="/bin.png" alt="Reset Score" />
         </div>
         <div title="Hide Sidebar" className="hide-sidebar">
-          <img src="/close.png" alt="" />
+          <img src="/close.png" alt="Hide Sidebar" />
         </div>
       </div>
+
       <div className="sidebar-content">
         <h2 className="sidebar-title text-2xl font-normal mt-5 p-2 text-center">
           SORTING ALGORITHM
         </h2>
+        {/* change this to users progress */}
         <div className="sidebar-info mt-5 px-3 py-4 text-center text-lg">
           Completed <br /> <span className="text-2xl">0 of 20</span> <br />
           exercises
@@ -54,34 +113,106 @@ export default function SortingAlgoSidebar() {
         <div className="flex justify-center items-center flex-col">
           <div className="sidebar-user p-3 text-center w-fit">
             <div>
-              <img src="/user.png" alt="" />
+              <img src="/user.png" alt="User" />
             </div>
-            <span className="text-lg">user123</span>
-            <button className="log-out-btn p-2">Log out</button>
+            <span className="text-lg">{username}</span>
+            <button onClick={handleLogout} className="log-out-btn p-2">
+              Log out
+            </button>
           </div>
           <div className="coins">
             <div>
-              <img src="/coin.gif" alt="" />
+              <img src="/coin.gif" alt="Coins" />
             </div>
-            <span className="coins-display">Coins: 600</span>
+            <span className="coins-display">Coins: {coins}</span>
           </div>
         </div>
 
-        {/* Display filtered quizzes */}
+        {/* Sorting Algorithm Sections */}
         <div className="exercises-container">
-          <div className=" mt-6 flex flex-col items-center justify-center">
+          {/* Bubble Sort */}
+          <div className="mt-6 flex flex-col items-center justify-center">
             <div
-              className="exercises w-full text-xl cursor-pointer transition-colors bubble  text-white"
-              onClick={toggleQuizzes}
+              className="exercises w-full text-xl cursor-pointer transition-colors bubble text-white"
+              onClick={() => toggleQuizzes("bubble")}
             >
               Bubble Sort
             </div>
-            {/* Conditionally display the quizzes if expanded */}
-            {isExpanded && (
+            {isExpanded.bubble && (
               <div className="flex flex-col gap-5 mt-4">
-                {quizzes.map((quiz) => (
+                {filteredQuizzes.bubble?.map((quiz) => (
                   <div
                     key={quiz._id}
+                    onClick={() => onQuizSelect(quiz)}
+                    className="flex bg-sky-600 hover:bg-sky-700 transition-colors cursor-pointer exercises justify-between items-center p-2"
+                  >
+                    <span className="quiz-title">{quiz.title}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Merge Sort */}
+          <div className="mt-6 flex flex-col items-center justify-center">
+            <div
+              className="exercises w-full text-xl cursor-pointer transition-colors merge text-white"
+              onClick={() => toggleQuizzes("merge")}
+            >
+              Merge Sort
+            </div>
+            {isExpanded.merge && (
+              <div className="flex flex-col gap-5 mt-4">
+                {filteredQuizzes.merge?.map((quiz) => (
+                  <div
+                    key={quiz._id}
+                    onClick={() => onQuizSelect(quiz)}
+                    className="flex bg-sky-600 hover:bg-sky-700 transition-colors cursor-pointer exercises justify-between items-center p-2"
+                  >
+                    <span className="quiz-title">{quiz.title}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Insertion Sort */}
+          <div className="mt-6 flex flex-col items-center justify-center">
+            <div
+              className="exercises w-full text-xl cursor-pointer transition-colors insertion text-white"
+              onClick={() => toggleQuizzes("insertion")}
+            >
+              Insertion Sort
+            </div>
+            {isExpanded.insertion && (
+              <div className="flex flex-col gap-5 mt-4">
+                {filteredQuizzes.insertion?.map((quiz) => (
+                  <div
+                    key={quiz._id}
+                    onClick={() => onQuizSelect(quiz)}
+                    className="flex bg-sky-600 hover:bg-sky-700 transition-colors cursor-pointer exercises justify-between items-center p-2"
+                  >
+                    <span className="quiz-title">{quiz.title}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Selection Sort */}
+          <div className="mt-6 flex flex-col items-center justify-center">
+            <div
+              className="exercises w-full text-xl cursor-pointer transition-colors selection text-white"
+              onClick={() => toggleQuizzes("selection")}
+            >
+              Selection Sort
+            </div>
+            {isExpanded.selection && (
+              <div className="flex flex-col gap-5 mt-4">
+                {filteredQuizzes.selection?.map((quiz) => (
+                  <div
+                    key={quiz._id}
+                    onClick={() => onQuizSelect(quiz)}
                     className="flex bg-sky-600 hover:bg-sky-700 transition-colors cursor-pointer exercises justify-between items-center p-2"
                   >
                     <span className="quiz-title">{quiz.title}</span>

@@ -68,7 +68,7 @@ const Button = ({ label, action }) => (
 const TableRow = ({ row, columns }) => (
   <tr>
     {columns.map((column) => (
-      <td key={column} className="px-4 py-2 border break-words">
+      <td key={column} className="px-4 z-10 py-2 border break-words">
         {column === "ID" ? (
           <CopyableID value={row[column]} />
         ) : column === "Questions" ? (
@@ -119,13 +119,13 @@ const CopyableID = ({ value }) => {
 // EVERY CLICK ON COLUMN IT SORT ASC AND DESC
 const Table = ({ columns, rows, onSort, sortConfig }) => {
   return (
-    <table className="min-w-full border bg-slate-950">
+    <table className="min-w-full max-w-full overflow-auto border bg-slate-950">
       <thead>
         <tr>
           {columns.map((column, index) => (
             <th
               key={index}
-              className="px-4 border bg-violet-800 py-2 cursor-pointer"
+              className="px-4 sticky top-0 left-0 right-0 border bg-violet-800 py-2 z-20 cursor-pointer"
               onClick={() => onSort(column)}
             >
               {column}
@@ -167,7 +167,7 @@ const QuizDashboardManager = ({
   <div
     data-testid="quiz-dashboard-manager"
     style={{ fontFamily: "Lexend" }}
-    className="bg-slate-200 p-10 flex flex-col gap-20 min-h-screen"
+    className="bg-slate-200 p-10 flex flex-col gap-20 h-screen"
   >
     <div className="flex items-center justify-between">
       <span className="text-4xl w-fit p-4 border-b-2 text-violet-700 border-violet-700 font-bold">

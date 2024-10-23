@@ -78,8 +78,6 @@
 }
 .instructions {
   color: yellow;
-  font-family: monospace, Helvetica, sans-serif;
-
   font-size: 26px;
   line-height: 30px;
   height: 100%;

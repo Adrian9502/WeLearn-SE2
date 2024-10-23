@@ -125,10 +125,14 @@ a {
   color: yellow;
   font-family: inherit;
   background-color: rgb(134, 3, 3);
+  transition: all 0.15s;
   border-bottom: 3px inset rgba(0, 0, 0, 0.5);
   border-left: 3px inset rgba(0, 0, 0, 0.5);
   border-right: 3px inset rgba(255, 255, 255, 0.5);
   border-top: 3px inset rgba(255, 255, 255, 0.5);
+}
+.log-out-btn:hover {
+  background-color: rgb(187, 5, 5);
 }
 .sidebar-user span {
   color: yellow;

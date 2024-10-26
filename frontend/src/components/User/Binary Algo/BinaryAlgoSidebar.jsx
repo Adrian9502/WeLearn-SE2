@@ -7,16 +7,14 @@ export default function BinaryAlgoSidebar({ onQuizSelect }) {
   const [coins, setCoins] = useState(0);
   const [completedQuizzes, setCompletedQuizzes] = useState([]);
   const [filteredQuizzes, setFilteredQuizzes] = useState({
-    bubble: [],
-    merge: [],
-    insertion: [],
-    selection: [],
+    addition: [],
+    subtraction: [],
+    alphabet: [],
   });
   const [isExpanded, setIsExpanded] = useState({
-    bubble: false,
-    merge: false,
-    insertion: false,
-    selection: false,
+    addition: false,
+    subtraction: false,
+    alphabet: false,
   });
 
   useEffect(() => {
@@ -41,24 +39,20 @@ export default function BinaryAlgoSidebar({ onQuizSelect }) {
       const response = await fetch("http://localhost:5000/api/quizzes");
       const data = await response.json();
 
-      const bubbleSortQuizzes = data.filter((quiz) =>
-        quiz.title.includes("Bubble Sort")
+      const additionQuizzes = data.filter((quiz) =>
+        quiz.title.includes("Addition")
       );
-      const mergeSortQuizzes = data.filter((quiz) =>
-        quiz.title.includes("Merge Sort")
+      const subtractionQuizzes = data.filter((quiz) =>
+        quiz.title.includes("Subtraction")
       );
-      const insertionSortQuizzes = data.filter((quiz) =>
-        quiz.title.includes("Insertion Sort")
-      );
-      const selectionSortQuizzes = data.filter((quiz) =>
-        quiz.title.includes("Selection Sort")
+      const alphabetQuizzes = data.filter((quiz) =>
+        quiz.title.includes("Alphabet")
       );
 
       setFilteredQuizzes({
-        bubble: bubbleSortQuizzes,
-        merge: mergeSortQuizzes,
-        insertion: insertionSortQuizzes,
-        selection: selectionSortQuizzes,
+        addition: additionQuizzes,
+        subtraction: subtractionQuizzes,
+        alphabet: alphabetQuizzes,
       });
     } catch (error) {
       console.error("Error fetching quizzes:", error);
@@ -91,7 +85,6 @@ export default function BinaryAlgoSidebar({ onQuizSelect }) {
   const totalQuizzes = Object.values(filteredQuizzes).flat().length;
   const completedCount = completedQuizzes.length;
 
-  // Rest of your existing code...
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
     const storedCoins = localStorage.getItem("coins");
@@ -156,7 +149,7 @@ export default function BinaryAlgoSidebar({ onQuizSelect }) {
           Completed <br />
           <span className="text-2xl">
             {completedCount} of {totalQuizzes}
-          </span>{" "}
+          </span>
           <br />
           exercises
         </div>
@@ -180,29 +173,29 @@ export default function BinaryAlgoSidebar({ onQuizSelect }) {
         </div>
 
         <div className="exercises-container">
-          {/* Bubble Sort */}
+          {/* Addition */}
           <div className="mt-6 flex flex-col items-center justify-center">
             <div
               className="exercises w-full text-xl cursor-pointer transition-colors bubble text-white"
-              onClick={() => toggleQuizzes("bubble")}
+              onClick={() => toggleQuizzes("addition")}
             >
-              Bubble Sort
+              Addition
             </div>
-            {isExpanded.bubble && (
+            {isExpanded.addition && (
               <div className="flex flex-col gap-5 mt-4">
-                {filteredQuizzes.bubble?.map((quiz) => (
+                {filteredQuizzes.addition?.map((add) => (
                   <div
-                    key={quiz._id}
-                    onClick={() => handleQuizSelect(quiz)}
+                    key={add._id}
+                    onClick={() => handleQuizSelect(add)}
                     className={`flex transition-colors cursor-pointer exercises justify-between items-center p-2
                       ${
-                        isQuizCompleted(quiz._id)
+                        isQuizCompleted(add._id)
                           ? "bg-green-600 cursor-not-allowed"
                           : "bg-sky-600 hover:bg-sky-700"
                       }`}
                   >
-                    <span className="quiz-title">{quiz.title}</span>
-                    {isQuizCompleted(quiz._id) && (
+                    <span className="quiz-title">{add.title}</span>
+                    {isQuizCompleted(add._id) && (
                       <span className="text-white ml-2">✓</span>
                     )}
                   </div>
@@ -211,29 +204,29 @@ export default function BinaryAlgoSidebar({ onQuizSelect }) {
             )}
           </div>
 
-          {/* Merge Sort */}
+          {/* Subtraction */}
           <div className="mt-6 flex flex-col items-center justify-center">
             <div
               className="exercises w-full text-xl cursor-pointer transition-colors merge text-white"
-              onClick={() => toggleQuizzes("merge")}
+              onClick={() => toggleQuizzes("subtraction")}
             >
-              Merge Sort
+              Subtraction
             </div>
-            {isExpanded.merge && (
+            {isExpanded.subtraction && (
               <div className="flex flex-col gap-5 mt-4">
-                {filteredQuizzes.merge?.map((quiz) => (
+                {filteredQuizzes.subtraction?.map((subtractQuiz) => (
                   <div
-                    key={quiz._id}
-                    onClick={() => handleQuizSelect(quiz)}
+                    key={subtractQuiz._id}
+                    onClick={() => handleQuizSelect(subtractQuiz)}
                     className={`flex transition-colors cursor-pointer exercises justify-between items-center p-2
                       ${
-                        isQuizCompleted(quiz._id)
+                        isQuizCompleted(subtractQuiz._id)
                           ? "bg-green-600 cursor-not-allowed"
                           : "bg-sky-600 hover:bg-sky-700"
                       }`}
                   >
-                    <span className="quiz-title">{quiz.title}</span>
-                    {isQuizCompleted(quiz._id) && (
+                    <span className="quiz-title">{subtractQuiz.title}</span>
+                    {isQuizCompleted(subtractQuiz._id) && (
                       <span className="text-white ml-2">✓</span>
                     )}
                   </div>
@@ -242,60 +235,29 @@ export default function BinaryAlgoSidebar({ onQuizSelect }) {
             )}
           </div>
 
-          {/* Insertion Sort */}
+          {/* Alphabet */}
           <div className="mt-6 flex flex-col items-center justify-center">
             <div
               className="exercises w-full text-xl cursor-pointer transition-colors insertion text-white"
-              onClick={() => toggleQuizzes("insertion")}
+              onClick={() => toggleQuizzes("alphabet")}
             >
-              Insertion Sort
+              Alphabet
             </div>
-            {isExpanded.insertion && (
+            {isExpanded.alphabet && (
               <div className="flex flex-col gap-5 mt-4">
-                {filteredQuizzes.insertion?.map((quiz) => (
+                {filteredQuizzes.alphabet?.map((alphabetQuiz) => (
                   <div
-                    key={quiz._id}
-                    onClick={() => handleQuizSelect(quiz)}
+                    key={alphabetQuiz._id}
+                    onClick={() => handleQuizSelect(alphabetQuiz)}
                     className={`flex transition-colors cursor-pointer exercises justify-between items-center p-2
                       ${
-                        isQuizCompleted(quiz._id)
+                        isQuizCompleted(alphabetQuiz._id)
                           ? "bg-green-600 cursor-not-allowed"
                           : "bg-sky-600 hover:bg-sky-700"
                       }`}
                   >
-                    <span className="quiz-title">{quiz.title}</span>
-                    {isQuizCompleted(quiz._id) && (
-                      <span className="text-white ml-2">✓</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Selection Sort */}
-          <div className="mt-6 flex flex-col items-center justify-center">
-            <div
-              className="exercises w-full text-xl cursor-pointer transition-colors selection text-white"
-              onClick={() => toggleQuizzes("selection")}
-            >
-              Selection Sort
-            </div>
-            {isExpanded.selection && (
-              <div className="flex flex-col gap-5 mt-4">
-                {filteredQuizzes.selection?.map((quiz) => (
-                  <div
-                    key={quiz._id}
-                    onClick={() => handleQuizSelect(quiz)}
-                    className={`flex transition-colors cursor-pointer exercises justify-between items-center p-2
-                      ${
-                        isQuizCompleted(quiz._id)
-                          ? "bg-green-600 cursor-not-allowed"
-                          : "bg-sky-600 hover:bg-sky-700"
-                      }`}
-                  >
-                    <span className="quiz-title">{quiz.title}</span>
-                    {isQuizCompleted(quiz._id) && (
+                    <span className="quiz-title">{alphabetQuiz.title}</span>
+                    {isQuizCompleted(alphabetQuiz._id) && (
                       <span className="text-white ml-2">✓</span>
                     )}
                   </div>

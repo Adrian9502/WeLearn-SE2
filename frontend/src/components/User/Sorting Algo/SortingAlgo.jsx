@@ -79,7 +79,7 @@ export default function SortingAlgo() {
       }
     });
   };
-
+  // TODO: BINARY ALGO
   const handleSubmitAnswer = () => {
     Swal.fire({
       title: "Submit Answer?",

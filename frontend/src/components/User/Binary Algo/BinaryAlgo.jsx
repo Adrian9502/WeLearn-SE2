@@ -212,38 +212,35 @@ export default function BinaryAlgo() {
             <>
               <h1 className="exercise-title">{selectedQuiz.title}</h1>
               <div className="exercise-instruction jetbrains">
-                <p>
-                  <span className="font-bold">Review the Code:</span> Read
-                  through the given code snippets carefully.
-                </p>
-                <p>
-                  <span className="font-bold">Identify the Placeholders:</span>
-                  Look for the blanks represented by placeholders (e.g., _____).
-                </p>
-                <p>
-                  <span className="font-bold">Answering:</span> If there are two
-                  or more blanks, separate the answers with a comma
-                  (&apos;,&apos;).
-                </p>
-                <p>
-                  <span className="font-bold">Click Start:</span> To start the
-                  game, click on &quot;Start&quot; and the timer will begin.
-                  Good luck!
-                </p>
+                <div className="flex justify-between gap-5 text-md">
+                  <ul>
+                    Binary Addition
+                    <li>0 + 0 = 0 | 1 + 0 = 1</li>
+                    <li>0 + 1 = 1 | 1 + 1 = 10 (write 0, carry 1)</li>
+                  </ul>
+                  <ul>
+                    Binary Subtraction
+                    <li>0 - 0 = 0 | 1 - 0 = 1</li>
+                    <li>
+                      1 - 1 = 0 | 0 - 1 = 1 (borrow from left, turning 10 - 1 =
+                      1)
+                    </li>
+                  </ul>
+                </div>
               </div>
 
               <div className="exercise-area relative flex justify-around gap-5">
-                <div>
+                <div className="w-1/2">
                   <div className="text-slate-200 jetbrains mb-5">
                     <div className="font-bold text-lg mb-2">Instructions:</div>
-                    <div className="font-semibold">
+                    <div className="font-semibold text-lg">
                       {selectedQuiz.instruction}
                     </div>
                   </div>
-                  <div className="p-3 min-w-1/2 relative border-4 bg-neutral-900">
+                  <div className="p-3 min-w-1/2 relative border-2 bg-neutral-900">
                     {/* Conditionally add/remove blur class based on isBlurred */}
                     <div className={isBlurred ? "blur" : ""} />
-                    <pre className="jetbrains text-nowrap text-xl">
+                    <pre className="jetbrains text-wrap text-2xl">
                       {selectedQuiz.question}
                     </pre>
                   </div>

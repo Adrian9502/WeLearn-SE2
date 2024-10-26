@@ -57,8 +57,9 @@ export default function SortingAlgoSidebar({ onQuizSelect }) {
       console.error("Error fetching quizzes:", error);
     }
   };
-  // FETCH USER DATA
+  // FETCH USER DATA AND UPDATED COINS
   useEffect(() => {
+    // Initial fetch of stored values
     const storedUsername = localStorage.getItem("username");
     const storedCoins = localStorage.getItem("coins");
 
@@ -69,7 +70,29 @@ export default function SortingAlgoSidebar({ onQuizSelect }) {
     if (storedCoins) {
       setCoins(Number(storedCoins)); // Convert coins to a number
     }
-  }, []);
+
+    const handleStorageChange = () => {
+      const newCoins = parseInt(localStorage.getItem("coins")) || 0;
+      setCoins(newCoins);
+    };
+
+    // Listen for changes in localStorage across tabs
+    window.addEventListener("storage", handleStorageChange);
+
+    // Watch for changes in localStorage in the same tab
+    const interval = setInterval(() => {
+      const currentCoins = parseInt(localStorage.getItem("coins")) || 0;
+      if (currentCoins !== coins) {
+        setCoins(currentCoins);
+      }
+    }, 100); // Adjust interval as needed for real-time updates
+
+    // Clean up event listener and interval on unmount
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [coins]);
 
   // HANDLE LOG OUT
   const handleLogout = () => {

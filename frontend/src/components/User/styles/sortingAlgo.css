@@ -71,6 +71,13 @@
   -moz-box-shadow: 10px -12px 5px 0px rgba(0, 0, 0, 0.75);
   box-shadow: 10px -12px 5px 0px rgba(0, 0, 0, 0.75);
 }
+.answer-container {
+  background-color: #140666;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%236200ff' fill-opacity='0.66' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
+  -webkit-box-shadow: 10px -12px 5px 0px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: 10px -12px 5px 0px rgba(0, 0, 0, 0.75);
+  box-shadow: 10px -12px 5px 0px rgba(0, 0, 0, 0.75);
+}
 .instructions {
   color: yellow;
   font-size: 26px;
@@ -81,7 +88,17 @@
   flex-direction: column;
   justify-content: start;
 }
-
+/* BLUR */
+.blur {
+  background: rgba(255, 255, 255, 0);
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  backdrop-filter: blur(0.1px);
+  -webkit-backdrop-filter: blur(0.1px);
+}
 pre {
   color: rgb(0, 255, 221);
   line-height: 40px;
@@ -173,16 +190,53 @@ pre {
   background: #881400;
 }
 .submit-answer-button {
+  border-bottom: 6px inset rgba(0, 0, 0, 0.5);
+  border-left: 6px inset rgba(0, 0, 0, 0.5);
+  border-right: 6px inset rgba(255, 255, 255, 0.5);
+  border-top: 6px inset rgba(255, 255, 255, 0.5);
+  box-sizing: border-box;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 300;
+  min-width: 190px;
+  padding: 7px;
+  text-transform: uppercase;
   background-color: green;
 }
-.submit-answer-button:focus,
+.start-button {
+  border-bottom: 5px inset rgba(0, 0, 0, 0.5);
+  border-left: 5px inset rgba(0, 0, 0, 0.5);
+  border-right: 5px inset rgba(255, 255, 255, 0.5);
+  border-top: 5px inset rgba(255, 255, 255, 0.5);
+  box-sizing: border-box;
+  color: white;
+  font-size: 15px;
+  font-weight: 300;
+  min-width: 110px;
+  padding: 7px;
+  text-transform: uppercase;
+  transition: all;
+  background: rgb(1, 165, 1);
+}
+.start-button:hover {
+  background: rgb(2, 136, 2);
+}
+.timer {
+  border-bottom: 6px inset rgba(0, 0, 0, 0.5);
+  border-left: 6px inset rgba(0, 0, 0, 0.5);
+  border-right: 6px inset rgba(255, 255, 255, 0.5);
+  border-top: 6px inset rgba(255, 255, 255, 0.5);
+}
 .submit-answer-button:hover {
   background: rgb(1, 165, 1);
 }
 .show-btn {
   background: #881400;
 }
-.show-btn:focus,
+
 .show-btn:hover {
   background: #a81000;
 }
@@ -208,7 +262,6 @@ pre {
   border-right: 6px inset rgba(255, 255, 255, 0.5);
   border-top: 6px inset rgba(255, 255, 255, 0.5);
   box-sizing: border-box;
-  box-shadow: 5px -9px 5px 0px rgba(0, 0, 0, 0.75);
 }
 .exercises.answered-correctly {
   background-color: #90ee90;

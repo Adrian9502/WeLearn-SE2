@@ -1,27 +1,79 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SortingAlgoSidebar from "./SortingAlgoSidebar";
 import Swal from "sweetalert2";
+
 export default function SortingAlgo() {
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [userAnswer, setUserAnswer] = useState("");
   const [coins, setCoins] = useState(
     parseInt(localStorage.getItem("coins")) || 0
   );
-
+  const [time, setTime] = useState(0);
+  const [isActive, setIsActive] = useState(false);
+  const [isBlurred, setIsBlurred] = useState(true);
   const handleQuizSelect = (quiz) => {
     setSelectedQuiz(quiz);
     setUserAnswer("");
-    console.log(selectedQuiz);
+    setIsBlurred(true);
+    setIsActive(false);
+    setTime(0);
   };
 
   const handleShowAnswer = () => {
-    if (coins >= 300) {
-      setUserAnswer(selectedQuiz.answer);
-      setCoins(coins - 300);
-      localStorage.setItem("coins", (coins - 300).toString());
-    } else {
-      alert("Not enough coins!");
-    }
+    Swal.fire({
+      title: "Show Answer?",
+      width: 500,
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "YES",
+      cancelButtonText: "NO",
+      padding: "1em",
+      color: "#c3e602",
+      background:
+        "#fff url(https://cdn.vectorstock.com/i/1000v/38/53/pixel-art-style-purple-gradient-background-vector-8473853.jpg",
+      customClass: {
+        popup: "swal-font",
+        confirmButton: "btn-swal primary",
+        cancelButton: "btn-swal show-btn",
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        if (coins >= 300) {
+          setUserAnswer(selectedQuiz.answer);
+          const updatedCoins = coins - 300;
+          setCoins(updatedCoins);
+          localStorage.setItem("coins", updatedCoins.toString());
+          Swal.fire({
+            title: "Success!",
+            text: `New Coins: ${updatedCoins}`,
+            width: 500,
+            padding: "1em",
+            color: "#f00c45",
+            background:
+              "#fff url(https://i.pinimg.com/736x/82/cf/92/82cf92145d8c60f274c05401094ea998.jpg)",
+            customClass: {
+              popup: "swal-font",
+              confirmButton: "btn-swal secondary",
+            },
+          });
+        } else {
+          Swal.fire({
+            title: "Not enough coins!",
+            text: `You need at least 300 coins to show answer. Coins: ${coins}`,
+            width: 500,
+            padding: "1em",
+            color: "#f20c41",
+            background:
+              "#fff url(https://i.pinimg.com/736x/82/cf/92/82cf92145d8c60f274c05401094ea998.jpg)",
+            customClass: {
+              popup: "swal-font",
+              confirmButton: "btn-swal secondary",
+            },
+          });
+        }
+      }
+    });
   };
 
   const handleSubmitAnswer = () => {
@@ -45,9 +97,13 @@ export default function SortingAlgo() {
     }).then((result) => {
       // Only proceed if the user confirms the submission
       if (result.isConfirmed) {
-        if (
-          userAnswer.trim().toLowerCase() === selectedQuiz.answer.toLowerCase()
-        ) {
+        const cleanUserAnswer = userAnswer.trim().toLowerCase();
+        const cleanCorrectAnswer = selectedQuiz.answer.trim().toLowerCase();
+
+        console.log("User answer: ", cleanUserAnswer);
+        console.log("Quiz answer: ", cleanCorrectAnswer);
+
+        if (cleanUserAnswer === cleanCorrectAnswer) {
           Swal.fire({
             title: "Correct!",
             text: "You earned 100 coins!",
@@ -97,6 +153,29 @@ export default function SortingAlgo() {
     });
   };
 
+  const handleStart = () => {
+    setIsActive(true);
+    setIsBlurred(false); // Remove blur when the timer starts
+    setTime(0); // Reset timer to zero
+  };
+
+  useEffect(() => {
+    let interval;
+    if (isActive) {
+      interval = setInterval(() => {
+        setTime((prevTime) => prevTime + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval); // Clear interval on unmount
+  }, [isActive]);
+
+  const formatTime = () => {
+    const minutes = Math.floor(time / 60)
+      .toString()
+      .padStart(2, "0");
+    const seconds = (time % 60).toString().padStart(2, "0");
+    return `${minutes}:${seconds}`;
+  };
   return (
     <main
       style={{ fontFamily: "Retro Gaming, Arial, Helvetica, sans-serif" }}
@@ -125,24 +204,33 @@ export default function SortingAlgo() {
                   through the given code snippets carefully.
                 </p>
                 <p>
-                  <span className="font-bold">Identify the Placeholders:</span>{" "}
+                  <span className="font-bold">Identify the Placeholders:</span>
                   Look for the blanks represented by placeholders (e.g., _____).
                 </p>
                 <p>
-                  <span className="font-bold">Relax:</span> Take time to analyze
-                  the provided code below.
+                  <span className="font-bold">Answering:</span> If there are two
+                  or more blanks, separate the answers with a comma
+                  (&apos;,&apos;).
+                </p>
+
+                <p>
+                  <span className="font-bold">Click Start:</span> To start the
+                  game, click on &quot;Start&quot; and the timer will begin.
+                  Good luck!
                 </p>
               </div>
 
-              <div className="exercise-area flex gap-5">
-                <div className="min-w-1/2">
-                  <div className="text-slate-200 jetbrains  mb-5">
+              <div className="exercise-area flex justify-around gap-5">
+                <div>
+                  <div className="text-slate-200 jetbrains mb-5">
                     <div className="font-bold text-lg mb-2">Instructions:</div>
                     <div className="font-semibold">
                       {selectedQuiz.instruction}
                     </div>
                   </div>
-                  <div className="p-3 border-4 bg-neutral-900">
+                  <div className="p-3 min-w-1/2 relative border-4 bg-neutral-900">
+                    {/* Conditionally add/remove blur class based on isBlurred */}
+                    <div className={isBlurred ? "blur" : ""} />
                     <pre className="jetbrains text-nowrap text-xl">
                       {selectedQuiz.question}
                     </pre>
@@ -151,16 +239,36 @@ export default function SortingAlgo() {
 
                 <div className="flex flex-col items-center justify-around">
                   {/* input and submit button */}
-                  <div className="flex flex-col">
+                  <div className="flex answer-container p-3 flex-col">
+                    <div className="flex justify-around items-center">
+                      <button
+                        onClick={handleStart}
+                        className="primary start-button"
+                      >
+                        START
+                      </button>
+                      <div className="bg-zinc-950 text-lg text-cyan-400 px-6 py-1 timer">
+                        <span>Time:</span>{" "}
+                        <span className="tracking-widest">{formatTime()}</span>
+                      </div>
+                    </div>
                     <label
                       htmlFor="answer"
-                      className="mb-5 text-xl jetbrains text-cyan-500 font-bold"
+                      className="mb-1 mt-6 text-xl jetbrains text-cyan-400 font-bold"
                     >
                       Answer:
                     </label>
-                    <div className="flex gap-8">
+
+                    <form
+                      className="flex gap-8"
+                      onSubmit={(event) => {
+                        event.preventDefault(); // Prevents form from reloading the page
+                        handleSubmitAnswer();
+                      }}
+                    >
                       <input
                         type="text"
+                        disabled={isBlurred}
                         id="answer"
                         value={userAnswer}
                         onChange={(e) => setUserAnswer(e.target.value)}
@@ -168,17 +276,19 @@ export default function SortingAlgo() {
                         placeholder="Type your answer here..."
                       />
                       <button
-                        className="ex-area-btn primary submit-answer-button"
-                        onClick={handleSubmitAnswer}
+                        type="submit"
+                        disabled={isBlurred}
+                        className="primary submit-answer-button"
                       >
                         Submit Answer &gt;
                       </button>
-                    </div>
+                    </form>
                   </div>
 
                   <button
                     className="ex-area-btn show-btn"
                     onClick={handleShowAnswer}
+                    disabled={isBlurred}
                   >
                     Show Answer (
                     <div className="coin-show">

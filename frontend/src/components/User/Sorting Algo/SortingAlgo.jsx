@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import SortingAlgoSidebar from "./SortingAlgoSidebar";
 import Swal from "sweetalert2";
-
+import TitleAndInstruction from "./TitleAndInstruction";
+import Placeholder from "./Placeholder";
 export default function SortingAlgo() {
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [userAnswer, setUserAnswer] = useState("");
@@ -79,7 +80,6 @@ export default function SortingAlgo() {
       }
     });
   };
-  // TODO: BINARY ALGO
   const handleSubmitAnswer = () => {
     Swal.fire({
       title: "Submit Answer?",
@@ -210,27 +210,8 @@ export default function SortingAlgo() {
         <div className="exercise w-full">
           {selectedQuiz ? (
             <>
-              <h1 className="exercise-title">{selectedQuiz.title}</h1>
-              <div className="exercise-instruction jetbrains">
-                <p>
-                  <span className="font-bold">Review the Code:</span> Read
-                  through the given code snippets carefully.
-                </p>
-                <p>
-                  <span className="font-bold">Identify the Placeholders:</span>
-                  Look for the blanks represented by placeholders (e.g., _____).
-                </p>
-                <p>
-                  <span className="font-bold">Answering:</span> If there are two
-                  or more blanks, separate the answers with a comma
-                  (&apos;,&apos;).
-                </p>
-                <p>
-                  <span className="font-bold">Click Start:</span> To start the
-                  game, click on &quot;Start&quot; and the timer will begin.
-                  Good luck!
-                </p>
-              </div>
+              {/* title and instruction component */}
+              <TitleAndInstruction selectedQuiz={selectedQuiz} />
 
               <div className="exercise-area relative flex justify-around gap-5">
                 <div>
@@ -318,36 +299,7 @@ export default function SortingAlgo() {
             </>
           ) : (
             // Original placeholder content when no quiz is selected
-            <>
-              <h1 className="exercise-title">
-                Choose an Exercise on the left!
-              </h1>
-              <p className="exercise-instruction">Good luck!</p>
-              <div className="exercise-area">
-                <div>
-                  <div className="instructions jetbrains">
-                    Instructions: <br />
-                    1. Choose a Topic: Click on a topic in the left sidebar.{" "}
-                    <br />
-                    2. Select an Exercise: Click on an exercise title to reveal
-                    its questions.
-                    <br />
-                    3. Answer Questions: Fill in the blanks in each question wit
-                    hyour responses.
-                    <br />
-                    4. Submit Your Answers: Click &quot;Submit Answer&quot; at
-                    the bottom after answering all questions.
-                    <br />
-                    <br />
-                    Additional Information: <br />- Correct Answer: You will
-                    earn 100 coins for each correct answer.
-                    <br />- Show Answer: If you cannot answer a question, you
-                    can reveal the answer using <br />
-                    the &quot;Show Answer&quot; button, which costs 300 coins.
-                  </div>
-                </div>
-              </div>
-            </>
+            <Placeholder />
           )}
         </div>
       </div>

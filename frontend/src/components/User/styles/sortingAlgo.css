@@ -89,6 +89,15 @@
   justify-content: start;
 }
 /* BLUR */
+.quiz-completed {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgb(31, 16, 70);
+  z-index: 999;
+}
 .blur {
   background: rgba(255, 255, 255, 0);
   position: absolute;

@@ -5,6 +5,7 @@ export default function SortingAlgoSidebar({ onQuizSelect }) {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [coins, setCoins] = useState(0);
+  const [completedQuizzes, setCompletedQuizzes] = useState([]);
   const [filteredQuizzes, setFilteredQuizzes] = useState({
     bubble: [],
     merge: [],
@@ -20,6 +21,11 @@ export default function SortingAlgoSidebar({ onQuizSelect }) {
 
   useEffect(() => {
     fetchQuizzes();
+    // Load completed quizzes from localStorage
+    const stored = localStorage.getItem("completedQuizzes");
+    if (stored) {
+      setCompletedQuizzes(JSON.parse(stored));
+    }
   }, []);
 
   const toggleQuizzes = (type) => {
@@ -28,6 +34,7 @@ export default function SortingAlgoSidebar({ onQuizSelect }) {
       [type]: !prevState[type],
     }));
   };
+
   // FETCH QUIZZES
   const fetchQuizzes = async () => {
     try {
@@ -57,9 +64,35 @@ export default function SortingAlgoSidebar({ onQuizSelect }) {
       console.error("Error fetching quizzes:", error);
     }
   };
-  // FETCH USER DATA AND UPDATED COINS
+
+  // Check if a quiz is completed
+  const isQuizCompleted = (quizId) => {
+    return completedQuizzes.includes(quizId);
+  };
+
+  // Mark a quiz as completed
+  const markQuizCompleted = (quizId) => {
+    const updatedCompleted = [...completedQuizzes, quizId];
+    setCompletedQuizzes(updatedCompleted);
+    localStorage.setItem("completedQuizzes", JSON.stringify(updatedCompleted));
+  };
+
+  // Handle quiz selection with completion check
+  const handleQuizSelect = (quiz) => {
+    if (!isQuizCompleted(quiz._id)) {
+      onQuizSelect({
+        ...quiz,
+        onComplete: () => markQuizCompleted(quiz._id),
+      });
+    }
+  };
+
+  // Calculate total completed quizzes
+  const totalQuizzes = Object.values(filteredQuizzes).flat().length;
+  const completedCount = completedQuizzes.length;
+
+  // Rest of your existing code...
   useEffect(() => {
-    // Initial fetch of stored values
     const storedUsername = localStorage.getItem("username");
     const storedCoins = localStorage.getItem("coins");
 
@@ -68,7 +101,7 @@ export default function SortingAlgoSidebar({ onQuizSelect }) {
     }
 
     if (storedCoins) {
-      setCoins(Number(storedCoins)); // Convert coins to a number
+      setCoins(Number(storedCoins));
     }
 
     const handleStorageChange = () => {
@@ -76,33 +109,26 @@ export default function SortingAlgoSidebar({ onQuizSelect }) {
       setCoins(newCoins);
     };
 
-    // Listen for changes in localStorage across tabs
     window.addEventListener("storage", handleStorageChange);
 
-    // Watch for changes in localStorage in the same tab
     const interval = setInterval(() => {
       const currentCoins = parseInt(localStorage.getItem("coins")) || 0;
       if (currentCoins !== coins) {
         setCoins(currentCoins);
       }
-    }, 100); // Adjust interval as needed for real-time updates
+    }, 100);
 
-    // Clean up event listener and interval on unmount
     return () => {
       window.removeEventListener("storage", handleStorageChange);
       clearInterval(interval);
     };
   }, [coins]);
 
-  // HANDLE LOG OUT
   const handleLogout = () => {
-    // Remove specific user-related items from localStorage
     localStorage.removeItem("authToken");
     localStorage.removeItem("userRole");
     localStorage.removeItem("username");
     localStorage.removeItem("coins");
-
-    // Redirect to the login page
     navigate("/");
   };
 
@@ -126,13 +152,15 @@ export default function SortingAlgoSidebar({ onQuizSelect }) {
         <h2 className="sidebar-title text-2xl font-normal mt-5 p-2 text-center">
           SORTING ALGORITHM
         </h2>
-        {/* change this to users progress */}
         <div className="sidebar-info mt-5 px-3 py-4 text-center text-lg">
-          Completed <br /> <span className="text-2xl">0 of 20</span> <br />
+          Completed <br />
+          <span className="text-2xl">
+            {completedCount} of {totalQuizzes}
+          </span>{" "}
+          <br />
           exercises
         </div>
 
-        {/* User container */}
         <div className="flex justify-center items-center flex-col">
           <div className="sidebar-user p-3 text-center w-fit">
             <div>
@@ -151,7 +179,6 @@ export default function SortingAlgoSidebar({ onQuizSelect }) {
           </div>
         </div>
 
-        {/* Sorting Algorithm Sections */}
         <div className="exercises-container">
           {/* Bubble Sort */}
           <div className="mt-6 flex flex-col items-center justify-center">
@@ -166,10 +193,18 @@ export default function SortingAlgoSidebar({ onQuizSelect }) {
                 {filteredQuizzes.bubble?.map((quiz) => (
                   <div
                     key={quiz._id}
-                    onClick={() => onQuizSelect(quiz)}
-                    className="flex bg-sky-600 hover:bg-sky-700 transition-colors cursor-pointer exercises justify-between items-center p-2"
+                    onClick={() => handleQuizSelect(quiz)}
+                    className={`flex transition-colors cursor-pointer exercises justify-between items-center p-2
+                      ${
+                        isQuizCompleted(quiz._id)
+                          ? "bg-green-600 cursor-not-allowed"
+                          : "bg-sky-600 hover:bg-sky-700"
+                      }`}
                   >
                     <span className="quiz-title">{quiz.title}</span>
+                    {isQuizCompleted(quiz._id) && (
+                      <span className="text-white ml-2">✓</span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -189,10 +224,18 @@ export default function SortingAlgoSidebar({ onQuizSelect }) {
                 {filteredQuizzes.merge?.map((quiz) => (
                   <div
                     key={quiz._id}
-                    onClick={() => onQuizSelect(quiz)}
-                    className="flex bg-sky-600 hover:bg-sky-700 transition-colors cursor-pointer exercises justify-between items-center p-2"
+                    onClick={() => handleQuizSelect(quiz)}
+                    className={`flex transition-colors cursor-pointer exercises justify-between items-center p-2
+                      ${
+                        isQuizCompleted(quiz._id)
+                          ? "bg-green-600 cursor-not-allowed"
+                          : "bg-sky-600 hover:bg-sky-700"
+                      }`}
                   >
                     <span className="quiz-title">{quiz.title}</span>
+                    {isQuizCompleted(quiz._id) && (
+                      <span className="text-white ml-2">✓</span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -212,10 +255,18 @@ export default function SortingAlgoSidebar({ onQuizSelect }) {
                 {filteredQuizzes.insertion?.map((quiz) => (
                   <div
                     key={quiz._id}
-                    onClick={() => onQuizSelect(quiz)}
-                    className="flex bg-sky-600 hover:bg-sky-700 transition-colors cursor-pointer exercises justify-between items-center p-2"
+                    onClick={() => handleQuizSelect(quiz)}
+                    className={`flex transition-colors cursor-pointer exercises justify-between items-center p-2
+                      ${
+                        isQuizCompleted(quiz._id)
+                          ? "bg-green-600 cursor-not-allowed"
+                          : "bg-sky-600 hover:bg-sky-700"
+                      }`}
                   >
                     <span className="quiz-title">{quiz.title}</span>
+                    {isQuizCompleted(quiz._id) && (
+                      <span className="text-white ml-2">✓</span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -235,10 +286,18 @@ export default function SortingAlgoSidebar({ onQuizSelect }) {
                 {filteredQuizzes.selection?.map((quiz) => (
                   <div
                     key={quiz._id}
-                    onClick={() => onQuizSelect(quiz)}
-                    className="flex bg-sky-600 hover:bg-sky-700 transition-colors cursor-pointer exercises justify-between items-center p-2"
+                    onClick={() => handleQuizSelect(quiz)}
+                    className={`flex transition-colors cursor-pointer exercises justify-between items-center p-2
+                      ${
+                        isQuizCompleted(quiz._id)
+                          ? "bg-green-600 cursor-not-allowed"
+                          : "bg-sky-600 hover:bg-sky-700"
+                      }`}
                   >
                     <span className="quiz-title">{quiz.title}</span>
+                    {isQuizCompleted(quiz._id) && (
+                      <span className="text-white ml-2">✓</span>
+                    )}
                   </div>
                 ))}
               </div>

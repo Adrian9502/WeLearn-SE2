@@ -11,12 +11,16 @@ export default function SortingAlgo() {
   const [time, setTime] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [isBlurred, setIsBlurred] = useState(true);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [isQuizCompleted, setIsQuizCompleted] = useState(false);
   const handleQuizSelect = (quiz) => {
     setSelectedQuiz(quiz);
     setUserAnswer("");
     setIsBlurred(true);
     setIsActive(false);
     setTime(0);
+    setIsButtonDisabled(false);
+    setIsQuizCompleted(false);
   };
 
   const handleShowAnswer = () => {
@@ -106,7 +110,7 @@ export default function SortingAlgo() {
         if (cleanUserAnswer === cleanCorrectAnswer) {
           Swal.fire({
             title: "Correct!",
-            text: "You earned 100 coins!",
+            text: "You earned 100 coins!. Please choose another question on the sidebar!",
             width: 500,
             padding: "1em",
             color: "#ffea00",
@@ -123,7 +127,15 @@ export default function SortingAlgo() {
               confirmButton: "btn-swal primary",
             },
           });
-
+          if (selectedQuiz.onComplete) {
+            selectedQuiz.onComplete();
+            setIsQuizCompleted(true); // Mark this quiz as completed
+            setIsButtonDisabled(true); // Disable buttons after completion
+            setUserAnswer("");
+            setIsBlurred(true);
+            setTime(0);
+            setIsActive(false);
+          }
           // Update coins in state and localStorage
           const newCoins = coins + 100;
           setCoins(newCoins);
@@ -155,8 +167,9 @@ export default function SortingAlgo() {
 
   const handleStart = () => {
     setIsActive(true);
-    setIsBlurred(false); // Remove blur when the timer starts
-    setTime(0); // Reset timer to zero
+    setIsBlurred(false);
+    setTime(0);
+    setIsButtonDisabled(true);
   };
 
   useEffect(() => {
@@ -166,7 +179,7 @@ export default function SortingAlgo() {
         setTime((prevTime) => prevTime + 1);
       }, 1000);
     }
-    return () => clearInterval(interval); // Clear interval on unmount
+    return () => clearInterval(interval);
   }, [isActive]);
 
   const formatTime = () => {
@@ -212,7 +225,6 @@ export default function SortingAlgo() {
                   or more blanks, separate the answers with a comma
                   (&apos;,&apos;).
                 </p>
-
                 <p>
                   <span className="font-bold">Click Start:</span> To start the
                   game, click on &quot;Start&quot; and the timer will begin.
@@ -220,7 +232,7 @@ export default function SortingAlgo() {
                 </p>
               </div>
 
-              <div className="exercise-area flex justify-around gap-5">
+              <div className="exercise-area relative flex justify-around gap-5">
                 <div>
                   <div className="text-slate-200 jetbrains mb-5">
                     <div className="font-bold text-lg mb-2">Instructions:</div>
@@ -242,8 +254,13 @@ export default function SortingAlgo() {
                   <div className="flex answer-container p-3 flex-col">
                     <div className="flex justify-around items-center">
                       <button
+                        disabled={isButtonDisabled && isQuizCompleted} // Only disable if both conditions are true
                         onClick={handleStart}
-                        className="primary start-button"
+                        className={`primary start-button ${
+                          isButtonDisabled && isQuizCompleted
+                            ? "cursor-not-allowed opacity-50"
+                            : ""
+                        }`}
                       >
                         START
                       </button>
@@ -262,13 +279,13 @@ export default function SortingAlgo() {
                     <form
                       className="flex gap-8"
                       onSubmit={(event) => {
-                        event.preventDefault(); // Prevents form from reloading the page
+                        event.preventDefault();
                         handleSubmitAnswer();
                       }}
                     >
                       <input
                         type="text"
-                        disabled={isBlurred}
+                        disabled={isBlurred || isQuizCompleted} // Disable input when quiz is completed
                         id="answer"
                         value={userAnswer}
                         onChange={(e) => setUserAnswer(e.target.value)}
@@ -277,7 +294,7 @@ export default function SortingAlgo() {
                       />
                       <button
                         type="submit"
-                        disabled={isBlurred}
+                        disabled={isBlurred || isQuizCompleted} // Disable submit when quiz is completed
                         className="primary submit-answer-button"
                       >
                         Submit Answer &gt;
@@ -288,7 +305,7 @@ export default function SortingAlgo() {
                   <button
                     className="ex-area-btn show-btn"
                     onClick={handleShowAnswer}
-                    disabled={isBlurred}
+                    disabled={isBlurred || isQuizCompleted} // Disable show answer when quiz is completed
                   >
                     Show Answer (
                     <div className="coin-show">

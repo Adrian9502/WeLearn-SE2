@@ -3,18 +3,26 @@ import { Link, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 
 // Constants
-const SORTING_TYPES = {
+const QUIZ_TYPES = {
   BUBBLE: "bubble",
   MERGE: "merge",
   INSERTION: "insertion",
   SELECTION: "selection",
+  // Binary Algo
+  ADDITION: "addition",
+  SUBTRACTION: "subtraction",
+  ALPHABET: "alphabet",
 };
 
 const INITIAL_EXPANDED_STATE = {
-  [SORTING_TYPES.BUBBLE]: false,
-  [SORTING_TYPES.MERGE]: false,
-  [SORTING_TYPES.INSERTION]: false,
-  [SORTING_TYPES.SELECTION]: false,
+  [QUIZ_TYPES.BUBBLE]: false,
+  [QUIZ_TYPES.MERGE]: false,
+  [QUIZ_TYPES.INSERTION]: false,
+  [QUIZ_TYPES.SELECTION]: false,
+  // binary algo
+  [QUIZ_TYPES.ADDITION]: false,
+  [QUIZ_TYPES.SUBTRACTION]: false,
+  [QUIZ_TYPES.ALPHABET]: false,
 };
 
 // Custom hooks
@@ -84,30 +92,42 @@ const useQuizzes = () => {
 
 // Components
 const UserInfo = ({ username, coins, onLogout }) => (
-  <div className="flex justify-center items-center flex-col">
-    <div className="sidebar-user p-3 text-center w-fit">
-      <div>
-        <img src="/user.png" alt="User" />
+  <div className="flex my-8 flex-col gap-4">
+    {/* use image, username coins */}
+    <div className="coins">
+      <div className="flex gap-2 items-center flex-col">
+        <h1 className="text-center">USER INFO</h1>
+        <div className="flex sidebar-user gap-3 p-2">
+          <div className="sidebar-user-image">
+            <img src="/user.png" className="pointer-events-none" alt="User" />
+          </div>
+          <span>{username}</span>
+        </div>
+        <div className="flex sidebar-user px-2 py-1 items-center justify-center">
+          <img
+            src="/coin.gif"
+            className="coins-image pointer-events-none"
+            alt="Coins"
+          />
+          <div>
+            <span className="text-sm">Coins:</span>
+            <span>{coins}</span>
+          </div>
+        </div>
       </div>
-      <span className="text-lg">{username}</span>
-      <button onClick={onLogout} className="log-out-btn p-2">
+    </div>
+    <div className="flex justify-around">
+      {/* log out button */}
+      <button onClick={onLogout} className="log-out-btn  p-2">
         Log out
       </button>
-    </div>
-    <div className="coins">
-      <div>
-        <img src="/coin.gif" alt="Coins" />
-      </div>
-      <span className="coins-display">Coins: {coins}</span>
+      <button onClick={onLogout} className="log-out-btn  p-2">
+        Rankings
+      </button>
     </div>
   </div>
 );
-
-UserInfo.propTypes = {
-  username: PropTypes.string.isRequired,
-  coins: PropTypes.number.isRequired,
-  onLogout: PropTypes.func.isRequired,
-};
+// TODO: CONTINUE EDIT .
 
 const SidebarIcons = () => (
   <div className="sidebar-icons">
@@ -140,15 +160,6 @@ const QuizItem = ({ quiz, isCompleted, onClick }) => (
   </div>
 );
 
-QuizItem.propTypes = {
-  quiz: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-  }).isRequired,
-  isCompleted: PropTypes.bool.isRequired,
-  onClick: PropTypes.func.isRequired,
-};
-
 const QuizSection = ({
   title,
   quizzes,
@@ -179,22 +190,8 @@ const QuizSection = ({
   </div>
 );
 
-QuizSection.propTypes = {
-  title: PropTypes.string.isRequired,
-  quizzes: PropTypes.arrayOf(
-    PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-      title: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-  isExpanded: PropTypes.object.isRequired,
-  onToggle: PropTypes.func.isRequired,
-  isQuizCompleted: PropTypes.func.isRequired,
-  onQuizSelect: PropTypes.func.isRequired,
-};
-
 // Main Component
-export default function SortingAlgoSidebar({ onQuizSelect }) {
+export default function Sidebar({ onQuizSelect }) {
   const navigate = useNavigate();
   const [username, setUsername] = useLocalStorage("username", "");
   const [coins, setCoins] = useLocalStorage("coins", 0);
@@ -206,28 +203,58 @@ export default function SortingAlgoSidebar({ onQuizSelect }) {
 
   const quizzes = useQuizzes();
 
-  // Memoized sorting algorithms data
-  const sortingAlgorithms = useMemo(
+  // Memoized quiz titles data
+  const quizzesTitles = useMemo(
     () => [
+      // Sorting Algorithms
       {
-        title: "Bubble Sort",
-        quizzes: quizzes.filter((quiz) => quiz.title.includes("Bubble Sort")),
+        sectionTitle: "Sorting Algorithms",
+        quizzes: [
+          {
+            title: "Bubble Sort",
+            quizzes: quizzes.filter((quiz) =>
+              quiz.title.includes("Bubble Sort")
+            ),
+          },
+          {
+            title: "Merge Sort",
+            quizzes: quizzes.filter((quiz) =>
+              quiz.title.includes("Merge Sort")
+            ),
+          },
+          {
+            title: "Insertion Sort",
+            quizzes: quizzes.filter((quiz) =>
+              quiz.title.includes("Insertion Sort")
+            ),
+          },
+          {
+            title: "Selection Sort",
+            quizzes: quizzes.filter((quiz) =>
+              quiz.title.includes("Selection Sort")
+            ),
+          },
+        ],
       },
+      // Binary Operation
       {
-        title: "Merge Sort",
-        quizzes: quizzes.filter((quiz) => quiz.title.includes("Merge Sort")),
-      },
-      {
-        title: "Insertion Sort",
-        quizzes: quizzes.filter((quiz) =>
-          quiz.title.includes("Insertion Sort")
-        ),
-      },
-      {
-        title: "Selection Sort",
-        quizzes: quizzes.filter((quiz) =>
-          quiz.title.includes("Selection Sort")
-        ),
+        sectionTitle: "Binary Operation",
+        quizzes: [
+          {
+            title: "Addition",
+            quizzes: quizzes.filter((quiz) => quiz.title.includes("Addition")),
+          },
+          {
+            title: "Subtraction",
+            quizzes: quizzes.filter((quiz) =>
+              quiz.title.includes("Subtraction")
+            ),
+          },
+          {
+            title: "Alphabet",
+            quizzes: quizzes.filter((quiz) => quiz.title.includes("Alphabet")),
+          },
+        ],
       },
     ],
     [quizzes]
@@ -235,8 +262,16 @@ export default function SortingAlgoSidebar({ onQuizSelect }) {
 
   const totalQuizzes = useMemo(
     () =>
-      sortingAlgorithms.reduce((total, algo) => total + algo.quizzes.length, 0),
-    [sortingAlgorithms]
+      quizzesTitles.reduce(
+        (total, section) =>
+          total +
+          section.quizzes.reduce(
+            (subTotal, quizGroup) => subTotal + quizGroup.quizzes.length,
+            0
+          ),
+        0
+      ),
+    [quizzesTitles]
   );
 
   // Handlers
@@ -289,15 +324,17 @@ export default function SortingAlgoSidebar({ onQuizSelect }) {
       <SidebarIcons />
 
       <div className="sidebar-content">
-        <h2 className="sidebar-title text-2xl font-normal mt-5 p-2 text-center">
-          SORTING ALGORITHM
+        <h2 className="sidebar-title text-xl font-normal mt-5 p-2 text-center">
+          Sorting Algorithm and <br /> Binary Operation
         </h2>
 
-        <div className="sidebar-info mt-5 px-3 py-4 text-center text-lg">
+        <div className="sidebar-info mt-8 py-1 text-center text-base">
           Completed <br />
-          <span className="text-2xl">
-            {completedQuizzes.length} of {totalQuizzes}
-          </span>{" "}
+          <span className="text-2xl ">
+            <span className="text-yellow-400">{completedQuizzes.length} </span>
+            <span className="text-xl">out of</span>
+            <span className="text-yellow-400"> {totalQuizzes}</span>
+          </span>
           <br />
           exercises
         </div>
@@ -305,23 +342,54 @@ export default function SortingAlgoSidebar({ onQuizSelect }) {
         <UserInfo username={username} coins={coins} onLogout={handleLogout} />
 
         <div className="exercises-container">
-          {sortingAlgorithms.map((algorithm) => (
-            <QuizSection
-              key={algorithm.title}
-              title={algorithm.title}
-              quizzes={algorithm.quizzes}
-              isExpanded={isExpanded}
-              onToggle={toggleQuizzes}
-              isQuizCompleted={isQuizCompleted}
-              onQuizSelect={handleQuizSelect}
-            />
+          {quizzesTitles.map((section) => (
+            <div className="quiz-container p-2 my-6" key={section.sectionTitle}>
+              <h2 className="text-2xl text-center ">{section.sectionTitle}</h2>
+              {section.quizzes.map((quiz) => (
+                <QuizSection
+                  key={quiz.title}
+                  title={quiz.title}
+                  quizzes={quiz.quizzes}
+                  isExpanded={isExpanded}
+                  onToggle={toggleQuizzes}
+                  isQuizCompleted={isQuizCompleted}
+                  onQuizSelect={handleQuizSelect}
+                />
+              ))}
+            </div>
           ))}
         </div>
       </div>
     </aside>
   );
 }
-
-SortingAlgoSidebar.propTypes = {
+// Prop types
+Sidebar.propTypes = {
   onQuizSelect: PropTypes.func.isRequired,
+};
+UserInfo.propTypes = {
+  username: PropTypes.string.isRequired,
+  coins: PropTypes.number.isRequired,
+  onLogout: PropTypes.func.isRequired,
+};
+QuizSection.propTypes = {
+  title: PropTypes.string.isRequired,
+  quizzes: PropTypes.arrayOf(
+    PropTypes.shape({
+      _id: PropTypes.string.isRequired,
+      title: PropTypes.string.isRequired,
+    })
+  ).isRequired,
+  isExpanded: PropTypes.object.isRequired,
+  onToggle: PropTypes.func.isRequired,
+  isQuizCompleted: PropTypes.func.isRequired,
+  onQuizSelect: PropTypes.func.isRequired,
+};
+QuizItem.propTypes = {
+  quiz: PropTypes.shape({
+    _id: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+  }).isRequired,
+  isCompleted: PropTypes.bool.isRequired,
+  onClick: PropTypes.func.isRequired,
 };

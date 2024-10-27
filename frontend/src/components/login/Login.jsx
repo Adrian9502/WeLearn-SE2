@@ -61,8 +61,9 @@ const Login = () => {
           {/* Right Side */}
           <div className="flex w-1/2">
             <div className="text-center right-side-container text-yellow-400 tracking-wider leading-loose flex flex-col justify-around">
-              <h1 className="text-3xl">
-                Mastering Sorting Algorithms and Binary Operations
+              <h1 className="text-xl">
+                AN INTERACTIVE WEB-GAME SIMULATION DESIGNED FOR DCI STUDENTS TO
+                LEARN SORTING ALGORITHMS AND BINARY OPERATIONS
               </h1>
               <p className="text-sm">
                 A Web-Based Game Learning System Enhancing Learning Through

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-
+import { useUser } from "./UserContext";
 // Constants
 const QUIZ_TYPES = {
   BUBBLE: "bubble",
@@ -21,49 +21,6 @@ const INITIAL_EXPANDED_STATE = {
   [QUIZ_TYPES.ADDITION]: false,
   [QUIZ_TYPES.SUBTRACTION]: false,
   [QUIZ_TYPES.ALPHABET]: false,
-};
-
-// Custom hooks
-const useLocalStorage = (key, initialValue) => {
-  const [value, setValue] = useState(() => {
-    try {
-      const storedValue = localStorage.getItem(key);
-      if (storedValue === null) {
-        return initialValue;
-      }
-
-      try {
-        return JSON.parse(storedValue);
-      } catch {
-        return storedValue;
-      }
-    } catch (error) {
-      console.warn(`Error reading localStorage key "${key}":`, error);
-      return initialValue;
-    }
-  });
-
-  const setStoredValue = useCallback(
-    (newValue) => {
-      try {
-        const valueToStore =
-          newValue instanceof Function ? newValue(value) : newValue;
-        setValue(valueToStore);
-
-        const valueToSave =
-          typeof valueToStore === "string"
-            ? valueToStore
-            : JSON.stringify(valueToStore);
-
-        localStorage.setItem(key, valueToSave);
-      } catch (error) {
-        console.warn(`Error saving to localStorage key "${key}":`, error);
-      }
-    },
-    [key, value]
-  );
-
-  return [value, setStoredValue];
 };
 
 const useQuizzes = () => {
@@ -87,41 +44,43 @@ const useQuizzes = () => {
 };
 
 // Components
-const UserInfo = ({ username, coins, onLogout }) => (
-  <div className="flex my-8 flex-col gap-4">
-    <div className="coins">
-      <div className="flex gap-2 items-center flex-col">
-        <h1 className="text-center">USER INFO</h1>
-        <div className="flex sidebar-user gap-3 p-2">
-          <div className="sidebar-user-image">
-            <img src="/user.png" className="pointer-events-none" alt="User" />
+const UserInfo = ({ onLogout }) => {
+  const { user } = useUser();
+
+  return (
+    <div className="flex my-8 flex-col gap-4">
+      <div className="coins">
+        <div className="flex gap-2 items-center flex-col">
+          <h1 className="text-center">USER INFO</h1>
+          <div className="flex sidebar-user gap-3 p-2">
+            <div className="sidebar-user-image">
+              <img src="/user.png" className="pointer-events-none" alt="User" />
+            </div>
+            <span>{user?.username}</span>
           </div>
-          <span>{username}</span>
-        </div>
-        <div className="flex sidebar-user px-2 py-1 items-center justify-center">
-          <img
-            src="/coin.gif"
-            className="coins-image pointer-events-none"
-            alt="Coins"
-          />
-          <div>
-            <span className="text-sm">Coins:</span>
-            <span>{coins}</span>
+          <div className="flex sidebar-user px-2 py-1 items-center justify-center">
+            <img
+              src="/coin.gif"
+              className="coins-image pointer-events-none"
+              alt="Coins"
+            />
+            <div>
+              <span>{user?.coins}</span>
+            </div>
           </div>
         </div>
       </div>
+      <div className="flex justify-around">
+        <button onClick={onLogout} className="log-out-btn p-2">
+          Log out
+        </button>
+        <button className="log-out-btn p-2">Rankings</button>
+      </div>
     </div>
-    <div className="flex justify-around">
-      <button onClick={onLogout} className="log-out-btn p-2">
-        Log out
-      </button>
-      <button onClick={onLogout} className="log-out-btn p-2">
-        Rankings
-      </button>
-    </div>
-  </div>
-);
+  );
+};
 
+// components
 const SidebarIcons = () => (
   <div className="sidebar-icons">
     <Link to="/user-dashboard/home">
@@ -178,8 +137,7 @@ const QuizSection = ({
 // Main Component
 export default function Sidebar({ onQuizSelect }) {
   const navigate = useNavigate();
-  const [username, setUsername] = useLocalStorage("username", "");
-  const [coins, setCoins] = useLocalStorage("coins", 0);
+
   const [isExpanded, setIsExpanded] = useState(INITIAL_EXPANDED_STATE);
 
   const quizzes = useQuizzes();
@@ -276,17 +234,6 @@ export default function Sidebar({ onQuizSelect }) {
     navigate("/");
   }, [navigate]);
 
-  // Storage event listener for coins
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const newCoins = parseInt(localStorage.getItem("coins")) || 0;
-      setCoins(newCoins);
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, [setCoins]);
-
   return (
     <aside className="sidebar min-h-screen overflow-auto">
       <SidebarIcons />
@@ -307,7 +254,7 @@ export default function Sidebar({ onQuizSelect }) {
           exercises
         </div>
 
-        <UserInfo username={username} coins={coins} onLogout={handleLogout} />
+        <UserInfo onLogout={handleLogout} />
 
         <div className="exercises-container">
           {quizzesTitles.map((section) => (
@@ -334,12 +281,6 @@ export default function Sidebar({ onQuizSelect }) {
 // Prop types
 Sidebar.propTypes = {
   onQuizSelect: PropTypes.func.isRequired,
-};
-
-UserInfo.propTypes = {
-  username: PropTypes.string.isRequired,
-  coins: PropTypes.number.isRequired,
-  onLogout: PropTypes.func.isRequired,
 };
 
 QuizSection.propTypes = {

@@ -2,6 +2,7 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useUser } from "../User/UserContext";
 import { Blocks } from "react-loader-spinner";
 import React from "react";
 const Forms = ({
@@ -13,6 +14,9 @@ const Forms = ({
   setFormError,
   setIsPopupOpen,
 }) => {
+  // context
+  const { saveUser } = useUser();
+  //
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [registrationMessage, setRegistrationMessage] = useState("");
@@ -201,13 +205,18 @@ const Forms = ({
         );
 
         // Save both the auth token and user role to localStorage upon successful login
+        // this local storage are key to access different routes
         localStorage.setItem("authToken", response.data.token);
         localStorage.setItem("userRole", isAdmin ? "admin" : "user"); // Save role
 
-        // Save additional user data to localStorage if it exists
         if (response.data.user) {
-          localStorage.setItem("username", response.data.user.username);
-          localStorage.setItem("userId", response.data.user._id);
+          const userData = {
+            username: response.data.user.username,
+            userId: response.data.user._id,
+            coins: response.data.user.coins,
+          };
+          saveUser(userData);
+          console.log(userData);
         }
         setSuccessfulLogin(true);
 

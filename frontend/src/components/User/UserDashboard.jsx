@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import Swal from "sweetalert2";
 import axios from "axios";
-import TitleAndInstruction from "./TitleAndInstruction";
-import Placeholder from "./Placeholder";
+import TitleAndInstruction from "./components/TitleAndInstruction";
+import Placeholder from "./components/Placeholder";
 export default function UserDashboard() {
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [userAnswer, setUserAnswer] = useState("");

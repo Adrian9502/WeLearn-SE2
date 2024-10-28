@@ -28,12 +28,14 @@ const loginRoutes = require("./API/loginRoutes");
 const userRoutes = require("./API/usersRoutes");
 const adminRoutes = require("./API/adminsRoutes");
 const quizRoutes = require("./API/quizRoutes");
+const progressRoutes = require("./API/progressRoutes");
 // ---------- API ROUTING --------------------
 app.use("/register", registerRoutes);
 app.use("/login", loginRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/admins", adminRoutes);
 app.use("/api/quizzes", quizRoutes);
+app.use("/api/progress", progressRoutes);
 
 // --------------------------------------
 // Sample route - for testing

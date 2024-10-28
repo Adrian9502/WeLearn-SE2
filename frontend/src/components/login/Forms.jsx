@@ -207,7 +207,7 @@ const Forms = ({
         // Save additional user data to localStorage if it exists
         if (response.data.user) {
           localStorage.setItem("username", response.data.user.username);
-          localStorage.setItem("coins", response.data.user.coins); // Save coins if applicable
+          localStorage.setItem("userId", response.data.user._id);
         }
         setSuccessfulLogin(true);
 

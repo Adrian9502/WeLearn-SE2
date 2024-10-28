@@ -8,7 +8,6 @@ const QUIZ_TYPES = {
   MERGE: "merge",
   INSERTION: "insertion",
   SELECTION: "selection",
-  // Binary Algo
   ADDITION: "addition",
   SUBTRACTION: "subtraction",
   ALPHABET: "alphabet",
@@ -19,7 +18,6 @@ const INITIAL_EXPANDED_STATE = {
   [QUIZ_TYPES.MERGE]: false,
   [QUIZ_TYPES.INSERTION]: false,
   [QUIZ_TYPES.SELECTION]: false,
-  // binary algo
   [QUIZ_TYPES.ADDITION]: false,
   [QUIZ_TYPES.SUBTRACTION]: false,
   [QUIZ_TYPES.ALPHABET]: false,
@@ -34,7 +32,6 @@ const useLocalStorage = (key, initialValue) => {
         return initialValue;
       }
 
-      // Try to parse as JSON, if fails return the raw value
       try {
         return JSON.parse(storedValue);
       } catch {
@@ -53,7 +50,6 @@ const useLocalStorage = (key, initialValue) => {
           newValue instanceof Function ? newValue(value) : newValue;
         setValue(valueToStore);
 
-        // Handle different types of values appropriately
         const valueToSave =
           typeof valueToStore === "string"
             ? valueToStore
@@ -93,7 +89,6 @@ const useQuizzes = () => {
 // Components
 const UserInfo = ({ username, coins, onLogout }) => (
   <div className="flex my-8 flex-col gap-4">
-    {/* use image, username coins */}
     <div className="coins">
       <div className="flex gap-2 items-center flex-col">
         <h1 className="text-center">USER INFO</h1>
@@ -117,17 +112,15 @@ const UserInfo = ({ username, coins, onLogout }) => (
       </div>
     </div>
     <div className="flex justify-around">
-      {/* log out button */}
-      <button onClick={onLogout} className="log-out-btn  p-2">
+      <button onClick={onLogout} className="log-out-btn p-2">
         Log out
       </button>
-      <button onClick={onLogout} className="log-out-btn  p-2">
+      <button onClick={onLogout} className="log-out-btn p-2">
         Rankings
       </button>
     </div>
   </div>
 );
-// TODO: CONTINUE EDIT .
 
 const SidebarIcons = () => (
   <div className="sidebar-icons">
@@ -145,18 +138,12 @@ const SidebarIcons = () => (
   </div>
 );
 
-const QuizItem = ({ quiz, isCompleted, onClick }) => (
+const QuizItem = ({ quiz, onClick }) => (
   <div
     onClick={onClick}
-    className={`flex transition-colors cursor-pointer exercises justify-between items-center p-2
-      ${
-        isCompleted
-          ? "bg-green-600 cursor-not-allowed"
-          : "bg-sky-600 hover:bg-sky-700"
-      }`}
+    className="flex transition-colors cursor-pointer exercises justify-between items-center p-2 bg-sky-600 hover:bg-sky-700"
   >
     <span className="quiz-title">{quiz.title}</span>
-    {isCompleted && <span className="text-white ml-2">✓</span>}
   </div>
 );
 
@@ -165,48 +152,41 @@ const QuizSection = ({
   quizzes,
   isExpanded,
   onToggle,
-  isQuizCompleted,
   onQuizSelect,
-}) => (
-  <div className="mt-6 flex flex-col items-center justify-center">
-    <div
-      className={`exercises w-full text-xl cursor-pointer transition-colors ${title.toLowerCase()} text-white`}
-      onClick={() => onToggle(title.toLowerCase())}
-    >
-      {title}
-    </div>
-    {isExpanded[title.toLowerCase()] && (
-      <div className="flex flex-col gap-5 mt-4">
-        {quizzes?.map((quiz) => (
-          <QuizItem
-            key={quiz._id}
-            quiz={quiz}
-            isCompleted={isQuizCompleted(quiz._id)}
-            onClick={() => onQuizSelect(quiz)}
-          />
-        ))}
+}) => {
+  return (
+    <div className="mt-6 flex flex-col items-center justify-center">
+      <div
+        className={`exercises border w-full text-xl cursor-pointer transition-colors ${title.toLowerCase()} text-white`}
+        onClick={() => onToggle(title.toLowerCase())}
+      >
+        {title}
       </div>
-    )}
-  </div>
-);
+      {isExpanded[title.toLowerCase()] && (
+        <div className="flex flex-col gap-5 mt-4">
+          {quizzes?.map((quiz) => (
+            <div key={quiz._id}>
+              <QuizItem quiz={quiz} onClick={() => onQuizSelect(quiz)} />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 // Main Component
 export default function Sidebar({ onQuizSelect }) {
   const navigate = useNavigate();
   const [username, setUsername] = useLocalStorage("username", "");
   const [coins, setCoins] = useLocalStorage("coins", 0);
-  const [completedQuizzes, setCompletedQuizzes] = useLocalStorage(
-    "completedQuizzes",
-    []
-  );
   const [isExpanded, setIsExpanded] = useState(INITIAL_EXPANDED_STATE);
 
   const quizzes = useQuizzes();
 
-  // Memoized quiz titles data
   const quizzesTitles = useMemo(
     () => [
-      // Sorting Algorithms
+      // sorting algorithm
       {
         sectionTitle: "Sorting Algorithms",
         quizzes: [
@@ -236,7 +216,7 @@ export default function Sidebar({ onQuizSelect }) {
           },
         ],
       },
-      // Binary Operation
+      // binary operation
       {
         sectionTitle: "Binary Operation",
         quizzes: [
@@ -260,6 +240,7 @@ export default function Sidebar({ onQuizSelect }) {
     [quizzes]
   );
 
+  // compute total quizzes
   const totalQuizzes = useMemo(
     () =>
       quizzesTitles.reduce(
@@ -274,7 +255,6 @@ export default function Sidebar({ onQuizSelect }) {
     [quizzesTitles]
   );
 
-  // Handlers
   const toggleQuizzes = useCallback((type) => {
     setIsExpanded((prev) => ({
       ...prev,
@@ -282,33 +262,21 @@ export default function Sidebar({ onQuizSelect }) {
     }));
   }, []);
 
-  const isQuizCompleted = useCallback(
-    (quizId) => completedQuizzes.includes(quizId),
-    [completedQuizzes]
-  );
-
   const handleQuizSelect = useCallback(
     (quiz) => {
-      if (!isQuizCompleted(quiz._id)) {
-        onQuizSelect({
-          ...quiz,
-          onComplete: () => {
-            setCompletedQuizzes((prev) => [...prev, quiz._id]);
-          },
-        });
-      }
+      onQuizSelect(quiz);
     },
-    [isQuizCompleted, onQuizSelect, setCompletedQuizzes]
+    [onQuizSelect]
   );
 
   const handleLogout = useCallback(() => {
-    ["authToken", "userRole", "username", "coins"].forEach((key) =>
+    ["authToken", "userRole", "username", "coins", "userId"].forEach((key) =>
       localStorage.removeItem(key)
     );
     navigate("/");
   }, [navigate]);
 
-  // Storage event listener
+  // Storage event listener for coins
   useEffect(() => {
     const handleStorageChange = () => {
       const newCoins = parseInt(localStorage.getItem("coins")) || 0;
@@ -331,7 +299,7 @@ export default function Sidebar({ onQuizSelect }) {
         <div className="sidebar-info mt-8 py-1 text-center text-base">
           Completed <br />
           <span className="text-2xl ">
-            <span className="text-yellow-400">{completedQuizzes.length} </span>
+            <span className="text-yellow-400">2 </span>
             <span className="text-xl">out of</span>
             <span className="text-yellow-400"> {totalQuizzes}</span>
           </span>
@@ -352,7 +320,6 @@ export default function Sidebar({ onQuizSelect }) {
                   quizzes={quiz.quizzes}
                   isExpanded={isExpanded}
                   onToggle={toggleQuizzes}
-                  isQuizCompleted={isQuizCompleted}
                   onQuizSelect={handleQuizSelect}
                 />
               ))}
@@ -363,15 +330,18 @@ export default function Sidebar({ onQuizSelect }) {
     </aside>
   );
 }
+
 // Prop types
 Sidebar.propTypes = {
   onQuizSelect: PropTypes.func.isRequired,
 };
+
 UserInfo.propTypes = {
   username: PropTypes.string.isRequired,
   coins: PropTypes.number.isRequired,
   onLogout: PropTypes.func.isRequired,
 };
+
 QuizSection.propTypes = {
   title: PropTypes.string.isRequired,
   quizzes: PropTypes.arrayOf(
@@ -382,14 +352,13 @@ QuizSection.propTypes = {
   ).isRequired,
   isExpanded: PropTypes.object.isRequired,
   onToggle: PropTypes.func.isRequired,
-  isQuizCompleted: PropTypes.func.isRequired,
   onQuizSelect: PropTypes.func.isRequired,
 };
+
 QuizItem.propTypes = {
   quiz: PropTypes.shape({
     _id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
   }).isRequired,
-  isCompleted: PropTypes.bool.isRequired,
   onClick: PropTypes.func.isRequired,
 };

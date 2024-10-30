@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-const progressSchema = new mongoose.Schema({
+
+const userProgressSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -9,10 +10,6 @@ const progressSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Quiz",
     required: true,
-  },
-  completed: {
-    type: Boolean,
-    default: false,
   },
   exercisesCompleted: {
     type: Number,
@@ -26,14 +23,25 @@ const progressSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  answers: [
+  completed: {
+    type: Boolean,
+    default: false,
+  },
+  // Add new fields for time tracking
+  totalTimeSpent: {
+    type: Number,
+    default: 0, // Total time spent in seconds
+  },
+  attemptTimes: [
     {
       questionId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Quiz",
+        required: true,
       },
-      userAnswer: String,
-      isCorrect: Boolean,
+      timeSpent: {
+        type: Number,
+        required: true, // Time spent in seconds
+      },
       attemptDate: {
         type: Date,
         default: Date.now,
@@ -41,3 +49,7 @@ const progressSchema = new mongoose.Schema({
     },
   ],
 });
+
+const UserProgress = mongoose.model("UserProgress", userProgressSchema);
+
+module.exports = UserProgress;

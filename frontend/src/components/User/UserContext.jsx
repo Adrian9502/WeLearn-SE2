@@ -17,13 +17,14 @@ export const UserProvider = ({ children }) => {
     }
   }, []);
 
-  // Storage event listener to update `coins` in the context when changed
+  // Listen for changes to the `coins` key in localStorage
   useEffect(() => {
     const handleStorageChange = (event) => {
       if (event.key === "coins") {
+        const updatedCoins = parseInt(event.newValue, 10) || 0;
         setUser((prevUser) => ({
           ...prevUser,
-          coins: parseInt(event.newValue, 10) || 0,
+          coins: updatedCoins,
         }));
       }
     };
@@ -32,6 +33,7 @@ export const UserProvider = ({ children }) => {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
+  // Function to save user data to state and localStorage
   const saveUser = (userData) => {
     setUser(userData);
     localStorage.setItem("username", userData.username);
@@ -39,8 +41,19 @@ export const UserProvider = ({ children }) => {
     localStorage.setItem("coins", userData.coins);
   };
 
+  // Function to update user data
+  const updateUser = (updatedData) => {
+    setUser((prevUser) => ({
+      ...prevUser,
+      ...updatedData,
+    }));
+    // Update localStorage
+    localStorage.setItem("username", updatedData.username || user.username);
+    localStorage.setItem("userId", updatedData.userId || user.userId);
+    localStorage.setItem("coins", updatedData.coins || user.coins);
+  };
   return (
-    <UserContext.Provider value={{ user, saveUser }}>
+    <UserContext.Provider value={{ user, saveUser, updateUser }}>
       {children}
     </UserContext.Provider>
   );

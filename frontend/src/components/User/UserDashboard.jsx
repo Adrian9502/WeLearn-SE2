@@ -4,15 +4,19 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import TitleAndInstruction from "./components/TitleAndInstruction";
 import Placeholder from "./components/Placeholder";
+import { useUser } from "./UserContext";
+
 export default function UserDashboard() {
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [userAnswer, setUserAnswer] = useState("");
-  const [coins, setCoins] = useState(
-    parseInt(localStorage.getItem("coins")) || 0
-  );
-  // get user id
-  const userId = parseInt(localStorage.getItem("userId"));
+  // get user id and coins from context
+  const { user, updateUser } = useUser();
+  const [coins, setCoins] = useState(user?.coins);
+  const userId = user?.userId;
+  // Track time taken in quiz
   const [time, setTime] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
+  // -------------------------
   const [isActive, setIsActive] = useState(false);
   const [isBlurred, setIsBlurred] = useState(true);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
@@ -37,7 +41,14 @@ export default function UserDashboard() {
       const response = await axios.get(
         `http://localhost:5000/api/progress/user/${userId}/summary`
       );
-      setUserProgress(response.data.quizzes);
+
+      const quizzes = response.data.quizzes;
+      setUserProgress(quizzes);
+
+      // Log each quiz title
+      quizzes.forEach((quiz) => {
+        console.log(quiz.quizId.title);
+      });
     } catch (error) {
       console.error("Error fetching user progress:", error);
     }
@@ -50,31 +61,57 @@ export default function UserDashboard() {
       const response = await axios.get(
         `http://localhost:5000/api/progress/${userId}/${selectedQuiz._id}`
       );
+
       if (response.data.progress && response.data.progress.completed) {
         setIsQuizCompleted(true);
         setIsButtonDisabled(true);
+        console.warn(
+          "Done taking this quiz, proceed to another quiz: ",
+          response.message
+        );
+      }
+      if (!response) {
+        console.log(response.status);
       }
     } catch (error) {
+      console.warn("No quiz progress, it's a new quiz: ", error.message);
       // If no progress found, it's a new quiz for the user
       setIsQuizCompleted(false);
       setIsButtonDisabled(false);
     }
   };
 
-  const updateProgress = async (isCorrect) => {
-    console.log("updateProgress function called");
-
+  const updateProgress = async (isCorrect, timeSpent) => {
     try {
-      // Convert userId to string if it isn't already
       const response = await axios.post(
         `http://localhost:5000/api/progress/${userId}/${selectedQuiz._id}/answer`,
         {
           questionId: selectedQuiz._id,
           userAnswer,
           isCorrect,
-          // Add error logging
+          timeSpent,
         }
       );
+
+      // Update the user's coins
+      if (isCorrect) {
+        const updatedUser = await axios.put(
+          `http://localhost:5000/api/users/${userId}/coins`,
+          {
+            coins: 100, // Increment the user's coins by 100
+          }
+        );
+        setCoins(updatedUser.data.coins);
+        updateUser({ coins: updatedUser.data.coins });
+        localStorage.setItem("coins", updatedUser.data.coins.toString());
+        // Mark the quiz as completed
+        setIsQuizCompleted(true);
+        console.log("IF isCorrect: ", isCorrect);
+      } else {
+        console.log("ELSE isCorrect: ", isCorrect);
+        setIsQuizCompleted(false);
+      }
+
       console.log("Progress update response:", response.data);
       // Refresh progress after update
       fetchUserProgress();
@@ -109,10 +146,8 @@ export default function UserDashboard() {
         const cleanUserAnswer = userAnswer.trim().toLowerCase();
         const cleanCorrectAnswer = selectedQuiz.answer.trim().toLowerCase();
         const isCorrect = cleanUserAnswer === cleanCorrectAnswer;
-
-        await updateProgress(isCorrect);
-        console.log("User answer: ", cleanUserAnswer);
-        console.log("Quiz answer: ", cleanCorrectAnswer);
+        const timeSpent = time;
+        await updateProgress(isCorrect, timeSpent);
 
         if (isCorrect) {
           Swal.fire({
@@ -136,17 +171,14 @@ export default function UserDashboard() {
           });
           if (selectedQuiz.onComplete) {
             selectedQuiz.onComplete();
-            setIsQuizCompleted(true); // Mark this quiz as completed
-            setIsButtonDisabled(true); // Disable buttons after completion
+            setIsQuizCompleted(true);
+            setIsButtonDisabled(true);
             setUserAnswer("");
             setIsBlurred(true);
             setTime(0);
             setIsActive(false);
+            setHasStarted(false);
           }
-          // Update coins in state and localStorage
-          const newCoins = coins + 100;
-          setCoins(newCoins);
-          localStorage.setItem("coins", newCoins.toString());
         } else {
           Swal.fire({
             title: "Wrong answer!",
@@ -167,6 +199,9 @@ export default function UserDashboard() {
               confirmButton: "btn-swal secondary",
             },
           });
+
+          // Reset states for wrong answer
+          setUserAnswer("");
         }
       }
     });
@@ -176,23 +211,46 @@ export default function UserDashboard() {
     if (!userProgress) {
       return null;
     }
+
     return (
-      <div className="progress-display bg-neutral-900 p-4 rounded-lg">
-        <h3 className="text-cyan-400 text-xl mb-3">Your Progress</h3>
-        <div className="grid grid-cols-2 gap-4">
+      <div className="progress-display bg-neutral-900 p-6 rounded-lg shadow-lg">
+        <h3 className="text-cyan-400 text-2xl font-semibold mb-5">
+          Your Progress
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {userProgress.map((quiz) => (
             <div
               key={quiz._id}
-              className={`p-3 rounded ${
-                quiz.completed ? "bg-green-900" : "bg-gray-800"
+              className={`p-4 rounded-lg transition-colors ${
+                quiz.completed
+                  ? "bg-green-900 hover:bg-green-800"
+                  : "bg-gray-800 hover:bg-gray-700"
               }`}
             >
-              <h4 className="text-white mb-2">{quiz.title}</h4>
-              <p className="text-cyan-300">
-                Progress: {quiz.exercisesCompleted}/{quiz.totalExercises}
-              </p>
-              <p className="text-xs text-gray-400">
-                Last attempt:{" "}
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-white font-semibold text-lg">
+                  {quiz.quizId.title}
+                </h4>
+                {quiz.completed && (
+                  <div className="text-green-400 font-bold text-lg">
+                    <span className="text-sm">Completed</span> ✓
+                  </div>
+                )}
+              </div>
+
+              <div className="text-cyan-300 mb-1">
+                <p>
+                  <span>Total Attempts: </span>
+                  {quiz.exercisesCompleted}
+                </p>
+                <p>
+                  <span>Total Time Spent: </span>
+                  {formatTimeSpent(quiz.totalTimeSpent)}
+                </p>
+              </div>
+
+              <p className="text-xs text-gray-400 mt-2">
+                <span>Last Attempt: </span>
                 {new Date(quiz.lastAttemptDate).toLocaleDateString()}
               </p>
             </div>
@@ -203,6 +261,12 @@ export default function UserDashboard() {
   };
   //
   const handleShowAnswer = () => {
+    if (coins === undefined || coins === null) {
+      console.log("Coins are still loading...");
+      return;
+    }
+    console.log("coins line 233:", coins);
+
     Swal.fire({
       title: "Show Answer?",
       width: 500,
@@ -226,6 +290,7 @@ export default function UserDashboard() {
           setUserAnswer(selectedQuiz.answer);
           const updatedCoins = coins - 300;
           setCoins(updatedCoins);
+          updateUser({ coins: updatedCoins });
           localStorage.setItem("coins", updatedCoins.toString());
           Swal.fire({
             title: "Success!",
@@ -259,8 +324,12 @@ export default function UserDashboard() {
     });
   };
   const handleStart = () => {
+    if (hasStarted) {
+      return;
+    }
     setIsActive(true);
     setIsBlurred(false);
+    setHasStarted(true);
     setTime(0);
     setIsButtonDisabled(true);
   };
@@ -272,6 +341,7 @@ export default function UserDashboard() {
     setTime(0);
     setIsButtonDisabled(false);
     setIsQuizCompleted(false);
+    setHasStarted(false);
   };
 
   useEffect(() => {
@@ -291,16 +361,23 @@ export default function UserDashboard() {
     const seconds = (time % 60).toString().padStart(2, "0");
     return `${minutes}:${seconds}`;
   };
+  const formatTimeSpent = (totalTimeSpentInSeconds) => {
+    if (totalTimeSpentInSeconds < 60) {
+      return `${totalTimeSpentInSeconds} secs`;
+    }
 
+    const minutes = Math.floor(totalTimeSpentInSeconds / 60);
+    const seconds = totalTimeSpentInSeconds % 60;
+
+    return `${minutes} mins ${seconds} secs`;
+  };
   return (
     <main
       style={{ fontFamily: "Retro Gaming, Arial, Helvetica, sans-serif" }}
-      className="flex h-screen overflow-hidden"
+      className="custom-cursor flex h-screen overflow-hidden"
     >
       <Sidebar onQuizSelect={handleQuizSelect} userProgress={userProgress} />
-      {/* <QuizProgress /> */}
       <div className="main-content">
-        <ProgressDisplay />
         <div className="top-bar">
           <div className="hamburger-menu">
             <img
@@ -311,7 +388,6 @@ export default function UserDashboard() {
             />
           </div>
         </div>
-
         <div className="exercise w-full">
           {selectedQuiz ? (
             <>
@@ -340,10 +416,10 @@ export default function UserDashboard() {
                   <div className="flex answer-container p-3 flex-col">
                     <div className="flex justify-around items-center">
                       <button
-                        disabled={isButtonDisabled && isQuizCompleted} // Only disable if both conditions are true
+                        disabled={hasStarted || isQuizCompleted}
                         onClick={handleStart}
                         className={`primary start-button ${
-                          isButtonDisabled && isQuizCompleted
+                          (isButtonDisabled && isQuizCompleted) || hasStarted
                             ? "cursor-not-allowed opacity-50"
                             : ""
                         }`}
@@ -371,7 +447,7 @@ export default function UserDashboard() {
                     >
                       <input
                         type="text"
-                        disabled={isBlurred || isQuizCompleted} // Disable input when quiz is completed
+                        disabled={isBlurred || isQuizCompleted}
                         id="answer"
                         value={userAnswer}
                         onChange={(e) => setUserAnswer(e.target.value)}
@@ -380,18 +456,18 @@ export default function UserDashboard() {
                       />
                       <button
                         type="submit"
-                        disabled={isBlurred || isQuizCompleted} // Disable submit when quiz is completed
+                        disabled={isBlurred || isQuizCompleted}
                         className="primary submit-answer-button"
                       >
                         Submit Answer &gt;
                       </button>
                     </form>
                   </div>
-
+                  {/* show answer button */}
                   <button
                     className="ex-area-btn show-btn"
                     onClick={handleShowAnswer}
-                    disabled={isBlurred || isQuizCompleted} // Disable show answer when quiz is completed
+                    disabled={isBlurred || isQuizCompleted}
                   >
                     Show Answer (
                     <div className="coin-show">
@@ -405,6 +481,7 @@ export default function UserDashboard() {
           ) : (
             // Original placeholder content when no quiz is selected
             <Placeholder />
+            // todo: if quiz is completed. add check in the sidebar :)
           )}
         </div>
       </div>

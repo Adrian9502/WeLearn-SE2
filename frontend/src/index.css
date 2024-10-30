@@ -81,7 +81,10 @@
     background-position: 100% 0;
   }
 }
-
+/* custom cursor */
+.custom-cursor {
+  cursor: url("../public/cursor.cur"), auto;
+}
 /* font */
 .jetbrains {
   font-family: "JetBrains Mono", monospace;

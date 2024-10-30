@@ -205,5 +205,27 @@ router.delete("/:id", async (req, res) => {
       .json({ message: "Error deleting user", error: error.message }); // Handle any errors
   }
 });
+// UPDATE USER COINS
+router.put("/:id/coins", async (req, res) => {
+  const userId = req.params.id;
+  const { coins } = req.body;
 
+  try {
+    const updatedUser = await userModel.findByIdAndUpdate(
+      userId,
+      { $inc: { coins } }, // Increment the coins by the provided value
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error updating user coins", error: error.message });
+  }
+});
 module.exports = router;

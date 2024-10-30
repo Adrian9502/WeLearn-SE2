@@ -274,7 +274,7 @@ const Forms = ({
 
   return (
     <form
-      className="form-container"
+      className="form-container custom-cursor"
       onSubmit={isRegister ? handleRegister : handleLogin}
     >
       <h2 className="text-center text-3xl mb-5 p-3">

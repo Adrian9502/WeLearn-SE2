@@ -94,11 +94,15 @@ const SidebarIcons = () => (
   </div>
 );
 
-const QuizItem = ({ quiz, onClick, userProgress }) => {
-  const isCompleted = findQuizProgress(quiz._id, userProgress);
+const QuizItem = ({ quiz, onClick, userProgress, completedQuizzes }) => {
+  const isCompleted =
+    userProgress?.find(
+      (progress) => progress.quizId._id === quiz._id && progress.completed
+    ) || completedQuizzes?.has(quiz._id);
 
   return (
     <div
+      data-quiz-id={quiz._id}
       onClick={onClick}
       className={`flex transition-colors exercises justify-between items-center p-2 ${
         isCompleted
@@ -119,11 +123,16 @@ const QuizSection = ({
   onToggle,
   onQuizSelect,
   userProgress,
+  completedQuizzes,
 }) => {
   // Check if all quizzes in this section are completed
   const isSectionCompleted = () => {
-    if (!quizzes || !userProgress) return false;
-    return quizzes.every((quiz) => findQuizProgress(quiz._id, userProgress));
+    if (!quizzes || (!userProgress && !completedQuizzes)) return false;
+    return quizzes.every(
+      (quiz) =>
+        findQuizProgress(quiz._id, userProgress) ||
+        completedQuizzes?.has(quiz._id)
+    );
   };
 
   return (
@@ -147,6 +156,7 @@ const QuizSection = ({
               quiz={quiz}
               onClick={() => onQuizSelect(quiz)}
               userProgress={userProgress}
+              completedQuizzes={completedQuizzes}
             />
           ))}
         </div>
@@ -336,7 +346,8 @@ export default function Sidebar({ onQuizSelect, userProgress }) {
 // Prop types
 Sidebar.propTypes = {
   onQuizSelect: PropTypes.func.isRequired,
-  userProgress: PropTypes.func.isRequired,
+  userProgress: PropTypes.array,
+  completedQuizzes: PropTypes.instanceOf(Set),
 };
 
 QuizItem.propTypes = {

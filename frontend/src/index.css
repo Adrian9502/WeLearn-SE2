@@ -83,7 +83,7 @@
 }
 /* custom cursor */
 .custom-cursor {
-  cursor: url("../public/cursor.cur"), auto;
+  cursor: url("/cursor.cur"), auto;
 }
 /* font */
 .jetbrains {

@@ -36,12 +36,15 @@ router.post("/:userId/:quizId/answer", async (req, res) => {
     const { questionId, userAnswer, isCorrect, timeSpent } = req.body;
 
     let progress = await UserProgress.findOne({ userId, quizId });
+
     if (!progress) {
       progress = new UserProgress({
         userId,
         quizId,
         totalExercises: 1,
         totalTimeSpent: 0,
+        exercisesCompleted: 0,
+        completed: false,
         attemptTimes: [],
       });
     }
@@ -52,19 +55,34 @@ router.post("/:userId/:quizId/answer", async (req, res) => {
       timeSpent,
       attemptDate: new Date(),
     });
-    progress.totalTimeSpent += timeSpent;
 
-    // Update other progress fields
+    progress.totalTimeSpent += timeSpent;
     progress.exercisesCompleted += 1;
     progress.lastAttemptDate = new Date();
-    progress.completed =
-      progress.exercisesCompleted === progress.totalExercises;
+
+    // Important: Set completed to true if answer is correct
+    if (isCorrect) {
+      progress.completed = true;
+    }
 
     await progress.save();
 
-    res.json({ progress });
+    // Return the full progress object
+    const updatedProgress = await UserProgress.findById(progress._id)
+      .populate("quizId", "title totalExercises")
+      .exec();
+
+    res.json({
+      success: true,
+      progress: updatedProgress,
+      message: isCorrect ? "Quiz completed successfully!" : "Answer recorded",
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error updating progress:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 });
 
@@ -90,5 +108,36 @@ router.get("/:userId/:quizId/time-analytics", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+// Add a route to check completion status
+router.get("/:userId/:quizId/completion", async (req, res) => {
+  try {
+    const { userId, quizId } = req.params;
+    const progress = await UserProgress.findOne({ userId, quizId })
+      .populate("quizId", "title")
+      .select("completed exercisesCompleted totalTimeSpent lastAttemptDate");
 
+    if (!progress) {
+      return res.status(404).json({
+        success: false,
+        message: "No progress found for this quiz",
+      });
+    }
+
+    res.json({
+      success: true,
+      completion: {
+        completed: progress.completed,
+        exercisesCompleted: progress.exercisesCompleted,
+        totalTimeSpent: progress.totalTimeSpent,
+        lastAttemptDate: progress.lastAttemptDate,
+        quizTitle: progress.quizId.title,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
 module.exports = router;

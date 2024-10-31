@@ -11,7 +11,6 @@ export default function UserDashboard() {
   const [userAnswer, setUserAnswer] = useState("");
   // get user id and coins from context
   const { user, updateUser } = useUser();
-  const [coins, setCoins] = useState(user?.coins);
   const userId = user?.userId;
   // Track time taken in quiz
   const [time, setTime] = useState(0);
@@ -22,7 +21,29 @@ export default function UserDashboard() {
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [isQuizCompleted, setIsQuizCompleted] = useState(false);
   const [userProgress, setUserProgress] = useState(null);
+  // --------- State for real time quiz completion tracking
+  const [completedQuizzes, setCompletedQuizzes] = useState(new Set());
   // Fetch user's progress when component mounts
+  useEffect(() => {
+    if (userId) {
+      const fetchCompletedQuizzes = async () => {
+        try {
+          const response = await axios.get(
+            `http://localhost:5000/api/progress/user/${userId}/summary`
+          );
+          const completed = new Set(
+            response.data.quizzes
+              .filter((quiz) => quiz.completed)
+              .map((quiz) => quiz.quizId._id)
+          );
+          setCompletedQuizzes(completed);
+        } catch (error) {
+          console.error("Error fetching completed quizzes:", error);
+        }
+      };
+      fetchCompletedQuizzes();
+    }
+  }, [userId]);
   useEffect(() => {
     if (userId) {
       fetchUserProgress();
@@ -44,11 +65,6 @@ export default function UserDashboard() {
 
       const quizzes = response.data.quizzes;
       setUserProgress(quizzes);
-
-      // Log each quiz title
-      quizzes.forEach((quiz) => {
-        console.log(quiz.quizId.title);
-      });
     } catch (error) {
       console.error("Error fetching user progress:", error);
     }
@@ -62,16 +78,13 @@ export default function UserDashboard() {
         `http://localhost:5000/api/progress/${userId}/${selectedQuiz._id}`
       );
 
-      if (response.data.progress && response.data.progress.completed) {
-        setIsQuizCompleted(true);
-        setIsButtonDisabled(true);
-        console.warn(
-          "Done taking this quiz, proceed to another quiz: ",
-          response.message
-        );
-      }
-      if (!response) {
-        console.log(response.status);
+      if (response.data.progress) {
+        setIsQuizCompleted(response.data.progress.completed);
+        setIsButtonDisabled(response.data.progress.completed);
+
+        if (response.data.progress.completed) {
+          setCompletedQuizzes((prev) => new Set([...prev, selectedQuiz._id]));
+        }
       }
     } catch (error) {
       console.warn("No quiz progress, it's a new quiz: ", error.message);
@@ -83,45 +96,42 @@ export default function UserDashboard() {
 
   const updateProgress = async (isCorrect, timeSpent) => {
     try {
-      const response = await axios.post(
+      await axios.post(
         `http://localhost:5000/api/progress/${userId}/${selectedQuiz._id}/answer`,
         {
           questionId: selectedQuiz._id,
           userAnswer,
           isCorrect,
           timeSpent,
+          completed: isCorrect,
         }
       );
 
-      // Update the user's coins
       if (isCorrect) {
+        // Update coins with explicit operation
         const updatedUser = await axios.put(
           `http://localhost:5000/api/users/${userId}/coins`,
           {
-            coins: 100, // Increment the user's coins by 100
+            coins: 100,
+            operation: "add",
           }
         );
-        setCoins(updatedUser.data.coins);
-        updateUser({ coins: updatedUser.data.coins });
-        localStorage.setItem("coins", updatedUser.data.coins.toString());
-        // Mark the quiz as completed
-        setIsQuizCompleted(true);
-        console.log("IF isCorrect: ", isCorrect);
-      } else {
-        console.log("ELSE isCorrect: ", isCorrect);
-        setIsQuizCompleted(false);
-      }
 
-      console.log("Progress update response:", response.data);
-      // Refresh progress after update
-      fetchUserProgress();
+        const newCoins = updatedUser.data.coins;
+        updateUser({ ...user, coins: newCoins });
+        localStorage.setItem("coins", newCoins.toString());
+
+        return newCoins;
+      }
     } catch (error) {
       console.error(
         "Error updating progress:",
         error.response?.data || error.message
       );
+      return null;
     }
   };
+
   const handleSubmitAnswer = () => {
     Swal.fire({
       title: "Submit Answer?",
@@ -141,36 +151,41 @@ export default function UserDashboard() {
         cancelButton: "btn-swal show-btn",
       },
     }).then(async (result) => {
-      // Only proceed if the user confirms the submission
       if (result.isConfirmed) {
         const cleanUserAnswer = userAnswer.trim().toLowerCase();
         const cleanCorrectAnswer = selectedQuiz.answer.trim().toLowerCase();
         const isCorrect = cleanUserAnswer === cleanCorrectAnswer;
         const timeSpent = time;
-        await updateProgress(isCorrect, timeSpent);
 
-        if (isCorrect) {
-          Swal.fire({
-            title: "Correct!",
-            text: "You earned 100 coins!. Please choose another question on the sidebar!",
-            width: 500,
-            padding: "1em",
-            color: "#ffea00",
-            background:
-              "#fff url(https://st4.depositphotos.com/18899402/24653/i/450/depositphotos_246531954-stock-photo-abstract-purple-blue-gradient-background.jpg)",
-            backdrop: `
+        try {
+          const updatedUserCoins = await updateProgress(isCorrect, timeSpent);
+          if (isCorrect) {
+            // Fetch updated user progress after correct answer
+            await fetchUserProgress();
+            // Update completed quizzes set
+            setCompletedQuizzes((prev) => new Set([...prev, selectedQuiz._id]));
+            Swal.fire({
+              title: "Correct!",
+              text: `You earned 100 coins! Your new coins is ${updatedUserCoins}`,
+              width: 500,
+              padding: "1em",
+              color: "#ffea00",
+              background:
+                "#fff url(https://st4.depositphotos.com/18899402/24653/i/450/depositphotos_246531954-stock-photo-abstract-purple-blue-gradient-background.jpg)",
+              backdrop: `
               rgba(0,0,123,0.4)
               url("/toothless-dancing.gif")
               left top
               no-repeat
             `,
-            customClass: {
-              popup: "swal-font",
-              confirmButton: "btn-swal primary",
-            },
-          });
-          if (selectedQuiz.onComplete) {
-            selectedQuiz.onComplete();
+              customClass: {
+                popup: "swal-font",
+                confirmButton: "btn-swal primary",
+              },
+            });
+            if (selectedQuiz.onComplete) {
+              selectedQuiz.onComplete();
+            }
             setIsQuizCompleted(true);
             setIsButtonDisabled(true);
             setUserAnswer("");
@@ -178,30 +193,37 @@ export default function UserDashboard() {
             setTime(0);
             setIsActive(false);
             setHasStarted(false);
-          }
-        } else {
-          Swal.fire({
-            title: "Wrong answer!",
-            text: "That's okay, Try again!",
-            width: 500,
-            padding: "1em",
-            color: "#f00c45",
-            background:
-              "#fff url(https://i.pinimg.com/736x/82/cf/92/82cf92145d8c60f274c05401094ea998.jpg)",
-            backdrop: `
+          } else {
+            Swal.fire({
+              title: "Wrong answer!",
+              text: "That's okay, Try again!",
+              width: 500,
+              padding: "1em",
+              color: "#f00c45",
+              background:
+                "#fff url(https://i.pinimg.com/736x/82/cf/92/82cf92145d8c60f274c05401094ea998.jpg)",
+              backdrop: `
               rgba(0,0,123,0.4)
               url("/cute-sad.gif")
               left top
               no-repeat
             `,
-            customClass: {
-              popup: "swal-font",
-              confirmButton: "btn-swal secondary",
-            },
-          });
+              customClass: {
+                popup: "swal-font",
+                confirmButton: "btn-swal secondary",
+              },
+            });
 
-          // Reset states for wrong answer
-          setUserAnswer("");
+            // Reset states for wrong answer
+            setUserAnswer("");
+          }
+        } catch (error) {
+          console.error("Error handling answer submission:", error);
+          Swal.fire({
+            title: "Error",
+            text: "There was an error submitting your answer. Please try again.",
+            icon: "error",
+          });
         }
       }
     });
@@ -259,13 +281,11 @@ export default function UserDashboard() {
       </div>
     );
   };
-  //
   const handleShowAnswer = () => {
-    if (coins === undefined || coins === null) {
-      console.log("Coins are still loading...");
+    if (!user || user.coins === undefined || user.coins === null) {
+      console.log("User data is not loaded yet");
       return;
     }
-    console.log("coins line 233:", coins);
 
     Swal.fire({
       title: "Show Answer?",
@@ -284,31 +304,43 @@ export default function UserDashboard() {
         confirmButton: "btn-swal primary",
         cancelButton: "btn-swal show-btn",
       },
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        if (coins >= 300) {
-          setUserAnswer(selectedQuiz.answer);
-          const updatedCoins = coins - 300;
-          setCoins(updatedCoins);
-          updateUser({ coins: updatedCoins });
-          localStorage.setItem("coins", updatedCoins.toString());
-          Swal.fire({
-            title: "Success!",
-            text: `New Coins: ${updatedCoins}`,
-            width: 500,
-            padding: "1em",
-            color: "#f00c45",
-            background:
-              "#fff url(https://i.pinimg.com/736x/82/cf/92/82cf92145d8c60f274c05401094ea998.jpg)",
-            customClass: {
-              popup: "swal-font",
-              confirmButton: "btn-swal secondary",
-            },
-          });
+        if (user.coins >= 300) {
+          try {
+            const response = await axios.put(
+              `http://localhost:5000/api/users/${userId}/coins`,
+              {
+                coins: 300,
+                operation: "subtract",
+              }
+            );
+
+            const updatedCoins = response.data.coins;
+            setUserAnswer(selectedQuiz.answer);
+            updateUser({ ...user, coins: updatedCoins });
+            localStorage.setItem("coins", updatedCoins.toString());
+            Swal.fire({
+              title: "Answer Revealed!",
+              text: `New Coins: ${updatedCoins}. Keep going to earn more!`,
+              width: 500,
+              padding: "1em",
+              color: "#f00c45",
+              background:
+                "#fff url(https://i.pinimg.com/736x/82/cf/92/82cf92145d8c60f274c05401094ea998.jpg)",
+              customClass: {
+                popup: "swal-font",
+                confirmButton: "btn-swal secondary",
+              },
+            });
+          } catch (error) {
+            console.error("Error updating coins:", error);
+            // Handle error case
+          }
         } else {
           Swal.fire({
             title: "Not enough coins!",
-            text: `You need at least 300 coins to show answer. Coins: ${coins}`,
+            text: `You need at least 300 coins to show answer. Coins: ${user.coins}`,
             width: 500,
             padding: "1em",
             color: "#f20c41",
@@ -376,7 +408,11 @@ export default function UserDashboard() {
       style={{ fontFamily: "Retro Gaming, Arial, Helvetica, sans-serif" }}
       className="custom-cursor flex h-screen overflow-hidden"
     >
-      <Sidebar onQuizSelect={handleQuizSelect} userProgress={userProgress} />
+      <Sidebar
+        onQuizSelect={handleQuizSelect}
+        userProgress={userProgress}
+        completedQuizzes={completedQuizzes}
+      />
       <div className="main-content">
         <div className="top-bar">
           <div className="hamburger-menu">

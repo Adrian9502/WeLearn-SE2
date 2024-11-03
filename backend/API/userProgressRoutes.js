@@ -140,4 +140,81 @@ router.get("/:userId/:quizId/completion", async (req, res) => {
     });
   }
 });
+// Ranking route
+router.get("/rankings", async (req, res) => {
+  try {
+    // Get all users' progress
+    const allProgress = await UserProgress.find()
+      .populate("userId", "username coins")
+      .populate("quizId", "title");
+
+    // Group progress by user
+    const userProgressMap = new Map();
+
+    allProgress.forEach((progress) => {
+      const userId = progress.userId._id.toString();
+      if (!userProgressMap.has(userId)) {
+        userProgressMap.set(userId, {
+          userId,
+          username: progress.userId.username,
+          coins: progress.userId.coins,
+          completedQuizzes: 0,
+          totalTime: 0,
+          totalAttempts: 0,
+          successRate: 0,
+          consecutiveDays: 0,
+          averageTime: 0,
+        });
+      }
+
+      const userStats = userProgressMap.get(userId);
+
+      if (progress.completed) {
+        userStats.completedQuizzes++;
+      }
+
+      userStats.totalTime += progress.totalTimeSpent;
+      userStats.totalAttempts += progress.exercisesCompleted;
+
+      // Calculate success rate
+      userStats.successRate =
+        userStats.completedQuizzes / userStats.totalAttempts;
+
+      // Calculate average time per completed quiz
+      userStats.averageTime = userStats.totalTime / userStats.completedQuizzes;
+
+      // Calculate consecutive days (simplified version)
+      const attempts = progress.attemptTimes.map((at) =>
+        new Date(at.attemptDate).toDateString()
+      );
+      const uniqueDays = new Set(attempts).size;
+      userStats.consecutiveDays = Math.max(
+        userStats.consecutiveDays,
+        uniqueDays
+      );
+    });
+
+    // Convert map to array and sort for different rankings
+    const users = Array.from(userProgressMap.values());
+
+    const rankings = {
+      completionRankings: [...users].sort(
+        (a, b) => b.completedQuizzes - a.completedQuizzes
+      ),
+      timeRankings: [...users].sort((a, b) => a.averageTime - b.averageTime),
+      coinRankings: [...users].sort((a, b) => b.coins - a.coins),
+      consistencyRankings: [...users].sort(
+        (a, b) => b.consecutiveDays - a.consecutiveDays
+      ),
+      efficiencyRankings: [...users].sort(
+        (a, b) => b.successRate - a.successRate
+      ),
+    };
+
+    res.json(rankings);
+  } catch (error) {
+    console.error("Error fetching rankings:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
 module.exports = router;

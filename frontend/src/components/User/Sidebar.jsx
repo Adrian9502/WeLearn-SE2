@@ -6,6 +6,15 @@ import { IoIosSearch } from "react-icons/io";
 import { TbRefresh } from "react-icons/tb";
 import { FaTrophy, FaSignOutAlt, FaChartLine } from "react-icons/fa";
 import { FaSortAmountDown, FaSortAmountUp } from "react-icons/fa";
+import {
+  FaTrophy as Trophy,
+  FaClock as Clock,
+  FaCoins as Coins,
+} from "react-icons/fa";
+import { GiTargeting as Target } from "react-icons/gi";
+import { MdEmojiEvents as Award } from "react-icons/md";
+import { IoFlash as Zap } from "react-icons/io5";
+
 // Constants
 const QUIZ_TYPES = {
   BUBBLE: "bubble",
@@ -259,7 +268,192 @@ const ProgressDisplay = ({ userProgress, onClose }) => {
     </div>
   );
 };
+//  ranking component
+const RankingsDisplay = ({ onClose }) => {
+  const [rankings, setRankings] = useState({
+    quizCompletion: [],
+    speedsters: [],
+    wealthiest: [],
+    consistent: [],
+    efficiency: [],
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("quizCompletion");
 
+  useEffect(() => {
+    const fetchRankings = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/progress/rankings"
+        );
+        const data = await response.json();
+
+        const processedRankings = {
+          quizCompletion: data.completionRankings,
+          speedsters: data.timeRankings,
+          wealthiest: data.coinRankings,
+          consistent: data.consistencyRankings,
+          efficiency: data.efficiencyRankings,
+        };
+
+        setRankings(processedRankings);
+      } catch (error) {
+        console.error("Error fetching rankings:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRankings();
+  }, []);
+
+  const renderRankingList = (rankingData, categoryConfig) => {
+    return (
+      <div className="space-y-4">
+        {rankingData.map((user, index) => (
+          <div
+            key={user.userId}
+            className="flex items-center justify-between p-4 bg-gray-800 rounded-lg border border-gray-700"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 text-center">
+                {index < 3 ? (
+                  <Trophy
+                    size={24}
+                    className={
+                      index === 0
+                        ? "text-yellow-400"
+                        : index === 1
+                        ? "text-gray-300"
+                        : "text-orange-600"
+                    }
+                  />
+                ) : (
+                  <span className="text-gray-400">#{index + 1}</span>
+                )}
+              </div>
+              <span className="text-white font-medium">{user.username}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {categoryConfig.icon}
+              <span className="text-yellow-400 font-bold">
+                {categoryConfig.formatScore(user[categoryConfig.scoreField])}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div className="text-white">Loading rankings...</div>
+      </div>
+    );
+  }
+
+  const rankingCategories = {
+    quizCompletion: {
+      title: "Quiz Masters",
+      description: "Players who completed the most quizzes",
+      icon: <Target className="text-green-400" size={20} />,
+      scoreField: "completedQuizzes",
+      formatScore: (score) => `${score} quizzes`,
+    },
+    speedsters: {
+      title: "Speed Demons",
+      description: "Fastest quiz completers",
+      icon: <Zap className="text-blue-400" size={20} />,
+      scoreField: "averageTime",
+      formatScore: (time) => `${time.toFixed(1)}s avg`,
+    },
+    wealthiest: {
+      title: "Coin Champions",
+      description: "Players with the most coins",
+      icon: <Coins className="text-yellow-400" size={20} />,
+      scoreField: "coins",
+      formatScore: (coins) => `${coins} coins`,
+    },
+    consistent: {
+      title: "Consistency Kings",
+      description: "Most regular players",
+      icon: <Award className="text-purple-400" size={20} />,
+      scoreField: "consecutiveDays",
+      formatScore: (days) => `${days} days`,
+    },
+    efficiency: {
+      title: "Efficiency Elite",
+      description: "Highest success rate",
+      icon: <Clock className="text-red-400" size={20} />,
+      scoreField: "successRate",
+      formatScore: (rate) => `${(rate * 100).toFixed(1)}%`,
+    },
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-gray-900 rounded-lg shadow-xl w-full max-w-4xl max-h-[80vh] overflow-hidden">
+        {/* Header */}
+        <div className="p-6 border-b border-gray-800">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold text-cyan-400">Rankings</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-200 text-xl"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6">
+          {/* Tabs */}
+          <div className="grid grid-cols-5 gap-4 bg-gray-800 p-1 rounded-lg mb-6">
+            {Object.entries(rankingCategories).map(([key, category]) => (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key)}
+                className={`p-2 rounded-md transition-colors duration-200 ${
+                  activeTab === key
+                    ? "bg-cyan-600 text-white"
+                    : "text-gray-400 hover:text-gray-200"
+                }`}
+              >
+                <div className="flex flex-col items-center gap-1">
+                  {category.icon}
+                  <span className="text-xs">{category.title}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Tab Content */}
+          <div className="mt-4">
+            {Object.entries(rankingCategories).map(([key, category]) => (
+              <div
+                key={key}
+                className={`${activeTab === key ? "block" : "hidden"}`}
+              >
+                <div className="mb-4">
+                  <h3 className="text-lg font-medium text-white">
+                    {category.title}
+                  </h3>
+                  <p className="text-gray-400 text-sm">
+                    {category.description}
+                  </p>
+                </div>
+                {renderRankingList(rankings[key], category)}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 const useQuizzes = () => {
   const [quizzes, setQuizzes] = useState([]);
 
@@ -288,7 +482,7 @@ const findQuizProgress = (quizId, userProgress) => {
 // Components
 const UserInfo = ({ onLogout, username, coins, userProgress }) => {
   const [showProgress, setShowProgress] = useState(false);
-
+  const [showRankings, setShowRankings] = useState(false);
   return (
     <div className="user-info-container relative px-4 py-2 my-8">
       {/* Pixel Border Container */}
@@ -355,7 +549,10 @@ const UserInfo = ({ onLogout, username, coins, userProgress }) => {
             <span>VIEW PROGRESS</span>
           </button>
 
-          <button className="btn-border leaderboard-btn p-3 flex items-center justify-center gap-2 bg-gray-800 hover:bg-yellow-600 transition-all duration-200 text-white">
+          <button
+            onClick={() => setShowRankings(true)}
+            className="btn-border leaderboard-btn p-3 flex items-center justify-center gap-2 bg-gray-800 hover:bg-yellow-600 transition-all duration-200 text-white"
+          >
             <FaTrophy className="text-lg" />
             <span>RANKINGS</span>
           </button>
@@ -376,6 +573,10 @@ const UserInfo = ({ onLogout, username, coins, userProgress }) => {
           userProgress={userProgress}
           onClose={() => setShowProgress(false)}
         />
+      )}
+      {/* ranking display */}
+      {showRankings && (
+        <RankingsDisplay onClose={() => setShowRankings(false)} />
       )}
     </div>
   );

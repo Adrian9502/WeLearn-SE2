@@ -228,59 +228,7 @@ export default function UserDashboard() {
       }
     });
   };
-  // Add progress display component
-  const ProgressDisplay = () => {
-    if (!userProgress) {
-      return null;
-    }
 
-    return (
-      <div className="progress-display bg-neutral-900 p-6 rounded-lg shadow-lg">
-        <h3 className="text-cyan-400 text-2xl font-semibold mb-5">
-          Your Progress
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {userProgress.map((quiz) => (
-            <div
-              key={quiz._id}
-              className={`p-4 rounded-lg transition-colors ${
-                quiz.completed
-                  ? "bg-green-900 hover:bg-green-800"
-                  : "bg-gray-800 hover:bg-gray-700"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-white font-semibold text-lg">
-                  {quiz.quizId.title}
-                </h4>
-                {quiz.completed && (
-                  <div className="text-green-400 font-bold text-lg">
-                    <span className="text-sm">Completed</span> ✓
-                  </div>
-                )}
-              </div>
-
-              <div className="text-cyan-300 mb-1">
-                <p>
-                  <span>Total Attempts: </span>
-                  {quiz.exercisesCompleted}
-                </p>
-                <p>
-                  <span>Total Time Spent: </span>
-                  {formatTimeSpent(quiz.totalTimeSpent)}
-                </p>
-              </div>
-
-              <p className="text-xs text-gray-400 mt-2">
-                <span>Last Attempt: </span>
-                {new Date(quiz.lastAttemptDate).toLocaleDateString()}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
   const handleShowAnswer = () => {
     if (!user || user.coins === undefined || user.coins === null) {
       console.log("User data is not loaded yet");
@@ -393,16 +341,7 @@ export default function UserDashboard() {
     const seconds = (time % 60).toString().padStart(2, "0");
     return `${minutes}:${seconds}`;
   };
-  const formatTimeSpent = (totalTimeSpentInSeconds) => {
-    if (totalTimeSpentInSeconds < 60) {
-      return `${totalTimeSpentInSeconds} secs`;
-    }
 
-    const minutes = Math.floor(totalTimeSpentInSeconds / 60);
-    const seconds = totalTimeSpentInSeconds % 60;
-
-    return `${minutes} mins ${seconds} secs`;
-  };
   return (
     <main
       style={{ fontFamily: "Retro Gaming, Arial, Helvetica, sans-serif" }}
@@ -517,7 +456,6 @@ export default function UserDashboard() {
           ) : (
             // Original placeholder content when no quiz is selected
             <Placeholder />
-            // todo: if quiz is completed. add check in the sidebar :)
           )}
         </div>
       </div>

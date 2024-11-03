@@ -2,6 +2,10 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useUser } from "./UserContext";
+import { IoIosSearch } from "react-icons/io";
+import { TbRefresh } from "react-icons/tb";
+import { FaTrophy, FaSignOutAlt, FaChartLine } from "react-icons/fa";
+import { FaSortAmountDown, FaSortAmountUp } from "react-icons/fa";
 // Constants
 const QUIZ_TYPES = {
   BUBBLE: "bubble",
@@ -21,6 +25,239 @@ const INITIAL_EXPANDED_STATE = {
   [QUIZ_TYPES.ADDITION]: false,
   [QUIZ_TYPES.SUBTRACTION]: false,
   [QUIZ_TYPES.ALPHABET]: false,
+};
+// Progress display component
+const ProgressDisplay = ({ userProgress, onClose }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredProgress, setFilteredProgress] = useState(userProgress);
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: "desc",
+  });
+
+  // SEARCH ALGORITHM
+  const searchProgress = (term) => {
+    const results = [];
+    for (const quiz of userProgress) {
+      if (quiz.quizId.title.toLowerCase().includes(term.toLowerCase())) {
+        results.push(quiz);
+      }
+    }
+    return results;
+  };
+
+  // Sort function
+  const sortProgress = (data, key, direction) => {
+    return [...data].sort((a, b) => {
+      let compareA, compareB;
+
+      switch (key) {
+        case "title":
+          compareA = a.quizId.title.toLowerCase();
+          compareB = b.quizId.title.toLowerCase();
+          return direction === "asc"
+            ? compareA.localeCompare(compareB)
+            : compareB.localeCompare(compareA);
+        case "attempts":
+          return direction === "asc"
+            ? a.exercisesCompleted - b.exercisesCompleted
+            : b.exercisesCompleted - a.exercisesCompleted;
+        case "time":
+          return direction === "asc"
+            ? a.totalTimeSpent - b.totalTimeSpent
+            : b.totalTimeSpent - a.totalTimeSpent;
+        default:
+          return 0;
+      }
+    });
+  };
+
+  // Handle sort
+  const handleSort = (key) => {
+    let direction = "desc";
+    if (sortConfig.key === key && sortConfig.direction === "desc") {
+      direction = "asc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Reset all filters and sorting
+  const handleReset = () => {
+    setSearchTerm("");
+    setSortConfig({ key: null, direction: "desc" });
+    setFilteredProgress(userProgress);
+  };
+
+  // Update filtered progress whenever search term, userProgress, or sort config changes
+  useEffect(() => {
+    let filtered = searchProgress(searchTerm);
+    if (sortConfig.key) {
+      filtered = sortProgress(filtered, sortConfig.key, sortConfig.direction);
+    }
+    setFilteredProgress(filtered);
+  }, [searchTerm, userProgress, sortConfig]);
+
+  const formatTimeSpent = (totalTimeSpentInSeconds) => {
+    if (totalTimeSpentInSeconds < 60) {
+      return `${totalTimeSpentInSeconds} secs`;
+    }
+    const minutes = Math.floor(totalTimeSpentInSeconds / 60);
+    const seconds = totalTimeSpentInSeconds % 60;
+    return `${minutes} mins ${seconds} secs`;
+  };
+
+  if (!userProgress) {
+    return null;
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="user-completed-quiz-container p-6 max-w-4xl min-h-[80vh] max-h-[80vh] overflow-y-auto relative w-full mx-4">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-cyan-400 hover:text-cyan-600"
+        >
+          ✕
+        </button>
+
+        <h3 className="text-cyan-400 text-3xl text-center mb-5">
+          Completed Quizzes
+        </h3>
+
+        {userProgress.length > 0 ? (
+          <div>
+            {/* Search and Sort Controls */}
+            <div className="mb-6">
+              {/* Search Bar */}
+              <div className="relative flex items-center mb-4">
+                <input
+                  type="text"
+                  placeholder="Search quizzes by title..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full px-4 py-2 bg-neutral-700 btn-border text-white pl-10 border-cyan-600 focus:border-cyan-400 focus:outline-none transition-colors"
+                />
+                <IoIosSearch
+                  className="absolute left-3 text-gray-400"
+                  size={20}
+                />
+              </div>
+
+              {/* Sort Controls */}
+              <div className="flex items-center justify-center flex-wrap gap-4 mb-2">
+                <button
+                  onClick={() => handleSort("title")}
+                  className="flex btn-border items-center gap-2 px-3 py-1 bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                >
+                  Sort by Title
+                  {sortConfig.key === "title" &&
+                    (sortConfig.direction === "desc" ? (
+                      <FaSortAmountDown />
+                    ) : (
+                      <FaSortAmountUp />
+                    ))}
+                </button>
+                <button
+                  onClick={() => handleSort("attempts")}
+                  className="flex btn-border items-center gap-2 px-3 py-1 bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                >
+                  Sort by Attempts
+                  {sortConfig.key === "attempts" &&
+                    (sortConfig.direction === "desc" ? (
+                      <FaSortAmountDown />
+                    ) : (
+                      <FaSortAmountUp />
+                    ))}
+                </button>
+                <button
+                  onClick={() => handleSort("time")}
+                  className="flex btn-border items-center gap-2 px-3 py-1 bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                >
+                  Sort by Time
+                  {sortConfig.key === "time" &&
+                    (sortConfig.direction === "desc" ? (
+                      <FaSortAmountDown />
+                    ) : (
+                      <FaSortAmountUp />
+                    ))}
+                </button>
+                <button
+                  onClick={handleReset}
+                  className="flex btn-border items-center gap-2 px-3 py-1 bg-gray-600 text-white hover:bg-gray-700 transition-colors"
+                  title="Reset all filters and sorting"
+                >
+                  <TbRefresh size={20} /> Reset
+                </button>
+              </div>
+
+              {/* Search Stats */}
+              <div className="text-gray-200 text-sm">
+                Showing {filteredProgress?.length} of {userProgress.length}{" "}
+                quizzes
+                {sortConfig.key && (
+                  <span className="ml-2">
+                    (Sorted by {sortConfig.key} -{" "}
+                    {sortConfig.direction === "desc"
+                      ? "descending"
+                      : "ascending"}
+                    )
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* No Results Message */}
+            {filteredProgress?.length === 0 && (
+              <div className="text-center text-gray-200 py-8 min-h-full">
+                No quizzes found matching &quot;{searchTerm}&quot;
+              </div>
+            )}
+
+            {/* Progress Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProgress?.map((quiz) => (
+                <div
+                  key={quiz._id}
+                  className={`p-2 progress-grid transition-colors ${
+                    quiz.completed ? "bg-rose-600" : "bg-gray-800"
+                  }`}
+                >
+                  <h4 className="text-white text-xl w-full text-center mb-2">
+                    {quiz.quizId.title}
+                  </h4>
+
+                  <div className="text-white mb-1 space-y-1">
+                    <div className="attempts-time-spent-container bg-blue-700 flex flex-col mb-3 justify-around p-2">
+                      <span className="text-sm mb-1">Total Attempts:</span>
+                      <div className="text-yellow-400 flex items-center justify-center">
+                        {quiz.exercisesCompleted} attempts
+                      </div>
+                    </div>
+                    <div className="attempts-time-spent-container bg-blue-700 p-2 flex flex-col justify-around">
+                      <span className="text-sm mb-1">Total Time Spent: </span>
+                      <div className="text-yellow-400 flex items-center justify-center">
+                        {formatTimeSpent(quiz.totalTimeSpent)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-white mt-2">
+                    <span>Last Attempt: </span>
+                    {new Date(quiz.lastAttemptDate).toLocaleDateString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <p className="text-center text-slate-200 mt-10 text-lg">
+            You currently don&quot;t have any progress. Go play now and start
+            tracking your progress!
+          </p>
+        )}
+      </div>
+    </div>
+  );
 };
 
 const useQuizzes = () => {
@@ -49,30 +286,97 @@ const findQuizProgress = (quizId, userProgress) => {
   );
 };
 // Components
-const UserInfo = ({ onLogout, username, coins }) => {
+const UserInfo = ({ onLogout, username, coins, userProgress }) => {
+  const [showProgress, setShowProgress] = useState(false);
+
   return (
-    <div className="user-info-container flex flex-col items-center justify-center px-6 py-3 my-8">
-      <h1 className="text-center text-cyan-400 text-lg mb-2">
-        User Information
-      </h1>
-      {/* username and coins */}
-      <div className="inline-flex user-con flex-col items-center px-2 mb-4 py-1 text-slate-100 justify-center">
-        <img src="/user.png" alt="User" className="w-8 h-8" />
-        <span className="text-lg font-medium">{username}</span>
-        <img src="/coin.gif" className="w-10 h-10" alt="Coins" />
-        <span className="text-lg font-medium ml-2">{coins}</span>
+    <div className="user-info-container relative px-4 py-2 my-8">
+      {/* Pixel Border Container */}
+      <div className="absolute inset-0 p-[2px]">
+        <div className="absolute inset-0" style={{ margin: "2px" }} />
       </div>
-      <div className="flex flex-col gap-3">
-        <button className="btn-border p-2 view-progress-btn">
-          View Progress
-        </button>
-        <button onClick={onLogout} className="btn-border log-out-btn p-2 ">
-          Log Out
-        </button>
-        <button className="btn-border leaderboard-btn p-2">
-          View Rankings
-        </button>
+
+      {/* Main Content */}
+      <div className="relative z-10 flex flex-col items-center">
+        {/* Title with Pixel Effect */}
+        <h1 className="text-center text-yellow-400 text-2xl mb-4 p-2 relative">
+          <span className="absolute top-0 left-0 w-2 h-2 bg-yellow-400" />
+          <span className="absolute top-0 right-0 w-2 h-2 bg-yellow-400" />
+          <span className="absolute bottom-0 left-0 w-2 h-2 bg-yellow-400" />
+          <span className="absolute bottom-0 right-0 w-2 h-2 bg-yellow-400" />
+          PLAYER STATUS
+        </h1>
+
+        {/* User Profile Card */}
+        <div className="user-con w-full max-w-xs flex flex-col items-center mb-4 btn-border p-4 relative">
+          {/* Profile Image */}
+          <div className="relative w-24 h-24 mb-4">
+            <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 rounded-lg p-[2px]">
+              <div className="btn-border w-full h-full rounded-lg overflow-hidden">
+                <img
+                  src="/user-profile.png"
+                  alt="User"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Username and Coins Section */}
+          <div className="w-full px-4 py-3 bg-pink-700 btn-border">
+            <div className="flex flex-col items-center border-b-2 border-yellow-500/30 pb-3 mb-3">
+              <span className="jetbrains text-xs text-yellow-400/80">
+                PLAYER NAME
+              </span>
+              <span className="text-lg text-white mt-1 truncate">
+                {username}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-center">
+              <span className="jetbrains text-xs text-yellow-400/80 mr-2">
+                COINS
+              </span>
+              <div className="flex items-center bg-gray-500/20 px-3 py-1 rounded-full justify-center">
+                <img src="/coin.gif" className="w-6 h-6 mr-1" alt="Coins" />
+                <span className="text-lg text-slate-100">{coins}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col gap-3 w-full max-w-xs">
+          <button
+            onClick={() => setShowProgress(true)}
+            className="btn-border view-progress-btn p-3 flex items-center justify-center gap-2 transition-all duration-200 text-white"
+          >
+            <FaChartLine className="text-lg" />
+            <span>VIEW PROGRESS</span>
+          </button>
+
+          <button className="btn-border leaderboard-btn p-3 flex items-center justify-center gap-2 bg-gray-800 hover:bg-yellow-600 transition-all duration-200 text-white">
+            <FaTrophy className="text-lg" />
+            <span>RANKINGS</span>
+          </button>
+          <div className="w-full border-b-2 border-yellow-500"></div>
+          <button
+            onClick={onLogout}
+            className="btn-border log-out-btn p-3 flex items-center justify-center gap-2 bg-gray-800 hover:bg-red-600 transition-all duration-200 text-white mt-2"
+          >
+            <FaSignOutAlt className="text-lg" />
+            <span>LOG OUT</span>
+          </button>
+        </div>
       </div>
+
+      {/* Progress Display */}
+      {showProgress && (
+        <ProgressDisplay
+          userProgress={userProgress}
+          onClose={() => setShowProgress(false)}
+        />
+      )}
     </div>
   );
 };
@@ -106,11 +410,11 @@ const QuizItem = ({ quiz, onClick, userProgress, completedQuizzes }) => {
       onClick={onClick}
       className={`flex transition-colors exercises justify-between items-center p-2 ${
         isCompleted
-          ? "bg-green-600 pointer-events-none text-slate-200"
-          : "bg-red-600 hover:bg-red-700 text-yellow-400"
+          ? "bg-[#0fa002] hover:bg-[#128a07] pointer-events-none text-slate-100"
+          : "bg-[#dd1d3d] hover:bg-[#a8122b] text-yellow-400"
       } `}
     >
-      <span className="quiz-title">{quiz.title}</span>
+      <span className="text-lg">{quiz.title}</span>
       {isCompleted && <span className="text-slate-200 text-xl ml-2">✓</span>}
     </div>
   );
@@ -138,18 +442,18 @@ const QuizSection = ({
   return (
     <div className="mt-6 flex flex-col items-center justify-center">
       <div
-        className={`flex items-center justify-between exercises w-full text-xl cursor-pointer transition-colors ${
+        className={`flex text-center items-center justify-between exercises w-full text-xl cursor-pointer transition-colors ${
           isSectionCompleted()
-            ? "bg-green-600 hover:bg-green-700"
-            : "bg-blue-600 hover:bg-blue-700"
+            ? "bg-[#0fa002] hover:bg-[#128a07]"
+            : "bg-[#0110e6] hover:bg-[#020da7]"
         } text-slate-200 p-3 flex justify-between items-center`}
         onClick={() => onToggle(title.toLowerCase())}
       >
         <span>{title}</span>
-        {isSectionCompleted() && <span className="text-white text-2xl">✓</span>}
+        {isSectionCompleted() && <span className="text-white ext-2xl">✓</span>}
       </div>
       {isExpanded[title.toLowerCase()] && (
-        <div className="flex flex-col gap-5 mt-4">
+        <div className="flex border p-3 bg-[#0110e6] texture btn-border flex-col gap-5 mt-4">
           {quizzes?.map((quiz) => (
             <QuizItem
               key={quiz._id}
@@ -313,11 +617,11 @@ export default function Sidebar({ onQuizSelect, userProgress }) {
           <br />
           exercises
         </div>
-
         <UserInfo
           onLogout={handleLogout}
           username={username}
           coins={user?.coins || 0}
+          userProgress={userProgress}
         />
 
         <div className="exercises-container">
@@ -387,4 +691,25 @@ QuizSection.propTypes = {
       completed: PropTypes.bool.isRequired,
     })
   ),
+};
+ProgressDisplay.propTypes = {
+  userProgress: PropTypes.arrayOf(
+    PropTypes.shape({
+      _id: PropTypes.string.isRequired,
+      quizId: PropTypes.shape({
+        title: PropTypes.string.isRequired,
+      }),
+      completed: PropTypes.bool.isRequired,
+      exercisesCompleted: PropTypes.number.isRequired,
+      totalTimeSpent: PropTypes.number.isRequired,
+      lastAttemptDate: PropTypes.string.isRequired,
+    })
+  ),
+  onClose: PropTypes.func.isRequired,
+};
+UserInfo.propTypes = {
+  onLogout: PropTypes.func.isRequired,
+  username: PropTypes.string,
+  coins: PropTypes.number.isRequired,
+  userProgress: PropTypes.array,
 };

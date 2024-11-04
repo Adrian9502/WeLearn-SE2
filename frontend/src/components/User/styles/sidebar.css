@@ -1,13 +1,13 @@
 /* Sidebar styles */
 ::-webkit-scrollbar {
-  width: 1px;
+  width: 5px;
 }
 /* Track */
 ::-webkit-scrollbar-track {
-  background: #510261;
+  background: #460261;
 }
 ::-webkit-scrollbar-thumb {
-  background: #460261;
+  background: #c305e9;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
@@ -101,7 +101,7 @@ a {
   border-top: 3px inset rgba(255, 255, 255, 0.5);
 }
 .user-completed-quiz-container {
-  background-color: rgb(112, 10, 207);
+  background-color: rgb(85, 11, 155);
   border-bottom: 7px inset rgba(0, 0, 0, 0.5);
   border-left: 7px inset rgba(0, 0, 0, 0.5);
   border-right: 7px inset rgba(255, 255, 255, 0.5);
@@ -110,10 +110,10 @@ a {
 .progress-grid {
   font-family: inherit;
   transition: all 0.15s;
-  border-bottom: 5px inset rgba(0, 0, 0, 0.5);
-  border-left: 5px inset rgba(0, 0, 0, 0.5);
-  border-right: 5px inset rgba(255, 255, 255, 0.5);
-  border-top: 5px inset rgba(255, 255, 255, 0.5);
+  border-bottom: 4px inset rgba(0, 0, 0, 0.5);
+  border-left: 4px inset rgba(0, 0, 0, 0.5);
+  border-right: 4px inset rgba(255, 255, 255, 0.5);
+  border-top: 4px inset rgba(255, 255, 255, 0.5);
 }
 .attempts-time-spent-container {
   transition: all 0.15s;

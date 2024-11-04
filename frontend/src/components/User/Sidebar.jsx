@@ -6,6 +6,12 @@ import { IoIosSearch } from "react-icons/io";
 import { TbRefresh } from "react-icons/tb";
 import { FaTrophy, FaSignOutAlt, FaChartLine } from "react-icons/fa";
 import { FaSortAmountDown, FaSortAmountUp } from "react-icons/fa";
+import { FiRefreshCcw as RefreshCcw } from "react-icons/fi";
+import {
+  LuArrowUpAZ as ArrowUpAZ,
+  LuArrowDownAZ as ArrowDownAZ,
+} from "react-icons/lu";
+
 import {
   FaTrophy as Trophy,
   FaClock as Clock,
@@ -134,132 +140,126 @@ const ProgressDisplay = ({ userProgress, onClose }) => {
         </h3>
 
         {userProgress.length > 0 ? (
-          <div>
-            {/* Search and Sort Controls */}
-            <div className="mb-6">
-              {/* Search Bar */}
-              <div className="relative flex items-center mb-4">
-                <input
-                  type="text"
-                  placeholder="Search quizzes by title..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-4 py-2 bg-neutral-700 btn-border text-white pl-10 border-cyan-600 focus:border-cyan-400 focus:outline-none transition-colors"
-                />
-                <IoIosSearch
-                  className="absolute left-3 text-gray-400"
-                  size={20}
-                />
+          <div className="p-2">
+            {/* Search and Controls */}
+            <div className="mb-8">
+              {/* Search Bar with Pixel Border */}
+              <div className="relative mb-6">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search quizzes..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full px-4 py-3 bg-neutral-800 text-white border-4 border-cyan-500 focus:border-cyan-400 outline-none 
+                           [image-rendering:pixelated] transition-all
+                           before:content-[''] before:absolute before:inset-0 before:border-4 before:border-black"
+                  />
+                  <IoIosSearch
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-cyan-400"
+                    size={24}
+                  />
+                </div>
               </div>
 
-              {/* Sort Controls */}
-              <div className="flex items-center justify-center flex-wrap gap-4 mb-2">
-                <button
-                  onClick={() => handleSort("title")}
-                  className="flex btn-border items-center gap-2 px-3 py-1 bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                >
-                  Sort by Title
-                  {sortConfig.key === "title" &&
-                    (sortConfig.direction === "desc" ? (
-                      <FaSortAmountDown />
-                    ) : (
-                      <FaSortAmountUp />
-                    ))}
-                </button>
-                <button
-                  onClick={() => handleSort("attempts")}
-                  className="flex btn-border items-center gap-2 px-3 py-1 bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                >
-                  Sort by Attempts
-                  {sortConfig.key === "attempts" &&
-                    (sortConfig.direction === "desc" ? (
-                      <FaSortAmountDown />
-                    ) : (
-                      <FaSortAmountUp />
-                    ))}
-                </button>
-                <button
-                  onClick={() => handleSort("time")}
-                  className="flex btn-border items-center gap-2 px-3 py-1 bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                >
-                  Sort by Time
-                  {sortConfig.key === "time" &&
-                    (sortConfig.direction === "desc" ? (
-                      <FaSortAmountDown />
-                    ) : (
-                      <FaSortAmountUp />
-                    ))}
-                </button>
+              {/* Control Buttons */}
+              <div className="flex flex-wrap gap-4 mb-4">
+                {[
+                  { key: "title", label: "Title" },
+                  { key: "attempts", label: "Attempts" },
+                  { key: "time", label: "Time" },
+                ].map((sort) => (
+                  <button
+                    key={sort.key}
+                    onClick={() => handleSort(sort.key)}
+                    className="px-2 bg-blue-700 text-white  transition-all progress-grid flex items-center gap-2"
+                  >
+                    {sort.label}
+                    {sortConfig.key === sort.key &&
+                      (sortConfig.direction === "desc" ? (
+                        <ArrowDownAZ size={16} />
+                      ) : (
+                        <ArrowUpAZ size={16} />
+                      ))}
+                  </button>
+                ))}
                 <button
                   onClick={handleReset}
-                  className="flex btn-border items-center gap-2 px-3 py-1 bg-gray-600 text-white hover:bg-gray-700 transition-colors"
-                  title="Reset all filters and sorting"
+                  className="px-2 bg-blue-700 text-white  transition-all progress-grid flex items-center gap-2"
                 >
-                  <TbRefresh size={20} /> Reset
+                  <RefreshCcw size={16} /> Reset
                 </button>
               </div>
 
-              {/* Search Stats */}
-              <div className="text-gray-200 text-sm">
-                Showing {filteredProgress?.length} of {userProgress.length}{" "}
+              {/* Stats */}
+              <div className="text-gray-400 text-sm px-2">
+                Showing {filteredProgress.length} of {userProgress.length}{" "}
                 quizzes
                 {sortConfig.key && (
                   <span className="ml-2">
                     (Sorted by {sortConfig.key} -{" "}
-                    {sortConfig.direction === "desc"
-                      ? "descending"
-                      : "ascending"}
-                    )
+                    {sortConfig.direction === "desc" ? "↓" : "↑"})
                   </span>
                 )}
               </div>
             </div>
 
-            {/* No Results Message */}
-            {filteredProgress?.length === 0 && (
-              <div className="text-center text-gray-200 py-8 min-h-full">
-                No quizzes found matching &quot;{searchTerm}&quot;
+            {/* No Results */}
+            {filteredProgress.length === 0 && (
+              <div className="text-center text-gray-200 py-8 border-4 border-dashed border-rose-600">
+                No quizzes found matching "{searchTerm}"
               </div>
             )}
 
-            {/* Progress Grid */}
+            {/* Quiz Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProgress?.map((quiz) => (
+              {filteredProgress.map((quiz) => (
                 <div
                   key={quiz._id}
-                  className={`p-2 progress-grid transition-colors ${
-                    quiz.completed ? "bg-rose-600" : "bg-gray-800"
-                  }`}
+                  className={`
+                 relative p-4 progress-grid
+                 ${quiz.completed ? "bg-rose-600" : "bg-neutral-800"}
+                 
+              
+               `}
                 >
-                  <h4 className="text-white text-xl w-full text-center mb-2">
+                  {/* Title */}
+                  <h4 className="text-white text-xl mb-4 text-center px-2 py-1 bg-blue-600 border-b-4 border-blue-800">
                     {quiz.quizId.title}
                   </h4>
 
-                  <div className="text-white mb-1 space-y-1">
-                    <div className="attempts-time-spent-container bg-blue-700 flex flex-col mb-3 justify-around p-2">
-                      <span className="text-sm mb-1">Total Attempts:</span>
-                      <div className="text-yellow-400 flex items-center justify-center">
-                        {quiz.exercisesCompleted} attempts
+                  {/* Stats Boxes */}
+                  <div className="space-y-4">
+                    <div className="bg-blue-700 p-3 border-4 border-blue-900">
+                      <div className="text-sm text-gray-200 mb-1">
+                        Total Attempts
+                      </div>
+                      <div className="text-xl text-yellow-300 text-center">
+                        {quiz.exercisesCompleted}
                       </div>
                     </div>
-                    <div className="attempts-time-spent-container bg-blue-700 p-2 flex flex-col justify-around">
-                      <span className="text-sm mb-1">Total Time Spent: </span>
-                      <div className="text-yellow-400 flex items-center justify-center">
+
+                    <div className="bg-blue-700 p-3 border-4 border-blue-900">
+                      <div className="text-sm text-gray-200 mb-1">
+                        Time Spent
+                      </div>
+                      <div className="text-xl text-yellow-300 text-center">
                         {formatTimeSpent(quiz.totalTimeSpent)}
                       </div>
                     </div>
                   </div>
 
-                  <p className="text-xs text-white mt-2">
-                    <span>Last Attempt: </span>
+                  {/* Last Attempt Date */}
+                  <div className="mt-4 text-xs text-gray-200 border-t-2 border-yellow-500 pt-2">
+                    Last Attempt:{" "}
                     {new Date(quiz.lastAttemptDate).toLocaleDateString()}
-                  </p>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         ) : (
-          <p className="text-center text-slate-200 mt-10 text-lg">
+          <p className="text-center text-slate-100 mt-10 text-lg">
             You currently don&quot;t have any progress. Go play now and start
             tracking your progress!
           </p>

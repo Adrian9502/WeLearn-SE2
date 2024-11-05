@@ -3,9 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useUser } from "./UserContext";
 import { IoIosSearch } from "react-icons/io";
-import { TbRefresh } from "react-icons/tb";
 import { FaTrophy, FaSignOutAlt, FaChartLine } from "react-icons/fa";
-import { FaSortAmountDown, FaSortAmountUp } from "react-icons/fa";
 import { FiRefreshCcw as RefreshCcw } from "react-icons/fi";
 import {
   LuArrowUpAZ as ArrowUpAZ,
@@ -313,7 +311,7 @@ const RankingsDisplay = ({ onClose }) => {
         {rankingData.map((user, index) => (
           <div
             key={user.userId}
-            className="flex items-center justify-between p-4 bg-gray-800 rounded-lg border border-gray-700"
+            className="flex items-center justify-between p-4 bg-gray-800 btn-border"
           >
             <div className="flex items-center gap-3">
               <div className="w-8 text-center">
@@ -332,11 +330,13 @@ const RankingsDisplay = ({ onClose }) => {
                   <span className="text-gray-400">#{index + 1}</span>
                 )}
               </div>
-              <span className="text-white font-medium">{user.username}</span>
+              <span className="text-white">
+                {index + 1}. {user.username}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               {categoryConfig.icon}
-              <span className="text-yellow-400 font-bold">
+              <span className="text-yellow-400">
                 {categoryConfig.formatScore(user[categoryConfig.scoreField])}
               </span>
             </div>
@@ -394,14 +394,18 @@ const RankingsDisplay = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-gray-900 rounded-lg shadow-xl w-full max-w-4xl max-h-[80vh] overflow-hidden">
+      <div className="user-completed-quiz-container shadow-xl w-full max-w-4xl max-h-[80vh] overflow-hidden">
         {/* Header */}
-        <div className="p-6 border-b border-gray-800">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-cyan-400">Rankings</h2>
+        <div className="p-2">
+          <div className="flex items-center justify-between">
+            <div className="flex-grow text-center">
+              <h2 className="text-3xl mt-4 font-bold text-cyan-400 inline-block">
+                Rankings
+              </h2>
+            </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-200 text-xl"
+              className="text-gray-400 transition-colors hover:text-gray-200 text-xl"
             >
               ✕
             </button>
@@ -411,37 +415,37 @@ const RankingsDisplay = ({ onClose }) => {
         {/* Content */}
         <div className="p-6">
           {/* Tabs */}
-          <div className="grid grid-cols-5 gap-4 bg-gray-800 p-1 rounded-lg mb-6">
+          <div className="grid grid-cols-5 gap-4 p-1 rounded-lg mb-6">
             {Object.entries(rankingCategories).map(([key, category]) => (
               <button
                 key={key}
                 onClick={() => setActiveTab(key)}
-                className={`p-2 rounded-md transition-colors duration-200 ${
+                className={`p-1 btn-border transition-colors duration-200 ${
                   activeTab === key
-                    ? "bg-cyan-600 text-white"
-                    : "text-gray-400 hover:text-gray-200"
+                    ? "bg-blue-600 text-white"
+                    : "bg-fuchsia-700 text-gray-300 hover:text-gray-200"
                 }`}
               >
                 <div className="flex flex-col items-center gap-1">
                   {category.icon}
-                  <span className="text-xs">{category.title}</span>
+                  <span className="text-sm">{category.title}</span>
                 </div>
               </button>
             ))}
           </div>
 
           {/* Tab Content */}
-          <div className="mt-4">
+          <div className="mt-4 p-3 btn-border bg-blue-700 overflow-y-auto">
             {Object.entries(rankingCategories).map(([key, category]) => (
               <div
                 key={key}
                 className={`${activeTab === key ? "block" : "hidden"}`}
               >
                 <div className="mb-4">
-                  <h3 className="text-lg font-medium text-white">
+                  <h3 className="text-2xl text-center font-medium text-yellow-500">
                     {category.title}
                   </h3>
-                  <p className="text-gray-400 text-sm">
+                  <p className="text-gray-200 text-center text-sm">
                     {category.description}
                   </p>
                 </div>

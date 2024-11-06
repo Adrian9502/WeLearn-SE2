@@ -217,4 +217,68 @@ router.get("/rankings", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+// Route for getting the completion rate of users
+router.get("/completion-stats", async (req, res) => {
+  try {
+    // Get all progress records
+    const allProgress = await UserProgress.find().populate(
+      "quizId",
+      "totalExercises"
+    );
+
+    if (allProgress.length === 0) {
+      return res.json({
+        completionRate: 0,
+        totalQuizzes: 0,
+        completedQuizzes: 0,
+      });
+    }
+
+    // Count completed quizzes
+    const completedQuizzes = allProgress.filter(
+      (progress) => progress.completed
+    ).length;
+    const totalQuizzes = allProgress.length;
+
+    // Calculate completion rate as a percentage
+    const completionRate = (completedQuizzes / totalQuizzes) * 100;
+
+    res.json({
+      completionRate,
+      totalQuizzes,
+      completedQuizzes,
+      trend: calculateTrend(allProgress), // Optional: calculate trend
+    });
+  } catch (error) {
+    console.error("Error calculating completion rate:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+// Helper function to calculate trend (optional)
+function calculateTrend(allProgress) {
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const recentProgress = allProgress.filter(
+    (p) => new Date(p.lastAttemptDate) > thirtyDaysAgo
+  );
+
+  const previousProgress = allProgress.filter(
+    (p) => new Date(p.lastAttemptDate) <= thirtyDaysAgo
+  );
+
+  const recentRate =
+    (recentProgress.filter((p) => p.completed).length / recentProgress.length) *
+    100;
+  const previousRate =
+    (previousProgress.filter((p) => p.completed).length /
+      previousProgress.length) *
+    100;
+
+  return recentRate - previousRate;
+}
 module.exports = router;

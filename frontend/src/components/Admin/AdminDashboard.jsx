@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   FaChartBar,
   FaUsers,
@@ -25,26 +26,23 @@ import {
 } from "recharts";
 
 const OverviewCard = ({ title, count, Icon, trend }) => (
-  <div className="bg-gradient-to-r from-violet-600 to-fuchsia-500 shadow-md p-5 rounded-lg text-white hover:shadow-lg transition">
-    <div className="flex items-center justify-between h-36">
+  <div className="shadow-md px-6 py-8 rounded-lg hover:shadow-lg bg-gradient-to-bl from-purple-600 to-fuchsia-600 transition">
+    <div className="flex items-center justify-between">
       <div>
-        <h2 className="text-md font-medium">{title}</h2>
+        <h2 className="text-xl font-medium mb-2">{title}</h2>
         <p className="text-4xl font-bold">{count}</p>
-        {trend && (
-          <p className="text-sm mt-2">
-            {trend > 0 ? "↑" : "↓"} {Math.abs(trend)}% from last month
-          </p>
-        )}
       </div>
-      <Icon className="text-white text-5xl" />
+      <Icon className="text-5xl" />
     </div>
   </div>
 );
 
 const StatisticsCard = ({ title, children }) => (
-  <div className="bg-white shadow-lg rounded-lg p-6">
-    <h3 className="text-xl font-semibold text-gray-800 mb-4">{title}</h3>
-    <div className="h-64">{children}</div>
+  <div className="bg-gradient-to-bl from-purple-600 to-fuchsia-700 shadow-lg rounded-lg p-6">
+    <h3 className="text-xl font-semibold mb-4 flex items-center justify-around">
+      {title}
+    </h3>
+    <div className="h-64 bg-slate-200 p-2 rounded-lg">{children}</div>
   </div>
 );
 
@@ -54,6 +52,7 @@ export default function AdminDashboard() {
     users: 0,
     questions: 0,
     admins: 0,
+    completionRate: 0,
   });
   const [analytics, setAnalytics] = useState({
     userActivity: [],
@@ -65,13 +64,11 @@ export default function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [timeRange, setTimeRange] = useState("week"); // week, month, year
+  const [timeRange, setTimeRange] = useState("week");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Your existing fetch calls...
-
         // Additional analytics fetch calls
         const [userActivity, quizStats, timeStats, rankings] =
           await Promise.all([
@@ -108,13 +105,62 @@ export default function AdminDashboard() {
     fetchData();
   }, [timeRange]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // fetch all users
+        const fetchUser = await axios.get("http://localhost:5000/api/users");
+        // fetch all admins
+        const fetchAdmin = await axios.get("http://localhost:5000/api/admins");
+        // fetch all quizzes
+        const fetchQuizzes = await axios.get(
+          "http://localhost:5000/api/quizzes"
+        );
+
+        const users = fetchUser.data;
+        const admin = fetchAdmin.data;
+        const quizzes = fetchQuizzes.data;
+        const totalUsers = users.length;
+        const totalAdmins = admin.length;
+        const totalQuizzes = quizzes.length;
+        const totalQuestions = quizzes.reduce((count, quiz) => {
+          return count + (quiz.question ? 1 : 0);
+        }, 0);
+
+        // Fetch completion rate
+        const fetchCompletionRate = await axios.get(
+          "http://localhost:5000/api/progress/completion-stats"
+        );
+
+        // Set the combined overview data
+        setOverviewData({
+          quizzes: totalQuizzes,
+          users: totalUsers,
+          questions: totalQuestions,
+          admins: totalAdmins,
+          completionRate: fetchCompletionRate.data.completionRate,
+        });
+
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   if (loading || error) {
     return <div>{/* Your existing loading/error state */}</div>;
   }
 
   return (
-    <div className="min-h-screen p-8 bg-gray-50">
-      <h1 className="text-4xl border-b-2 border-violet-700 p-4 font-bold text-violet-700 mb-8">
+    <div
+      className="min-h-screen w-full p-8 bg-slate-100"
+      style={{ fontFamily: "Lexend" }}
+    >
+      <h1 className="text-4xl font-bold text-purple-600 mb-8">
         Admin Dashboard
       </h1>
 
@@ -124,32 +170,28 @@ export default function AdminDashboard() {
           title="Total Quizzes"
           count={overviewData.quizzes}
           Icon={FaClipboardList}
-          trend={5.2}
         />
         <OverviewCard
-          title="Active Users"
+          title="Total Users"
           count={overviewData.users}
           Icon={FaUsers}
-          trend={12.5}
         />
         <OverviewCard
           title="Total Questions"
           count={overviewData.questions}
           Icon={FaQuestionCircle}
-          trend={8.1}
         />
         <OverviewCard
           title="Completion Rate"
           count={`${Math.round(overviewData.completionRate)}%`}
           Icon={FaCheckCircle}
-          trend={3.7}
         />
       </div>
 
       {/* Time Range Selector */}
       <div className="mb-6">
         <select
-          className="bg-white border border-gray-300 rounded-md px-4 py-2"
+          className="bg-purple-600 text-white border rounded-md px-4 py-2 hover:bg-purple-700 transition"
           value={timeRange}
           onChange={(e) => setTimeRange(e.target.value)}
         >
@@ -169,8 +211,8 @@ export default function AdminDashboard() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="activeUsers" stroke="#8884d8" />
-              <Line type="monotone" dataKey="newUsers" stroke="#82ca9d" />
+              <Line type="monotone" dataKey="activeUsers" stroke="#3b82f6" />
+              <Line type="monotone" dataKey="newUsers" stroke="#10b981" />
             </LineChart>
           </ResponsiveContainer>
         </StatisticsCard>
@@ -183,7 +225,7 @@ export default function AdminDashboard() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="completionRate" fill="#8884d8" />
+              <Bar dataKey="completionRate" fill="#3b82f6" />
             </BarChart>
           </ResponsiveContainer>
         </StatisticsCard>
@@ -196,7 +238,7 @@ export default function AdminDashboard() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="avgTime" stroke="#82ca9d" />
+              <Line type="monotone" dataKey="avgTime" stroke="#10b981" />
             </LineChart>
           </ResponsiveContainer>
         </StatisticsCard>

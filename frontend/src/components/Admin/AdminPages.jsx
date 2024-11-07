@@ -7,9 +7,9 @@ import ManageAdmins from "./ManageAdmins/ManageAdmins";
 
 export default function AdminPages() {
   return (
-    <div className="flex text-white">
+    <div className="min-h-screen bg-slate-900">
       <AdminSidebar />
-      <div className="flex-1">
+      <main className="lg:ml-64 min-h-screen">
         <Routes>
           <Route path="/" element={<AdminDashboard />} />
 
@@ -17,7 +17,7 @@ export default function AdminPages() {
           <Route path="manage-users" element={<ManageUsers />} />
           <Route path="manage-admins" element={<ManageAdmins />} />
         </Routes>
-      </div>
+      </main>
     </div>
   );
 }

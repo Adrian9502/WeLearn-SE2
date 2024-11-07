@@ -214,7 +214,6 @@ const Forms = ({
             coins: response.data.user.coins,
           };
           saveUser(userData);
-          console.log(userData);
         }
         setSuccessfulLogin(true);
 

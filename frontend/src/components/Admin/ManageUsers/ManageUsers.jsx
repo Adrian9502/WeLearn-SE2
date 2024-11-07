@@ -123,7 +123,7 @@ const ManageUsers = () => {
   if (loading) {
     return (
       <div
-        className="flex h-screen items-center justify-center mb-5"
+        className="flex min-h-screen items-center justify-center mb-5"
         data-testid="loading-spinner"
       >
         <ThreeDots

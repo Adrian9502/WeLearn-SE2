@@ -167,7 +167,7 @@ const QuizDashboardManager = ({
   <div
     data-testid="quiz-dashboard-manager"
     style={{ fontFamily: "Lexend" }}
-    className="bg-slate-200 w-full p-10 flex flex-col gap-16 min-h-screen"
+    className="bg-slate-200 w-full p-10 flex flex-col gap-20 min-h-screen"
   >
     <div className="flex items-center justify-between">
       <span className="text-4xl w-fit p-4 border-b-2 text-violet-700 border-violet-700 font-bold">

@@ -162,7 +162,7 @@ const DashboardManager = ({
     <div
       data-testid="dashboard-manager"
       style={{ fontFamily: "Lexend" }}
-      className="bg-slate-200 ml-64 p-10 flex flex-col gap-20 min-h-screen"
+      className="bg-slate-200 w-full p-10 flex flex-col gap-20 min-h-screen"
     >
       <div className="flex items-center justify-between">
         <span className="text-4xl w-fit p-4 border-b-2 text-violet-700 border-violet-700 font-bold">
@@ -183,7 +183,7 @@ const DashboardManager = ({
         </div>
       </div>
 
-      <div className="flex overflow-x-auto border">
+      <div className="flex overflow-y-auto h-[650px]">
         <Table
           columns={tableColumns}
           rows={tableRows}

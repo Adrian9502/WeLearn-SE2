@@ -3,7 +3,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { ProgressBar } from "react-loader-spinner";
 import PropTypes from "prop-types";
-const API_BASE_URL = "http://localhost:5000/api/quizzes";
+const API_BASE_URL = "/api/quizzes";
 
 const InputField = ({
   label,

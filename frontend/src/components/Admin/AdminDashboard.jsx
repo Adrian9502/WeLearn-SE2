@@ -25,7 +25,7 @@ import {
   Cell,
 } from "recharts";
 
-const OverviewCard = ({ title, count, Icon, trend }) => (
+const OverviewCard = ({ title, count, Icon }) => (
   <div className="shadow-md px-6 py-8 rounded-lg hover:shadow-lg bg-gradient-to-bl from-purple-600 to-fuchsia-600 transition">
     <div className="flex items-center justify-between">
       <div>
@@ -72,18 +72,10 @@ export default function AdminDashboard() {
         // Additional analytics fetch calls
         const [userActivity, quizStats, timeStats, rankings] =
           await Promise.all([
-            fetch("http://localhost:5000/api/analytics/user-activity").then(
-              (res) => res.json()
-            ),
-            fetch("http://localhost:5000/api/analytics/quiz-stats").then(
-              (res) => res.json()
-            ),
-            fetch("http://localhost:5000/api/analytics/time-stats").then(
-              (res) => res.json()
-            ),
-            fetch("http://localhost:5000/api/progress/rankings").then((res) =>
-              res.json()
-            ),
+            fetch("/api/analytics/user-activity").then((res) => res.json()),
+            fetch("/api/analytics/quiz-stats").then((res) => res.json()),
+            fetch("/api/analytics/time-stats").then((res) => res.json()),
+            fetch("/api/progress/rankings").then((res) => res.json()),
           ]);
 
         setAnalytics({
@@ -109,13 +101,11 @@ export default function AdminDashboard() {
     const fetchData = async () => {
       try {
         // fetch all users
-        const fetchUser = await axios.get("http://localhost:5000/api/users");
+        const fetchUser = await axios.get("/api/users");
         // fetch all admins
-        const fetchAdmin = await axios.get("http://localhost:5000/api/admins");
+        const fetchAdmin = await axios.get("/api/admins");
         // fetch all quizzes
-        const fetchQuizzes = await axios.get(
-          "http://localhost:5000/api/quizzes"
-        );
+        const fetchQuizzes = await axios.get("/api/quizzes");
 
         const users = fetchUser.data;
         const admin = fetchAdmin.data;
@@ -129,7 +119,7 @@ export default function AdminDashboard() {
 
         // Fetch completion rate
         const fetchCompletionRate = await axios.get(
-          "http://localhost:5000/api/progress/completion-stats"
+          "/api/progress/completion-stats"
         );
 
         // Set the combined overview data

@@ -281,9 +281,7 @@ const RankingsDisplay = ({ onClose }) => {
   useEffect(() => {
     const fetchRankings = async () => {
       try {
-        const response = await fetch(
-          "http://localhost:5000/api/progress/rankings"
-        );
+        const response = await fetch("/api/progress/rankings");
         const data = await response.json();
 
         const processedRankings = {
@@ -464,7 +462,7 @@ const useQuizzes = () => {
   useEffect(() => {
     const fetchQuizzes = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/quizzes");
+        const response = await fetch("/api/quizzes");
         const data = await response.json();
         setQuizzes(data);
       } catch (error) {
@@ -688,9 +686,7 @@ export default function Sidebar({ onQuizSelect, userProgress }) {
   // Function to fetch user count of completed quiz in quizzes
   const fetchUserQuizCompleted = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/progress/user/${userId}/summary`
-      );
+      const response = await fetch(`/api/progress/user/${userId}/summary`);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }

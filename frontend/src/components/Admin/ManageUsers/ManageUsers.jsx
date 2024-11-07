@@ -28,7 +28,7 @@ const ManageUsers = () => {
   const fetchUserData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:5000/api/users");
+      const response = await axios.get("/api/users");
       const transformedData = response.data.map((user) => ({
         ID: user._id,
         Name: user.fullName,

@@ -29,7 +29,7 @@ export default function UserDashboard() {
       const fetchCompletedQuizzes = async () => {
         try {
           const response = await axios.get(
-            `http://localhost:5000/api/progress/user/${userId}/summary`
+            `/api/progress/user/${userId}/summary`
           );
           const completed = new Set(
             response.data.quizzes
@@ -59,9 +59,7 @@ export default function UserDashboard() {
 
   const fetchUserProgress = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:5000/api/progress/user/${userId}/summary`
-      );
+      const response = await axios.get(`/api/progress/user/${userId}/summary`);
 
       const quizzes = response.data.quizzes;
       setUserProgress(quizzes);
@@ -75,7 +73,7 @@ export default function UserDashboard() {
 
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/progress/${userId}/${selectedQuiz._id}`
+        `/api/progress/${userId}/${selectedQuiz._id}`
       );
 
       if (response.data.progress) {
@@ -96,26 +94,20 @@ export default function UserDashboard() {
 
   const updateProgress = async (isCorrect, timeSpent) => {
     try {
-      await axios.post(
-        `http://localhost:5000/api/progress/${userId}/${selectedQuiz._id}/answer`,
-        {
-          questionId: selectedQuiz._id,
-          userAnswer,
-          isCorrect,
-          timeSpent,
-          completed: isCorrect,
-        }
-      );
+      await axios.post(`/api/progress/${userId}/${selectedQuiz._id}/answer`, {
+        questionId: selectedQuiz._id,
+        userAnswer,
+        isCorrect,
+        timeSpent,
+        completed: isCorrect,
+      });
 
       if (isCorrect) {
         // Update coins with explicit operation
-        const updatedUser = await axios.put(
-          `http://localhost:5000/api/users/${userId}/coins`,
-          {
-            coins: 100,
-            operation: "add",
-          }
-        );
+        const updatedUser = await axios.put(`/api/users/${userId}/coins`, {
+          coins: 100,
+          operation: "add",
+        });
 
         const newCoins = updatedUser.data.coins;
         updateUser({ ...user, coins: newCoins });
@@ -256,13 +248,10 @@ export default function UserDashboard() {
       if (result.isConfirmed) {
         if (user.coins >= 300) {
           try {
-            const response = await axios.put(
-              `http://localhost:5000/api/users/${userId}/coins`,
-              {
-                coins: 300,
-                operation: "subtract",
-              }
-            );
+            const response = await axios.put(`/api/users/${userId}/coins`, {
+              coins: 300,
+              operation: "subtract",
+            });
 
             const updatedCoins = response.data.coins;
             setUserAnswer(selectedQuiz.answer);

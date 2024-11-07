@@ -189,9 +189,7 @@ const Forms = ({
 
     try {
       // Define the correct endpoint based on whether it's an admin login
-      const endpoint = isAdmin
-        ? "http://localhost:5000/login/admin"
-        : "http://localhost:5000/login/user";
+      const endpoint = isAdmin ? "/login/admin" : "/login/user";
 
       const response = await axios.post(endpoint, {
         username,
@@ -245,9 +243,7 @@ const Forms = ({
     setLoading(true);
 
     try {
-      const endpoint = isAdmin
-        ? "http://localhost:5000/register/admin"
-        : "http://localhost:5000/register/user";
+      const endpoint = isAdmin ? "/register/admin" : "/register/user";
       await axios.post(endpoint, { ...formData, isAdmin });
 
       // Set success state to true and show success message

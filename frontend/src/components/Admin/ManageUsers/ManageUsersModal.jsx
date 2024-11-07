@@ -4,7 +4,7 @@ import Swal from "sweetalert2";
 import { ThreeDots } from "react-loader-spinner";
 import PropTypes from "prop-types";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-const API_BASE_URL = "http://localhost:5000/api/users";
+const API_BASE_URL = "/api/users";
 
 // INPUT FIELD COMPONENT
 const InputField = ({

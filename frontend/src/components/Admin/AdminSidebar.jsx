@@ -3,15 +3,41 @@ import { FaUser, FaQuestionCircle, FaCogs, FaChartLine } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { RiLogoutBoxLine, RiMenuLine, RiCloseLine } from "react-icons/ri";
 import { RiAdminFill } from "react-icons/ri";
-
+import Swal from "sweetalert2";
 const AdminSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    navigate("/");
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You will be logged out of the admin dashboard",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, logout",
+      background: "#1e293b", // Dark background
+      color: "#fff", // White text
+      customClass: {
+        popup: "border border-slate-700",
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        localStorage.removeItem("authToken");
+        Swal.fire({
+          title: "Logged Out!",
+          text: "You have been successfully logged out.",
+          icon: "success",
+          background: "#1e293b",
+          color: "#fff",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+        navigate("/");
+      }
+    });
   };
 
   const toggleSidebar = () => {

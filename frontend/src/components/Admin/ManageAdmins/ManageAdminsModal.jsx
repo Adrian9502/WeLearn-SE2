@@ -267,6 +267,11 @@ const ManageAdminsModal = ({
     if (!validateForm()) {
       Swal.fire({
         title: "Validation Error",
+        background: "#1e293b", // Dark background
+        color: "#fff", // White text
+        customClass: {
+          popup: "border border-slate-700",
+        },
         text: "Please check all fields and try again",
         icon: "error",
       });
@@ -304,6 +309,11 @@ const ManageAdminsModal = ({
 
       Swal.fire({
         title: "Success!",
+        background: "#1e293b", // Dark background
+        color: "#fff", // White text
+        customClass: {
+          popup: "border border-slate-700",
+        },
         text: response.data.message,
         icon: "success",
       });
@@ -314,6 +324,11 @@ const ManageAdminsModal = ({
     } catch (error) {
       Swal.fire({
         title: "Error",
+        background: "#1e293b", // Dark background
+        color: "#fff", // White text
+        customClass: {
+          popup: "border border-slate-700",
+        },
         text: `Error ${error.response?.status}: ${
           error.response?.message || "An error occurred"
         }`,

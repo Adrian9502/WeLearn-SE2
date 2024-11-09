@@ -232,6 +232,11 @@ const ManageQuizzesModal = ({
     if (!validateForm()) {
       Swal.fire({
         title: "Validation Error",
+        background: "#1e293b", // Dark background
+        color: "#fff", // White text
+        customClass: {
+          popup: "border border-slate-700",
+        },
         text: "Please check all fields and try again",
         icon: "error",
       });
@@ -269,6 +274,11 @@ const ManageQuizzesModal = ({
 
       Swal.fire({
         title: "Success!",
+        background: "#1e293b", // Dark background
+        color: "#fff", // White text
+        customClass: {
+          popup: "border border-slate-700",
+        },
         text: response.data.message,
         icon: "success",
       });
@@ -279,6 +289,11 @@ const ManageQuizzesModal = ({
     } catch (error) {
       Swal.fire({
         title: "Error",
+        background: "#1e293b", // Dark background
+        color: "#fff", // White text
+        customClass: {
+          popup: "border border-slate-700",
+        },
         text: error.response?.data.message || "An error occurred",
         icon: "error",
       });

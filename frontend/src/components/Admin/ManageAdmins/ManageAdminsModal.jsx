@@ -5,7 +5,7 @@ import { ThreeDots } from "react-loader-spinner";
 import PropTypes from "prop-types";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-const API_BASE_URL = "http://localhost:5000/api/admins";
+const API_BASE_URL = "/api/admins";
 
 // INPUT FIELD COMPONENT
 const InputField = ({

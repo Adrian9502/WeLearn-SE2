@@ -30,7 +30,11 @@ const OverviewCard = ({ title, count, Icon }) => (
         <div>
           <h2 className="text-xl font-medium text-slate-400 mb-2">{title}</h2>
           <p className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
-            {count}
+            {count ? (
+              count
+            ) : (
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+            )}
           </p>
         </div>
         <Icon className="text-5xl text-cyan-400" />

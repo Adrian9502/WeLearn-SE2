@@ -144,39 +144,6 @@ const Button = ({ onClick, type, className, children }) => (
     {children}
   </button>
 );
-
-// const fetchData = async ({
-//   validateForm,
-//   formData,
-//   resetForm,
-//   apiEndpoint,
-//   method = "POST",
-//   callback,
-//   handleCloseModal,
-// }) => {
-//   if (!validateForm(formData)) {
-//     return;
-//   }
-
-//   try {
-//     const response = await axios({ method, url: apiEndpoint, data: formData });
-//     sweetAlert({
-//       title: "Success!",
-//       text: response.data.message,
-//       icon: "success",
-//     });
-//     callback();
-//     handleCloseModal();
-//     resetForm();
-//   } catch (error) {
-//     sweetAlert({
-//       title: "Error",
-//       text: error.response?.data.message || "An error occurred",
-//       icon: "error",
-//     });
-//   }
-// };
-
 const ManageQuizzesModal = ({
   isOpen,
   onClose,

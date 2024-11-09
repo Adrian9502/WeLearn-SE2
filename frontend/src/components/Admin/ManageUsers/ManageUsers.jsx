@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import ManageUsersModal from "./ManageUsersModal";
 import DashboardManager from "../DashboardManager";
 import axios from "axios";
-import { ThreeDots } from "react-loader-spinner";
 
 // MAIN COMPONENT
 const ManageUsers = () => {
@@ -122,23 +121,12 @@ const ManageUsers = () => {
   // LOADING STATE
   if (loading) {
     return (
-      <div
-        className="flex min-h-screen items-center justify-center mb-5"
-        data-testid="loading-spinner"
-      >
-        <ThreeDots
-          visible={true}
-          height="80"
-          width="80"
-          color="#6d28d9"
-          radius="9"
-          ariaLabel="three-dots-loading"
-          wrapperStyle={{}}
-          wrapperClass=""
-        />
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
       </div>
     );
   }
+
   // ERROR STATE
   if (error) {
     return (
@@ -169,6 +157,7 @@ const ManageUsers = () => {
         onSearchChange={handleSearch}
         sortConfig={sortConfig}
         onSort={handleSort}
+        sortTitle={"Name"}
       />
       <ManageUsersModal
         isOpen={isModalOpen}

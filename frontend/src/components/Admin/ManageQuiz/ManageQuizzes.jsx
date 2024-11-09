@@ -77,13 +77,13 @@ const ManageQuizzes = () => {
     let sortableItems = [...filteredData];
     if (sortConfig.key !== null) {
       sortableItems.sort((a, b) => {
-        const aValue = a[sortConfig.key].toString().toLowerCase();
-        const bValue = b[sortConfig.key].toString().toLowerCase();
+        const aValue = a[sortConfig.key] ?? "";
+        const bValue = b[sortConfig.key] ?? "";
 
-        if (aValue < bValue) {
+        if (aValue.toString().toLowerCase() < bValue.toString().toLowerCase()) {
           return sortConfig.direction === "asc" ? -1 : 1;
         }
-        if (aValue > bValue) {
+        if (aValue.toString().toLowerCase() > bValue.toString().toLowerCase()) {
           return sortConfig.direction === "asc" ? 1 : -1;
         }
         return 0;

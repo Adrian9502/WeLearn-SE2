@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FaUser, FaQuestionCircle, FaCogs, FaChartLine } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { RiLogoutBoxLine, RiMenuLine, RiCloseLine } from "react-icons/ri";
+import { RiAdminFill } from "react-icons/ri";
 
 const AdminSidebar = () => {
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ const AdminSidebar = () => {
     },
     {
       path: "/admin-dashboard/manage-admins",
-      icon: <FaUser size={20} />,
+      icon: <RiAdminFill size={20} />,
       label: "Manage Admins",
     },
   ];

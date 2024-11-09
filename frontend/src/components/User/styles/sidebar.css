@@ -1,17 +1,17 @@
 /* Sidebar styles */
 ::-webkit-scrollbar {
   width: 5px;
+  height: 5px;
 }
 /* Track */
 ::-webkit-scrollbar-track {
-  background: #460261;
+  background: #000000;
 }
 ::-webkit-scrollbar-thumb {
-  background: #c305e9;
+  background: #6a0cc7;
+  border-radius: 20px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
+
 .sidebar {
   width: 275px;
   padding: 5px;

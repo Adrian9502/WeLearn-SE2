@@ -33,7 +33,6 @@ const SearchAndSort = ({
           className="flex-grow p-2 rounded-md text-gray-900"
         />
       </div>
-      {/* Search is now real-time */}
       <SortButton
         label={
           sortConfig.direction === "asc" ? (
@@ -162,7 +161,7 @@ const DashboardManager = ({
     <div
       data-testid="dashboard-manager"
       style={{ fontFamily: "Lexend" }}
-      className="bg-slate-200 w-full p-10 flex flex-col gap-20 min-h-screen"
+      className="bg-slate-200 w-full text-white p-10 flex flex-col gap-20 min-h-screen"
     >
       <div className="flex items-center justify-between">
         <span className="text-4xl w-fit p-4 border-b-2 text-violet-700 border-violet-700 font-bold">

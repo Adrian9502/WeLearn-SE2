@@ -1,10 +1,44 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { ProgressBar } from "react-loader-spinner";
 import PropTypes from "prop-types";
+import { IoCloseOutline } from "react-icons/io5";
+
 const API_BASE_URL = "/api/quizzes";
 
+const validateField = (name, value, actionType) => {
+  switch (name) {
+    case "quizId":
+      if (actionType === "create") return ""; // Skip validation for `create` action
+      if (!value) return "Quiz ID is required";
+      if (!/^[A-Za-z0-9-_]+$/.test(value))
+        return "Quiz ID can only contain letters, numbers, hyphens and underscores";
+      if (value.length < 3) return "Quiz ID must be at least 3 characters";
+      return "";
+    case "title":
+      if (!value) return "Title is required";
+      if (value.length < 3) return "Title must be at least 3 characters";
+      if (value.length > 100) return "Title must not exceed 100 characters";
+      return "";
+    case "instruction":
+      if (!value) return "Instructions are required";
+      if (value.length < 8) return "Instructions must be at least 8 characters";
+      return "";
+    case "question":
+      if (!value) return "Question is required";
+      if (value.length < 5) return "Question must be at least 5 characters";
+      return "";
+    case "answer":
+      if (!value) return "Answer is required";
+      if (value.length < 5) return "Answer must be at least 5 characters";
+      return "";
+    case "category":
+      if (!value) return "Category is required";
+      return "";
+    default:
+      return "";
+  }
+};
 const InputField = ({
   label,
   name,
@@ -12,37 +46,91 @@ const InputField = ({
   onChange,
   placeholder,
   type = "text",
+  error,
 }) => (
-  <div className="my-2">
-    <label htmlFor={name} className="block text-lg font-semibold mb-2">
-      {label}
-    </label>
-    <input
-      id={name}
-      name={name}
-      type={type}
-      value={value}
-      onChange={onChange}
-      className="text-gray-900 rounded-md focus:shadow-lg w-full p-2 focus:outline-none"
-      placeholder={placeholder}
-      required
-    />
+  <div className="relative space-y-2 mb-4">
+    <div className="flex justify-between items-center">
+      <label
+        htmlFor={name}
+        className="block text-sm font-medium text-slate-300"
+      >
+        {label}
+      </label>
+      {error && (
+        <span className="text-xs text-red-400 ml-2 animate-fadeIn">
+          {error}
+        </span>
+      )}
+    </div>
+    <div className="relative">
+      <input
+        id={name}
+        name={name}
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className={`
+          w-full
+          p-2
+          border-2 ${error ? "border-red-500 " : "border-slate-700"}
+          placeholder-slate-400
+          text-slate-950
+          rounded-lg
+          transition-all
+          duration-200
+          focus:outline-none
+          focus:ring-2
+          ${error ? "focus:ring-red-500/50" : "focus:ring-indigo-500"}
+          hover:border-slate-600
+        `}
+      />
+    </div>
   </div>
 );
 
-const TextAreaField = ({ label, name, value, onChange, placeholder }) => (
-  <div className="my-2">
-    <label htmlFor={name} className="block text-lg font-semibold mb-2">
-      {label}
-    </label>
+const TextAreaField = ({
+  label,
+  name,
+  value,
+  onChange,
+  placeholder,
+  error,
+}) => (
+  <div className="relative space-y-2 mb-4">
+    <div className="flex justify-between items-center">
+      <label
+        htmlFor={name}
+        className="block text-sm font-medium text-slate-300"
+      >
+        {label}
+      </label>
+      {error && (
+        <span className="text-xs text-red-400 ml-2 animate-fadeIn">
+          {error}
+        </span>
+      )}
+    </div>
     <textarea
       id={name}
       name={name}
       value={value}
       onChange={onChange}
-      className="text-gray-900 rounded-md focus:shadow-lg resize-none w-full p-2 focus:outline-none"
+      className={`
+        w-full
+        p-2
+        border-2 ${error ? "border-red-500" : "border-slate-700"}
+        placeholder-slate-400
+        text-slate-950
+        rounded-lg
+        transition-all
+        duration-200
+        focus:outline-none
+        focus:ring-2
+        ${error ? "focus:ring-red-500/50" : "focus:ring-indigo-500"}
+        hover:border-slate-600
+      `}
       placeholder={placeholder}
-      required
     />
   </div>
 );
@@ -57,53 +145,37 @@ const Button = ({ onClick, type, className, children }) => (
   </button>
 );
 
-const sweetAlert = ({ title, text, icon }) => {
-  Swal.fire({ title, text, icon });
-};
-const validateForm = (formData) => {
-  const { title, instruction, question, answer, category } = formData;
-  if (!title || !instruction || !question || !answer || !category) {
-    sweetAlert({
-      title: "Error",
-      text: "All fields are required.",
-      icon: "error",
-    });
-    return false;
-  }
-  return true;
-};
+// const fetchData = async ({
+//   validateForm,
+//   formData,
+//   resetForm,
+//   apiEndpoint,
+//   method = "POST",
+//   callback,
+//   handleCloseModal,
+// }) => {
+//   if (!validateForm(formData)) {
+//     return;
+//   }
 
-const fetchData = async ({
-  validateForm,
-  formData,
-  resetForm,
-  apiEndpoint,
-  method = "POST",
-  callback,
-  handleCloseModal,
-}) => {
-  if (!validateForm(formData)) {
-    return;
-  }
-
-  try {
-    const response = await axios({ method, url: apiEndpoint, data: formData });
-    sweetAlert({
-      title: "Success!",
-      text: response.data.message,
-      icon: "success",
-    });
-    callback();
-    handleCloseModal();
-    resetForm();
-  } catch (error) {
-    sweetAlert({
-      title: "Error",
-      text: error.response?.data.message || "An error occurred",
-      icon: "error",
-    });
-  }
-};
+//   try {
+//     const response = await axios({ method, url: apiEndpoint, data: formData });
+//     sweetAlert({
+//       title: "Success!",
+//       text: response.data.message,
+//       icon: "success",
+//     });
+//     callback();
+//     handleCloseModal();
+//     resetForm();
+//   } catch (error) {
+//     sweetAlert({
+//       title: "Error",
+//       text: error.response?.data.message || "An error occurred",
+//       icon: "error",
+//     });
+//   }
+// };
 
 const ManageQuizzesModal = ({
   isOpen,
@@ -121,8 +193,9 @@ const ManageQuizzesModal = ({
     answer: "",
     category: "",
   });
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-
+  const [touched, setTouched] = useState({});
   const resetForm = () => {
     setFormData({
       quizId: "",
@@ -132,8 +205,21 @@ const ManageQuizzesModal = ({
       answer: "",
       category: "",
     });
+    setErrors({});
+    setTouched({});
   };
+  // validate form function
+  const validateForm = () => {
+    const newErrors = {};
+    Object.keys(formData).forEach((key) => {
+      if (type === "delete" && key !== "quizId") return;
+      const error = validateField(key, formData[key], type);
+      if (error) newErrors[key] = error;
+    });
 
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
   useEffect(() => {
     if (!isOpen) {
       resetForm();
@@ -145,10 +231,46 @@ const ManageQuizzesModal = ({
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Validate field on change if it's been touched
+    if (touched[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: validateField(name, value),
+      }));
+    }
+  };
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    setErrors((prev) => ({
+      ...prev,
+      [name]: validateField(name, value),
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Mark all fields as touched
+    const allTouched = Object.keys(formData).reduce(
+      (acc, key) => ({
+        ...acc,
+        [key]: true,
+      }),
+      {}
+    );
+    setTouched(allTouched);
+
+    if (!validateForm()) {
+      Swal.fire({
+        title: "Validation Error",
+        text: "Please check all fields and try again",
+        icon: "error",
+      });
+      return;
+    }
+
     setLoading(true);
 
     const apiActions = {
@@ -171,17 +293,31 @@ const ManageQuizzesModal = ({
 
     const action = apiActions[type];
 
-    await fetchData({
-      validateForm: type === "delete" ? () => true : validateForm,
-      formData,
-      resetForm,
-      apiEndpoint: action.endpoint,
-      method: action.method,
-      callback: action.callback,
-      handleCloseModal: onClose,
-    });
+    try {
+      const response = await axios({
+        method: action.method,
+        url: action.endpoint,
+        data: formData,
+      });
 
-    setLoading(false);
+      Swal.fire({
+        title: "Success!",
+        text: response.data.message,
+        icon: "success",
+      });
+
+      action.callback();
+      onClose();
+      resetForm();
+    } catch (error) {
+      Swal.fire({
+        title: "Error",
+        text: error.response?.data.message || "An error occurred",
+        icon: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const renderForm = () => {
@@ -192,55 +328,84 @@ const ManageQuizzesModal = ({
           <>
             {type === "update" && (
               <InputField
-                label="Quiz ID:"
+                label="Quiz ID"
                 name="quizId"
                 value={formData.quizId}
                 onChange={handleInputChange}
+                onBlur={handleBlur}
                 placeholder="Enter existing quiz id"
+                error={errors.quizId}
               />
             )}
             <InputField
-              label="Title:"
+              label="Title"
               name="title"
               value={formData.title}
               onChange={handleInputChange}
+              onBlur={handleBlur}
               placeholder="Enter quiz title"
+              error={errors.title}
             />
             <TextAreaField
-              label="Instructions:"
+              label="Instructions"
               name="instruction"
               value={formData.instruction}
               onChange={handleInputChange}
+              onBlur={handleBlur}
               placeholder="Enter quiz instructions"
+              error={errors.instruction}
             />
             <TextAreaField
-              label="Question:"
+              label="Question"
               name="question"
               value={formData.question}
               onChange={handleInputChange}
+              onBlur={handleBlur}
               placeholder="Enter quiz question"
+              error={errors.question}
             />
             <TextAreaField
-              label="Answer:"
+              label="Answer"
               name="answer"
               value={formData.answer}
               onChange={handleInputChange}
+              onBlur={handleBlur}
               placeholder="Enter quiz answer"
+              error={errors.answer}
             />
-            <div className="my-2">
-              <label
-                htmlFor="category"
-                className="block text-lg font-semibold mb-2"
-              >
-                Category:
-              </label>
+            <div className="relative space-y-2 mb-8">
+              <div className="flex justify-between items-center">
+                <label
+                  htmlFor="category"
+                  className="block text-sm font-medium text-slate-300"
+                >
+                  Category
+                </label>
+                {errors.category && (
+                  <span className="text-xs text-red-400 ml-2 animate-fadeIn">
+                    {errors.category}
+                  </span>
+                )}
+              </div>
               <select
                 id="category"
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
-                className="text-gray-900 rounded-md focus:shadow-lg w-full p-2 focus:outline-none"
-                required
+                onBlur={handleBlur}
+                className={`
+                  text-gray-900 
+                  p-2.5 
+                  w-full 
+                  rounded-lg 
+                  focus:outline-none 
+                  focus:ring-2 
+                  ${
+                    errors.category
+                      ? "border-red-500 focus:ring-red-500/50"
+                      : "focus:ring-indigo-500"
+                  }
+                `}
               >
                 <option value="">Select a category</option>
                 <option value="Sorting Algorithm">Sorting Algorithm</option>
@@ -251,15 +416,15 @@ const ManageQuizzesModal = ({
         );
       case "delete":
         return (
-          <>
-            <InputField
-              label="Quiz ID:"
-              name="quizId"
-              value={formData.quizId}
-              onChange={handleInputChange}
-              placeholder="Enter quiz id to delete"
-            />
-          </>
+          <InputField
+            label="Quiz ID"
+            name="quizId"
+            value={formData.quizId}
+            onChange={handleInputChange}
+            onBlur={handleBlur}
+            placeholder="Enter quiz id to delete"
+            error={errors.quizId}
+          />
         );
       default:
         return null;
@@ -267,46 +432,43 @@ const ManageQuizzesModal = ({
   };
 
   return (
-    <div className="fixed inset-0 flex justify-center items-center z-30 bg-black bg-opacity-50">
-      <div className="rounded-lg  bg-violet-700 p-8 w-96">
-        <h2 className="text-3xl text-center font-bold mb-4">
-          {type.charAt(0).toUpperCase() + type.slice(1)} Quiz
-        </h2>
-        {loading ? (
-          <div className="text-center my-4">
-            <div className="flex justify-center mb-5">
-              <ProgressBar
-                visible={true}
-                height="80"
-                width="80"
-                color="#4fa94d"
-                ariaLabel="progress-bar-loading"
-              />
+    <div
+      style={{ fontFamily: "lexend" }}
+      className="fixed inset-0 flex justify-center items-center z-30 bg-black bg-opacity-50"
+    >
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-[1px]">
+        <div className="rounded-xl relative bg-slate-900 text-slate-200 p-8 w-80 lg:w-96">
+          <h2 className="text-xl md:text-2xl text-center font-medium mb-4">
+            {type.charAt(0).toUpperCase() + type.slice(1)} Quiz
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-white absolute right-4 top-4"
+          >
+            <IoCloseOutline size={20} />
+          </button>
+          {loading ? (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
             </div>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">{renderForm()}</div>
-            <div className="flex justify-around mb-4">
-              <Button
-                type="submit"
-                className={`text-white ${
-                  type === "delete"
-                    ? "bg-red-600 hover:bg-red-700"
-                    : "bg-green-600 hover:bg-green-700"
-                }`}
-              >
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </Button>
-              <Button
-                onClick={onClose}
-                className="text-white bg-gray-600 hover:bg-gray-700"
-              >
-                Close
-              </Button>
-            </div>
-          </form>
-        )}
+          ) : (
+            <form onSubmit={handleSubmit}>
+              <div>{renderForm()}</div>
+              <div className="flex justify-around">
+                <button
+                  type="submit"
+                  className={`rounded-md py-2 px-4 text-white bg-gradient-to-l ${
+                    type === "delete"
+                      ? "from-orange-600 to-red-500"
+                      : "from-emerald-600 to-green-600"
+                  }`}
+                >
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );

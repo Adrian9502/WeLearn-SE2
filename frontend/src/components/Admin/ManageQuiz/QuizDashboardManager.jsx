@@ -58,7 +58,7 @@ const CopyableID = ({ value }) => {
 
   const handleCopy = () => {
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), 500);
   };
 
   return (
@@ -70,7 +70,7 @@ const CopyableID = ({ value }) => {
         </button>
       </CopyToClipboard>
       {copied && (
-        <div className="absolute -top-8 right-0 px-2 py-1 bg-slate-700 text-xs rounded-md">
+        <div className="absolute -top-2 right-0 px-2 py-1 z-50 bg-slate-700 text-xs rounded-md">
           Copied!
         </div>
       )}
@@ -80,24 +80,20 @@ const CopyableID = ({ value }) => {
 
 const Table = ({ columns, rows, onSort, sortConfig }) => {
   return (
-    <div className="w-full h-full relative overflow-auto">
+    <div
+      style={{ fontFamily: "lexend" }}
+      className="w-full h-full relative overflow-auto"
+    >
       <table className="w-full border-collapse">
         <thead>
-          <tr>
+          <tr className="sticky top-0 left-0 right-0 z-30">
             {columns.map((column, index) => (
               <th
                 key={column}
                 onClick={() => onSort(column)}
-                className={`px-6 py-4 bg-slate-800 border-r border-slate-700 text-left text-sm font-medium cursor-pointer sticky top-0 ${
-                  index === 0 ? "sticky left-0 rounded-tl-xl" : ""
+                className={`px-6 py-4 bg-slate-800 border-r border-slate-700 text-left text-sm font-medium cursor-pointer ${
+                  index === 0 ? "rounded-tl-lg" : ""
                 }`}
-                style={{
-                  minWidth: index === 0 ? "150px" : "auto",
-                  left: index === 0 ? 0 : "auto",
-                  backgroundColor:
-                    index === 0 ? "rgb(30 41 59)" : "rgb(30 41 59)",
-                  zIndex: index === 0 ? 30 : 20,
-                }}
               >
                 <div className="flex items-center gap-2">
                   {column}
@@ -122,19 +118,10 @@ const Table = ({ columns, rows, onSort, sortConfig }) => {
                 key={index}
                 className="hover:bg-slate-800/50 transition-colors"
               >
-                {columns.map((column, colIndex) => (
+                {columns.map((column) => (
                   <td
                     key={column}
-                    className={`px-6 py-4 text-sm text-slate-300 border-r border-slate-700 ${
-                      colIndex === 0 ? "sticky left-0" : ""
-                    }`}
-                    style={{
-                      minWidth: colIndex === 0 ? "150px" : "auto",
-                      left: colIndex === 0 ? 0 : "auto",
-                      backgroundColor:
-                        colIndex === 0 ? "rgb(2 6 23)" : "rgb(2 6 23)",
-                      zIndex: colIndex === 0 ? 10 : 1,
-                    }}
+                    className="px-6 py-4 text-sm text-slate-300 border-r border-slate-700"
                   >
                     {column === "ID" ? (
                       <CopyableID value={row[column]} />
@@ -177,7 +164,10 @@ const QuizDashboardManager = ({
 }) => (
   <div className="min-h-screen text-white p-8">
     <div className="space-y-16">
-      <div className="flex flex-col md:flex-row items-center mt-10 space-y-4 md:space-y-0 justify-between p-4">
+      <div
+        style={{ fontFamily: "lexend" }}
+        className="flex flex-col md:flex-row items-center mt-10 space-y-4 md:space-y-0 justify-between p-4"
+      >
         <h1 className="text-4xl md:text-4xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
           {title}
         </h1>

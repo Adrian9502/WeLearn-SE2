@@ -1,12 +1,83 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { ThreeDots } from "react-loader-spinner";
 import PropTypes from "prop-types";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { IoCloseOutline } from "react-icons/io5";
 
 const API_BASE_URL = "/api/admins";
 
+// input validation
+const validateField = (name, value, actionType) => {
+  switch (name) {
+    case "adminId":
+      if (actionType === "create") return ""; // Skip validation for `create` action
+      if (!value) return "Admin ID is required";
+      if (!/^[A-Za-z0-9-_]+$/.test(value))
+        return "Admin ID can only contain letters, numbers, hyphens and underscores";
+      if (value.length < 3) return "Admin ID must be at least 3 characters";
+      return "";
+
+    case "fullName":
+      if (!value) return "Full name is required";
+      if (value.length < 2) return "Full name must be at least 2 characters";
+      if (!/^[A-Za-z\s'-]+$/.test(value))
+        return "Full name can only contain letters, spaces, hyphens and apostrophes";
+      return "";
+
+    case "username":
+      if (!value) return "Username is required";
+      if (value.length < 3) return "Username must be at least 3 characters";
+      if (value.length > 30) return "Username must not exceed 30 characters";
+      if (!/^[A-Za-z0-9_]+$/.test(value))
+        return "Username can only contain letters, numbers and underscores";
+      return "";
+
+    case "email":
+      if (!value) return "Email is required";
+      // Basic email validation regex
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) return "Please enter a valid email address";
+      return "";
+
+    case "password":
+      if (actionType === "update" && !value) return ""; // Allow empty password on update
+      if (!value) return "Password is required";
+      if (value.length < 8) return "Password must be at least 8 characters";
+      if (!/(?=.*[a-z])/.test(value))
+        return "Password must contain at least one lowercase letter";
+      if (!/(?=.*[A-Z])/.test(value))
+        return "Password must contain at least one uppercase letter";
+      if (!/(?=.*\d)/.test(value))
+        return "Password must contain at least one number";
+      if (!/(?=.*[!@#$%^&*])/.test(value))
+        return "Password must contain at least one special character (!@#$%^&*)";
+      return "";
+
+    case "dob":
+      if (!value) return "Birthday is required";
+      const birthDate = new Date(value);
+      const today = new Date();
+
+      if (isNaN(birthDate.getTime())) return "Please enter a valid date";
+      if (birthDate > today) return "Birthday cannot be in the future";
+
+      // Check if user is at least 13 years old
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birthDate.getDate())
+      ) {
+        age--;
+      }
+      if (age < 13) return "User must be at least 13 years old";
+      return "";
+
+    default:
+      return "";
+  }
+};
 // INPUT FIELD COMPONENT
 const InputField = ({
   label,
@@ -15,42 +86,64 @@ const InputField = ({
   onChange,
   placeholder,
   type = "text",
+  error,
   showPassword,
   toggleShowPassword,
 }) => (
-  <div className="my-2">
-    <label htmlFor={name} className="block mb-2">
-      {label}
-    </label>
+  <div className="relative space-y-2 mb-4">
+    <div className="flex justify-between items-center">
+      <label
+        htmlFor={name}
+        className="block text-sm font-medium text-slate-300"
+      >
+        {label}
+      </label>
+      {error && (
+        <span className="text-xs text-red-400 ml-2 animate-fadeIn">
+          {error}
+        </span>
+      )}
+    </div>
     <div className="relative">
       <input
         id={name}
         name={name}
-        type={name === "password" && showPassword ? "text" : type}
+        // Conditionally set the type for password field
+        type={name === "password" ? (showPassword ? "text" : "password") : type}
         value={value}
         onChange={onChange}
-        className="text-gray-900 rounded-md focus:shadow-lg w-full p-2 focus:outline-none"
         placeholder={placeholder}
-        required
-        data-testid={name}
+        className={`
+          w-full
+          p-2
+          border-2 ${error ? "border-red-500 " : "border-slate-700"}
+          placeholder-slate-400
+          text-slate-950
+          rounded-lg
+          transition-all
+          duration-200
+          focus:outline-none
+          focus:ring-2
+          ${error ? "focus:ring-red-500/50" : "focus:ring-indigo-500"}
+          hover:border-slate-600
+        `}
       />
       {name === "password" && (
         <button
           type="button"
           onClick={toggleShowPassword}
-          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
         >
           {showPassword ? (
-            <FaEyeSlash className="h-5 w-5 text-purple-700" />
+            <FaEyeSlash className="h-5 w-5 text-slate-800" />
           ) : (
-            <FaEye className="h-5 w-5 text-purple-700" />
+            <FaEye className="h-5 w-5 text-slate-800" />
           )}
         </button>
       )}
     </div>
   </div>
 );
-// BUTTON COMPONENT
 const Button = ({ onClick, type, className, children }) => (
   <button
     onClick={onClick}
@@ -60,25 +153,6 @@ const Button = ({ onClick, type, className, children }) => (
     {children}
   </button>
 );
-// SWEET ALERT FUNCTION
-const sweetAlert = ({ title, text, icon }) => {
-  Swal.fire({ title, text, icon });
-};
-// FORM VALIDATION
-const validateForm = (formData) => {
-  const { fullName, username, email, password } = formData;
-
-  if (
-    fullName.length < 5 ||
-    username.length < 5 ||
-    password.length < 5 ||
-    !email.includes("@")
-  ) {
-    return false; // Invalid
-  }
-
-  return true; // Valid
-};
 // MAIN COMPONENT
 const ManageAdminsModal = ({
   isOpen,
@@ -96,136 +170,56 @@ const ManageAdminsModal = ({
     password: "",
     dob: "",
   });
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
-  // FETCH DATA USING AXIOS
-  const fetchData = async ({
-    validateForm,
-    formData,
-    resetForm,
-    apiEndpoint,
-    method = "POST",
-    callback,
-    handleCloseModal,
-  }) => {
-    // Validate the form before making the request
-    if (!validateForm(formData)) {
-      return;
-    }
-    setLoading(true);
-    try {
-      // Make the API request
-      const response = await axios({
-        method,
-        url: apiEndpoint,
-        data: formData,
-      });
-
-      // Show success message
-      sweetAlert({
-        title: "Success!",
-        text: response.data.message,
-        icon: "success",
-      });
-
-      // Call the callback to refresh the data or perform any other actions
-      callback();
-      handleCloseModal();
-      resetForm();
-    } catch (error) {
-      // Check if there's a response and handle the error accordingly
-      if (error.response) {
-        // If response is available, handle the error based on the response status
-        const { status, data } = error.response;
-
-        // If status is 404, it means the resource was not found
-        if (status === 404) {
-          sweetAlert({
-            title: "Error",
-            text: data.message || "Admin not found. Please check the ID.",
-            icon: "error",
-          });
-        } else if (status === 500) {
-          sweetAlert({
-            title: "Error",
-            text: "Invalid ID format. Please check the ID.",
-            icon: "error",
-          });
-        } else if (error.response) {
-          let errorMessage = "";
-
-          // Check if the response contains multiple validation errors (e.g., an array of errors)
-          if (
-            error.response.data.errors &&
-            Array.isArray(error.response.data.errors)
-          ) {
-            // Extract the error messages from the errors array and join them into a single string
-            errorMessage = error.response.data.errors
-              .map((err) => err.msg)
-              .join(", ");
-          } else {
-            // Fallback to using a single message or stringify the entire response if no message is provided
-            errorMessage =
-              error.response.data.message ||
-              JSON.stringify(error.response.data);
-          }
-
-          console.log(errorMessage); // For debugging purposes
-
-          // Show SweetAlert with the extracted error message
-          sweetAlert({
-            title: "Error",
-            text: errorMessage,
-            icon: "error",
-          });
-        } else {
-          // Handle other status codes and extract error messages
-          const errors = data.errors;
-          const passwordError = errors
-            ? errors.find((err) => err.path === "password")
-            : null;
-          const errorMessage = passwordError
-            ? passwordError.msg
-            : "An error occurred";
-
-          sweetAlert({
-            title: "Error",
-            text: errorMessage,
-            icon: "error",
-          });
-        }
-      } else if (error.request) {
-        // The request was made but no response was received
-        sweetAlert({
-          title: "Error",
-          text: "No response from the server. Please try again later.",
-          icon: "error",
-        });
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        sweetAlert({
-          title: "Error",
-          text: "An unexpected error occurred: " + error.message,
-          icon: "error",
-        });
-      }
-    } finally {
-      setLoading(false); // Set loading to false after request completion
-    }
-  };
   // RESET FORM FUNCTION
   const resetForm = () => {
     setFormData({
-      adminId: "",
-      fullName: "",
-      username: "",
-      email: "",
-      password: "",
-      dob: "",
+      quizId: "",
+      title: "",
+      instruction: "",
+      question: "",
+      answer: "",
+      category: "",
     });
+    setErrors({});
+    setTouched({});
+  };
+  // FORM VALIDATION
+  const validateForm = () => {
+    const newErrors = {};
+
+    // For delete operation, only validate adminId
+    if (type === "delete") {
+      const error = validateField("adminId", formData.adminId, type);
+      if (error) newErrors.adminId = error;
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+    }
+
+    // For create/update operations, validate all required fields
+    Object.keys(formData).forEach((key) => {
+      // Skip password validation for update if password is empty
+      if (type === "update" && key === "password" && !formData[key]) {
+        return;
+      }
+
+      // Skip adminId validation for create
+      if (type === "create" && key === "adminId") {
+        return;
+      }
+
+      const error = validateField(key, formData[key], type);
+      if (error) newErrors[key] = error;
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
   useEffect(() => {
     if (!isOpen) {
@@ -239,23 +233,47 @@ const ManageAdminsModal = ({
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Validate field on change if it's been touched
+    if (touched[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: validateField(name, value),
+      }));
+    }
   };
-  // SUBMIT FORM FUNCTION
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    setErrors((prev) => ({
+      ...prev,
+      [name]: validateField(name, value),
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const isValid = type === "delete" || validateForm(formData); // Only validate if not deleting
+    // Mark all fields as touched
+    const allTouched = Object.keys(formData).reduce(
+      (acc, key) => ({
+        ...acc,
+        [key]: true,
+      }),
+      {}
+    );
+    setTouched(allTouched);
 
-    if (!isValid) {
-      // Show SweetAlert or any error message here
-      sweetAlert({
-        title: "Error",
-        text: "All fields are required and must be at least 5 characters long.",
+    if (!validateForm()) {
+      Swal.fire({
+        title: "Validation Error",
+        text: "Please check all fields and try again",
         icon: "error",
       });
-
-      return; // Exit the function if the form is invalid
+      return;
     }
+
+    setLoading(true);
 
     const apiActions = {
       create: {
@@ -277,15 +295,33 @@ const ManageAdminsModal = ({
 
     const action = apiActions[type];
 
-    await fetchData({
-      validateForm: type === "delete" ? () => true : validateForm,
-      formData,
-      resetForm,
-      apiEndpoint: action.endpoint,
-      method: action.method,
-      callback: action.callback,
-      handleCloseModal: onClose,
-    });
+    try {
+      const response = await axios({
+        method: action.method,
+        url: action.endpoint,
+        data: formData,
+      });
+
+      Swal.fire({
+        title: "Success!",
+        text: response.data.message,
+        icon: "success",
+      });
+
+      action.callback();
+      onClose();
+      resetForm();
+    } catch (error) {
+      Swal.fire({
+        title: "Error",
+        text: `Error ${error.response?.status}: ${
+          error.response?.message || "An error occurred"
+        }`,
+        icon: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   // RENDER FORM INPUTS
@@ -302,6 +338,8 @@ const ManageAdminsModal = ({
                 name="adminId"
                 data-testid="adminId"
                 value={formData.adminId}
+                error={errors.adminId}
+                onBlur={handleBlur}
                 onChange={handleInputChange}
                 placeholder="Enter existing admin id"
               />
@@ -311,6 +349,8 @@ const ManageAdminsModal = ({
               label="Full Name:"
               name="fullName"
               value={formData.fullName}
+              error={errors.fullName}
+              onBlur={handleBlur}
               onChange={handleInputChange}
               placeholder="Enter full name"
             />
@@ -319,6 +359,8 @@ const ManageAdminsModal = ({
               label="Username:"
               name="username"
               value={formData.username}
+              error={errors.username}
+              onBlur={handleBlur}
               onChange={handleInputChange}
               placeholder="Enter username"
             />
@@ -328,6 +370,8 @@ const ManageAdminsModal = ({
               name="email"
               type="email"
               value={formData.email}
+              error={errors.email}
+              onBlur={handleBlur}
               onChange={handleInputChange}
               placeholder="Enter email"
             />
@@ -337,6 +381,8 @@ const ManageAdminsModal = ({
               name="password"
               type="password"
               value={formData.password}
+              error={errors.password}
+              onBlur={handleBlur}
               onChange={handleInputChange}
               placeholder="Enter password"
               showPassword={showPassword}
@@ -348,6 +394,8 @@ const ManageAdminsModal = ({
               name="dob"
               type="date"
               value={formData.dob}
+              error={errors.dob}
+              onBlur={handleBlur}
               onChange={handleInputChange}
             />
           </>
@@ -369,51 +417,42 @@ const ManageAdminsModal = ({
 
   return (
     <div
-      style={{ fontFamily: "Lexend" }}
-      className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50"
+      style={{ fontFamily: "lexend" }}
+      className="fixed inset-0 flex justify-center items-center z-30 bg-black bg-opacity-50"
     >
-      <div className="rounded-lg bg-violet-700 p-8 w-96">
-        <h2 className="text-3xl text-center font-semibold mb-4">
-          {type.charAt(0).toUpperCase() + type.slice(1)} Admin
-        </h2>
-
-        {loading ? (
-          <div className="flex items-center justify-center">
-            <ThreeDots
-              data-testid="loading-spinner"
-              visible={true}
-              height="80"
-              width="80"
-              color="#6d28d9"
-              radius="9"
-              ariaLabel="three-dots-loading"
-              wrapperStyle={{}}
-              wrapperClass=""
-            />
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} data-testid="modal-form">
-            <div className="mb-4">{renderForm()}</div>
-            <div className="flex justify-around mb-4">
-              <Button
-                type="submit"
-                className={`text-white ${
-                  type === "delete"
-                    ? "bg-red-600 hover:bg-red-700"
-                    : "bg-green-600 hover:bg-green-700"
-                }`}
-              >
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </Button>
-              <Button
-                onClick={onClose}
-                className="text-white bg-gray-600 hover:bg-gray-700"
-              >
-                Close
-              </Button>
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-[1px]">
+        <div className="rounded-xl relative bg-slate-900 text-slate-200 p-8 w-80 lg:w-96">
+          <h2 className="text-xl md:text-2xl text-center font-medium mb-4">
+            {type.charAt(0).toUpperCase() + type.slice(1)} Admin
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-white absolute right-4 top-4"
+          >
+            <IoCloseOutline size={20} />
+          </button>
+          {loading ? (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
             </div>
-          </form>
-        )}
+          ) : (
+            <form onSubmit={handleSubmit}>
+              <div>{renderForm()}</div>
+              <div className="flex justify-around">
+                <button
+                  type="submit"
+                  className={`rounded-md py-2 px-4 text-white bg-gradient-to-l ${
+                    type === "delete"
+                      ? "from-orange-600 to-red-500"
+                      : "from-emerald-600 to-green-600"
+                  }`}
+                >
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -30,7 +30,7 @@ const validateField = (name, value, actionType) => {
       return "";
     case "answer":
       if (!value) return "Answer is required";
-      if (value.length < 5) return "Answer must be at least 5 characters";
+      if (value.length < 1) return "Answer must be at least 1 character";
       return "";
     case "category":
       if (!value) return "Category is required";

@@ -181,12 +181,12 @@ const ManageUsersModal = ({
   // RESET FORM FUNCTION
   const resetForm = () => {
     setFormData({
-      quizId: "",
-      title: "",
-      instruction: "",
-      question: "",
-      answer: "",
-      category: "",
+      userId: "",
+      fullName: "",
+      username: "",
+      email: "",
+      password: "",
+      dob: "",
     });
     setErrors({});
     setTouched({});
@@ -284,12 +284,12 @@ const ManageUsersModal = ({
       },
       update: {
         method: "PUT",
-        endpoint: `${API_BASE_URL}/${formData.quizId}`,
+        endpoint: `${API_BASE_URL}/${formData.userId}`,
         callback: onUserUpdated,
       },
       delete: {
         method: "DELETE",
-        endpoint: `${API_BASE_URL}/${formData.quizId}`,
+        endpoint: `${API_BASE_URL}/${formData.userId}`,
         callback: onUserDeleted,
       },
     };

@@ -1,6 +1,21 @@
 @font-face {
-  font-family: "HomeVideo";
-  src: url("../../data/font/Pixellari.ttf") format("truetype");
+  font-family: "Kemco";
+  src: url("../../data/font/Kemco Pixel Bold.ttf") format("truetype");
+}
+@font-face {
+  font-family: "DePixelKlein";
+  src: url("../../data/font/DePixelKlein.ttf") format("truetype");
+}
+
+.kemco-font {
+  font-family: "Kemco", sans-serif;
+  font-weight: bold;
+}
+.font-outline {
+  text-shadow: 2px 7px #28248c;
+}
+.DePixelKlein {
+  font-family: "DePixelKlein", sans-serif;
 }
 
 .main-container {
@@ -11,16 +26,7 @@
   border-top: 6px inset rgba(255, 255, 255, 0.5);
   box-sizing: border-box;
 }
-/* right side container "MASTERING ...." */
-.right-side-container {
-  background: rgb(105, 3, 3);
-  border-bottom: 6px inset rgba(0, 0, 0, 0.5);
-  padding: 10px;
-  border-left: 6px inset rgba(0, 0, 0, 0.5);
-  border-right: 6px inset rgba(255, 255, 255, 0.5);
-  border-top: 6px inset rgba(255, 255, 255, 0.5);
-  box-sizing: border-box;
-}
+
 /* admin login button */
 .btn-admin {
   background: green;
@@ -39,38 +45,29 @@
   padding: 6px;
 }
 /* buttons */
-.btn {
-  background: #7c7c7c;
-  border-bottom: 6px inset rgba(0, 0, 0, 0.5);
-  border-left: 6px inset rgba(0, 0, 0, 0.5);
-  border-right: 6px inset rgba(255, 255, 255, 0.5);
-  border-top: 6px inset rgba(255, 255, 255, 0.5);
-  box-sizing: border-box;
-  color: white;
-  display: inline-block;
-  font-size: 20px;
-  font-weight: 300;
-  font-family: inherit;
-  margin: 1rem;
-  min-width: 150px;
-  padding: 10px;
-  text-transform: uppercase;
-  width: auto;
-}
-.btn:hover {
-  background: #bcbcbc;
-}
-.btn.red {
-  background: #881400;
-}
-.btn.red:hover {
-  background: #a81000;
-}
-.btn.blue {
-  background: #0000bc;
-}
-.btn.blue:hover {
-  background: #0000fc;
+.login-register-btn {
+  font-family: Kemco;
+  background-color: yellow;
+  color: #28248c;
+  clip-path: polygon(
+    0 4px,
+    4px 4px,
+    4px 0,
+    calc(100% - 4px) 0,
+    calc(100% - 4px) 4px,
+    100% 4px,
+    100% calc(100% - 4px),
+    calc(100% - 4px) calc(100% - 4px),
+    calc(100% - 4px) 100%,
+    4px 100%,
+    4px calc(100% - 4px),
+    0 calc(100% - 4px)
+  );
+  padding: 13px 13px;
+  box-shadow: inset -4px -4px 0px rgba(0, 0, 0, 0.3),
+    /* Inner shadow top-left */ inset 4px 4px 0px rgba(255, 255, 255, 0.2),
+    /* Inner shadow bottom-right */ 4px 4px 6px rgba(0, 0, 0, 0.4),
+    /* Bottom-right shadow */ 0px 4px 6px rgba(0, 0, 0, 0.4); /* Bottom shadow */
 }
 
 /* login-container centered within popup */
@@ -83,27 +80,6 @@
   max-width: 100%;
 }
 
-.login-container button {
-  padding: 10px;
-  font-family: inherit;
-  color: yellow;
-  background-color: #bd1c00;
-  border-bottom: 4px inset rgba(0, 0, 0, 0.5);
-  border-left: 4px inset rgba(0, 0, 0, 0.5);
-  border-right: 4px inset rgba(255, 255, 255, 0.5);
-  border-top: 4px inset rgba(255, 255, 255, 0.5);
-}
-
-/* buttons for register/login */
-.login-button {
-  color: yellow;
-  background-color: blueviolet;
-  transition: all 0.15s;
-  font-family: inherit;
-}
-.login-button:hover {
-  background-color: rgb(165, 68, 255);
-}
 /* popup form container */
 .form-container {
   color: yellow;
@@ -113,16 +89,13 @@
   border-right: 6px inset rgba(255, 255, 255, 0.5);
   border-top: 6px inset rgba(255, 255, 255, 0.5);
   position: absolute;
-  background-color: blueviolet;
+  background-color: #44049c;
   padding: 20px;
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  width: 400px;
-}
-label {
-  font-size: 15px;
+  width: 430px;
 }
 
 .form-container input {
@@ -140,18 +113,12 @@ label {
   box-sizing: border-box;
 }
 .form-container button {
-  background-color: #f52789;
-  color: white;
-  border: none;
-  cursor: pointer;
   border-bottom: 3px inset rgba(0, 0, 0, 0.5);
   border-left: 3px inset rgba(0, 0, 0, 0.5);
   border-right: 3px inset rgba(255, 255, 255, 0.5);
   border-top: 3px inset rgba(255, 255, 255, 0.5);
 }
-.form-container button:hover {
-  background-color: #f80a7d;
-}
+
 /* popup-overlay to center the login form */
 .popup-overlay {
   position: fixed;
@@ -184,15 +151,10 @@ label {
   object-fit: contain;
 }
 /* btn for login/registration */
-.btn-login-registration:hover {
-  background-color: rgb(4, 104, 4);
-}
+
 .error-text {
-  font-size: 13px;
-  font-weight: bold;
-  color: #fc0000;
-  background-color: yellow;
-  padding-left: 0.2rem;
+  color: yellow;
+  background-color: rgb(170, 22, 11);
 }
 .success-text {
   color: green;

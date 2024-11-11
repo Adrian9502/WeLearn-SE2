@@ -64,7 +64,7 @@ const validateField = (name, value, actionType) => {
       if (birthDate > today) return "Birthday cannot be in the future";
 
       // Check if user is at least 13 years old
-      const age = today.getFullYear() - birthDate.getFullYear();
+      let age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
       if (
         monthDiff < 0 ||

@@ -1,10 +1,11 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useUser } from "../User/UserContext";
 import { Blocks } from "react-loader-spinner";
-import React from "react";
+import { IoIosClose } from "react-icons/io";
+
 const Forms = ({
   isRegister,
   isAdmin,
@@ -23,15 +24,19 @@ const Forms = ({
   const [loginMessage, setLoginMessage] = useState("");
   const [successfulRegistration, setSuccessfulRegistration] = useState(false);
   const [successfulLogin, setSuccessfulLogin] = useState(false);
+  const [touched, setTouched] = useState({});
 
+  const handleBlur = (fieldName) => {
+    setTouched((prev) => ({ ...prev, [fieldName]: true }));
+  };
   // Validation functions
   const validateLoginForm = (fields) => {
     const errors = {};
 
     if (!fields.username.trim()) {
       errors.username = "Username is required";
-    } else if (fields.username.length < 6) {
-      errors.username = "Username must be at least 6 characters";
+    } else if (fields.username.length < 4) {
+      errors.username = "Username must be at least 4 characters";
     } else if (/[^a-zA-Z0-9]/.test(fields.username)) {
       errors.username = "Username cannot contain special characters";
     }
@@ -63,6 +68,8 @@ const Forms = ({
     // Confirm Password validation
     if (fields.password !== fields.confirmPassword) {
       errors.confirmPassword = "Passwords do not match";
+    } else if (!fields.confirmPassword) {
+      errors.confirmPassword = "Confirm password is required";
     }
 
     // Email validation
@@ -75,13 +82,51 @@ const Forms = ({
   };
 
   const validateField = (value, fieldName, minLength = 0) => {
+    // Basic required check
     if (!value.trim()) {
       return `${fieldName} is required`;
-    } else if (value.length < minLength) {
-      return `${fieldName} must be at least ${minLength} characters`;
-    } else if (fieldName === "Username" && /[^a-zA-Z0-9]/.test(value)) {
-      return `${fieldName} cannot contain special characters`;
     }
+
+    // Username-specific validation
+    if (fieldName === "Username") {
+      // Length check (6-20 char  acters)
+      if (value.length < 6) {
+        return "Username must be at least 6 characters";
+      }
+      if (value.length > 20) {
+        return "Username cannot be longer than 20 characters";
+      }
+
+      // Must start with a letter
+      if (!/^[a-zA-Z]/.test(value)) {
+        return "Username must start with a letter";
+      }
+
+      // Can only contain letters, numbers, and underscores
+      if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(value)) {
+        return "Username can only contain letters, numbers, and underscores";
+      }
+
+      // Cannot contain consecutive underscores
+      if (/__/.test(value)) {
+        return "Username cannot contain consecutive underscores";
+      }
+
+      // Cannot end with an underscore
+      if (/_$/.test(value)) {
+        return "Username cannot end with an underscore";
+      }
+
+      // Must contain at least one letter after the first character
+      if (!/[a-zA-Z]/.test(value.slice(1))) {
+        return "Username must contain at least one letter after the first character";
+      }
+    }
+    // Other fields length validation
+    else if (value.length < minLength) {
+      return `${fieldName} must be at least ${minLength} characters`;
+    }
+
     return null;
   };
 
@@ -128,6 +173,10 @@ const Forms = ({
   // Handle login submission
   const handleLogin = async (e) => {
     e.preventDefault();
+    setTouched({
+      username: true,
+      password: true,
+    });
 
     const { username, password } = e.target.elements;
 
@@ -146,13 +195,23 @@ const Forms = ({
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    // Access form elements using e.target.elements
-    const fullName = e.target.elements.fullName;
-    const username = e.target.elements.username;
-    const email = e.target.elements.email;
-    const password = e.target.elements.password;
-    const confirmPassword = e.target.elements.confirmPassword;
-    const dob = e.target.elements.dob;
+    // Mark all fields as touched on submit
+    const fields = [
+      "fullName",
+      "username",
+      "email",
+      "password",
+      "confirmPassword",
+      "dob",
+    ];
+    const newTouched = {};
+    fields.forEach((field) => {
+      newTouched[field] = true;
+    });
+    setTouched(newTouched);
+
+    const { fullName, username, email, password, confirmPassword, dob } =
+      e.target.elements;
 
     const validationErrors = validateRegisterForm({
       fullName: fullName.value,
@@ -165,7 +224,6 @@ const Forms = ({
 
     setErrors(validationErrors);
 
-    // Check for validation errors: look for non-null values
     const hasErrors = Object.values(validationErrors).some(
       (error) => error !== null
     );
@@ -178,8 +236,6 @@ const Forms = ({
         password: password.value,
         dob: dob.value,
       });
-    } else {
-      console.log("Validation errors present, form not submitted");
     }
   };
 
@@ -267,12 +323,47 @@ const Forms = ({
     }
   };
 
+  // Helper function to render input fields
+  const renderField = (label, name, type, errorMessage) => (
+    <div className="form-field relative mb-4">
+      <div>
+        <div className="flex items-center justify-between gap-1">
+          <label htmlFor={name} className="block">
+            {label}
+          </label>
+          {errorMessage && touched[name] && (
+            <div className="error-text p-[1px] text-sm">{errorMessage}</div>
+          )}
+        </div>
+      </div>
+      <input
+        data-testid={name}
+        id={name}
+        name={name}
+        type={type}
+        placeholder={label}
+        className={`w-full px-3 py-2 border ${
+          errorMessage && touched[name]
+            ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+            : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+        } focus:outline-none focus:ring-2 transition-colors `}
+        onBlur={() => handleBlur(name)}
+      />
+    </div>
+  );
   return (
     <form
-      className="form-container custom-cursor"
+      className="form-container relative"
       onSubmit={isRegister ? handleRegister : handleLogin}
     >
-      <h2 className="text-center text-3xl mb-5 p-3">
+      <button
+        type="button"
+        onClick={() => setIsPopupOpen(false)}
+        className="absolute bg-red-700 right-4 top-2 text-white hover:bg-red-600 transition-colors"
+      >
+        <IoIosClose size={25} />
+      </button>
+      <h2 className="text-center text-3xl mb-2">
         {isRegister
           ? isAdmin
             ? "Admin Registration"
@@ -282,30 +373,31 @@ const Forms = ({
           : "User Login"}
       </h2>
 
-      {/* Display error message if there's any */}
-      {formError && <div className="error-text mb-2">{formError}</div>}
+      {formError && (
+        <div className="error-text text-sm mb-2 p-1 text-center bg-red-100">
+          {formError}
+        </div>
+      )}
+      {/* TODO: TEST THE VALIDATION AND FIX RESPONSIVENESS OF THIS LOGIN FORM */}
 
-      {/* Display registration message */}
       {registrationMessage && (
         <div
-          className={`mb-2 text-center text-lg ${
+          className={`mb-2 text-center text-lg p-3 rounded ${
             registrationMessage.toLowerCase().includes("failed")
-              ? "error-text"
-              : "success-text"
+              ? "error-text bg-red-100 border border-red-400"
+              : "success-text bg-green-100 border border-green-400"
           }`}
         >
           {registrationMessage}
         </div>
       )}
 
-      {/* Display login message */}
       {loginMessage && (
-        <div className="mb-2 text-center text-lg success-text">
+        <div className="mb-2 text-center text-lg success-text bg-green-100 border border-green-400 p-3">
           {loginMessage}
         </div>
       )}
 
-      {/* Conditionally render the form fields only if registration is not successful */}
       {!successfulLogin && !successfulRegistration && (
         <>
           {loading ? (
@@ -319,7 +411,7 @@ const Forms = ({
               />
             </div>
           ) : (
-            <div className="flex flex-col">
+            <div className="flex flex-col space-y-2">
               {isRegister &&
                 renderField("Full Name", "fullName", "text", errors.fullName)}
               {renderField(
@@ -350,15 +442,15 @@ const Forms = ({
         </>
       )}
 
-      <div className="flex justify-around mt-2">
-        {/* Hide buttons if registration is successful */}
+      <div className="flex justify-center items-center mt-2">
         {!successfulLogin && !successfulRegistration && (
           <>
-            <button type="submit" disabled={loading}>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-4 py-1 text-lg bg-red-700 hover:bg-red-600 transition-colors disabled:opacity-50"
+            >
               {isRegister ? "Register" : "Login"}
-            </button>
-            <button type="button" onClick={() => setIsPopupOpen(false)}>
-              Close
             </button>
           </>
         )}
@@ -366,22 +458,6 @@ const Forms = ({
     </form>
   );
 };
-
-// Helper function to render input fields
-const renderField = (label, name, type, errorMessage) => (
-  <>
-    <label htmlFor={name}>{label}</label>
-    <input
-      data-testid={name}
-      id={name}
-      name={name}
-      type={type}
-      placeholder={label}
-      required
-    />
-    {errorMessage && <span className="error-text">{errorMessage}</span>}
-  </>
-);
 
 Forms.propTypes = {
   isRegister: PropTypes.bool.isRequired,

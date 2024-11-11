@@ -4,83 +4,12 @@
 
 /* BG-HOME */
 .circle-bg {
-  background-color: #0f0b16;
+  background: linear-gradient(to bottom, #622aff, rgba(98, 42, 255, 0.9));
   background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23696372' fill-opacity='0.31' fill-rule='evenodd'/%3E%3C/svg%3E");
   background-repeat: repeat;
   animation: moveBackgroundBody 60s linear infinite;
 }
-/* Glass and Bern */
-.ground {
-  position: absolute;
-  width: 100%;
-  bottom: 0;
-  height: 80px;
-  border: none;
-  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px,
-    rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px,
-    rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
-  background-color: #1f1304;
-  overflow: hidden;
-}
-.grass {
-  height: 20px;
-  position: relative;
-  background-color: #0c8a00;
-}
-.ground::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 200%;
-  height: 100%;
-  background-color: #230c0c;
-  background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  background-repeat: repeat;
-  animation: moveBackground 60s linear infinite;
-}
-/* BG - Home animation and BERN animation */
-#bern,
-#bern1 {
-  width: 112px;
-  height: 156px;
-  z-index: 999;
-  position: absolute;
-  animation: walk 0.8s steps(6) infinite;
-  background: url("/bern.png") repeat-x;
-}
-#bern {
-  left: 30px;
-  bottom: 66px;
-}
-#bern1 {
-  right: 30px;
-  bottom: 66px;
-}
-@keyframes walk {
-  0% {
-    background-position: 0;
-  }
-  100% {
-    background-position: -672px;
-  }
-}
-@keyframes moveBackground {
-  0% {
-    background-position: 100% 0;
-  }
-  100% {
-    background-position: 0 0;
-  }
-}
-@keyframes moveBackgroundBody {
-  0% {
-    background-position: 0 0;
-  }
-  100% {
-    background-position: 100% 0;
-  }
-}
+
 /* custom cursor */
 .custom-cursor {
   cursor: url("/cursor.cur"), auto;
@@ -88,4 +17,19 @@
 /* font */
 .jetbrains {
   font-family: "JetBrains Mono", monospace;
+}
+
+.ground-repeat {
+  background-image: url("/landscape.png");
+  background-repeat: repeat-x;
+  background-position: bottom;
+  background-size: auto;
+}
+.pixels {
+  background-image: url("https://cdn.prod.website-files.com/62be13fdb8a06d0f7cf4aa7b/62c35aa508a1f970d5fb8420_tile-intro-top%402x.png");
+  background-position: 50% 0;
+  background-repeat: repeat-x;
+  background-size: 40px;
+  background-attachment: scroll;
+  padding-bottom: 0;
 }

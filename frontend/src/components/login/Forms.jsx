@@ -261,6 +261,8 @@ const Forms = ({
         // Save both the auth token and user role to localStorage upon successful login
         // this local storage are key to access different routes
         localStorage.setItem("authToken", response.data.token);
+        localStorage.setItem("username", response.data.username);
+
         localStorage.setItem("userRole", isAdmin ? "admin" : "user"); // Save role
 
         if (response.data.user) {

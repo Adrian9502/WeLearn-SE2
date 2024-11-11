@@ -4,11 +4,13 @@ import Login from "./components/login/Login";
 import ProtectedRoute from "./ProtectedRoute";
 import UserPages from "./components/User/UserPages";
 import { UserProvider } from "./components/User/UserContext";
+import AdminLogin from "./components/Login/AdminLogin";
 function App() {
   return (
     <UserProvider>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/admin" element={<AdminLogin />} />
 
         {/* Protecting the admin dashboard route for admin users only */}
         <Route

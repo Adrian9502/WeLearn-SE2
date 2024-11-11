@@ -3,6 +3,7 @@ import { FaUser, FaQuestionCircle, FaCogs, FaChartLine } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { RiLogoutBoxLine, RiMenuLine, RiCloseLine } from "react-icons/ri";
 import { RiAdminFill } from "react-icons/ri";
+import axios from "axios";
 import Swal from "sweetalert2";
 const AdminSidebar = () => {
   const navigate = useNavigate();
@@ -15,27 +16,45 @@ const AdminSidebar = () => {
       text: "You will be logged out of the admin dashboard",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
+
       confirmButtonText: "Yes, logout",
       background: "#1e293b", // Dark background
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
       color: "#fff", // White text
       customClass: {
         popup: "border border-slate-700",
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        localStorage.removeItem("authToken");
-        Swal.fire({
-          title: "Logged Out!",
-          text: "You have been successfully logged out.",
-          icon: "success",
-          background: "#1e293b",
-          color: "#fff",
-          showConfirmButton: false,
-          timer: 1500,
-        });
-        navigate("/");
+        // Send logout request to server
+        axios
+          .post("/api/logout", {}, { withCredentials: true }) // Make sure to include credentials
+          .then(() => {
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("userRole");
+            localStorage.removeItem("username");
+            Swal.fire({
+              title: "Logged Out!",
+              text: "You have been successfully logged out.",
+              icon: "success",
+              background: "#1e293b",
+              color: "#fff",
+              showConfirmButton: false,
+              timer: 1500,
+            }).then(() => {
+              navigate("/admin"); // Redirect to login page
+            });
+          })
+          .catch((error) => {
+            Swal.fire({
+              title: "Error",
+              text: "There was an error logging you out. Please try again.",
+              icon: "error",
+              background: "#1e293b",
+              color: "#fff",
+            });
+          });
       }
     });
   };

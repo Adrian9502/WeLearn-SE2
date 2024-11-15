@@ -47,7 +47,7 @@ export default function RankingsDisplay({ onClose }) {
         {rankingData.map((user, index) => (
           <div
             key={user.userId}
-            className="flex items-center justify-between p-4 bg-gray-800 btn-border"
+            className="flex items-center justify-between p-4 bg-slate-950 rounded-lg border-2 border-slate-500"
           >
             <div className="flex items-center gap-3">
               <div className="w-8 text-center">
@@ -122,12 +122,12 @@ export default function RankingsDisplay({ onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="user-completed-quiz-container shadow-xl w-full max-w-4xl max-h-[80vh] overflow-hidden">
+      <div className="bg-gradient-to-b from-indigo-700 rounded-lg to-purple-800/90 shadow-xl w-full max-w-4xl max-h-[80vh] overflow-hidden">
         {/* Header */}
         <div className="p-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center px-2 justify-between">
             <div className="flex-grow text-center">
-              <h2 className="text-3xl mt-4 font-bold text-cyan-400 inline-block">
+              <h2 className="text-4xl  mt-4 text-slate-200 inline-block">
                 Rankings
               </h2>
             </div>
@@ -148,10 +148,10 @@ export default function RankingsDisplay({ onClose }) {
               <button
                 key={key}
                 onClick={() => setActiveTab(key)}
-                className={`p-1 btn-border transition-colors duration-200 ${
+                className={`p-1 rounded-lg border-2 transition-colors duration-200 ${
                   activeTab === key
-                    ? "bg-blue-600 text-white"
-                    : "bg-fuchsia-700 text-gray-300 hover:text-gray-200"
+                    ? "bg-blue-600 border-blue-400 text-slate-100"
+                    : "bg-fuchsia-700 border-fuchsia-500 text-gray-400 hover:text-gray-300"
                 }`}
               >
                 <div className="flex flex-col items-center gap-1">
@@ -163,14 +163,14 @@ export default function RankingsDisplay({ onClose }) {
           </div>
 
           {/* Tab Content */}
-          <div className="mt-4 p-3 btn-border bg-blue-700 overflow-y-auto">
+          <div className="mt-4 p-3 rounded-lg bg-indigo-600 overflow-y-auto max-h-[60vh]">
             {Object.entries(rankingCategories).map(([key, category]) => (
               <div
                 key={key}
                 className={`${activeTab === key ? "block" : "hidden"}`}
               >
                 <div className="mb-4">
-                  <h3 className="text-2xl text-center font-medium text-yellow-500">
+                  <h3 className="text-3xl my-2 text-center font-medium text-yellow-400">
                     {category.title}
                   </h3>
                   <p className="text-gray-200 text-center text-sm">

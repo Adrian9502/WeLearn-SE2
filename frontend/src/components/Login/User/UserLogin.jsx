@@ -87,7 +87,7 @@ const UserLogin = () => {
       />
 
       {/* main container */}
-      <div className="relative flex items-center justify-center min-h-[100vh]">
+      <div className="relative overflow-x-hidden flex items-center justify-center min-h-[100vh]">
         {/* Clouds with animation */}
         <img
           src="https://cdn.prod.website-files.com/62be13fdb8a06d0f7cf4aa7b/62cedd0333b4d08248813ec8_cloud2.png"

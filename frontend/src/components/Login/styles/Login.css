@@ -119,9 +119,7 @@
   position: absolute;
   opacity: 0.7; /* Cloud opacity */
 }
-.relative {
-  overflow: hidden; /* Prevent any overflowing elements */
-}
+
 /* Different animation speeds for each cloud */
 .animate-cloud1 {
   animation-duration: 50s;

@@ -1,21 +1,20 @@
 import React, { useState } from "react";
 import Forms from "./Forms";
 
-const Login = () => {
+const UserLogin = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState("");
-
-  const togglePopup = (admin = false, register = false) => {
-    if (!isPopupOpen) {
-      setErrors({});
-      setFormError("");
-    }
-    setIsAdmin(admin);
+  const togglePopup = (register = false) => {
     setIsRegister(register);
-    setIsPopupOpen((prevState) => !prevState);
+    setIsPopupOpen((prevState) => {
+      if (!prevState) {
+        setErrors({});
+        setFormError("");
+      }
+      return !prevState;
+    });
   };
 
   return (
@@ -23,6 +22,7 @@ const Login = () => {
       style={{ fontFamily: "HomeVideo, Arial, Helvetica, sans-serif" }}
       className="bg-gradient-to-b from-[#622aff] to-[#622aff]/90 custom-cursor min-h-screen pt-4"
     >
+      {/* for clouds */}
       <img src="" alt="" />
       <img src="" alt="" />
       <img src="" alt="" />
@@ -55,30 +55,29 @@ const Login = () => {
             <button
               className="text-sm hover:scale-105 transition-transform md:text-xl login-register-btn"
               data-testid="user-login-button"
-              onClick={() => togglePopup(false, false)}
+              onClick={() => togglePopup(false)}
             >
               Login
             </button>
             <button
               data-testid="user-register-button"
               className="login-register-btn hover:scale-105 transition-transform text-sm md:text-xl"
-              onClick={() => togglePopup(false, true)}
+              onClick={() => togglePopup(true)}
             >
               Register
             </button>
           </div>
         </div>
         {/* Mountain image */}
-        <div className="ground-repeat ground-repeat-with-gradient absolute bottom-0 w-full border h-80 pointer-events-none"></div>
+        <div className="ground-repeat ground-repeat-with-gradient absolute bottom-0 w-full h-80 pointer-events-none"></div>
       </div>
 
       {/* Popup Form */}
       {isPopupOpen && (
         <div className="popup-overlay">
-          <div className="login-container border items-center justify-center max-w-[90%] md:max-w-[80%] lg:max-w-none">
+          <div className="p-7">
             <Forms
               isRegister={isRegister}
-              isAdmin={isAdmin}
               errors={errors}
               formError={formError}
               setErrors={setErrors}
@@ -89,25 +88,6 @@ const Login = () => {
         </div>
       )}
 
-      {/* ADMIN LOGIN/REGISTER */}
-      <div className="m-2 absolute border flex flex-col items-center justify-center top-0 right-0">
-        <h2 className="text-yellow-400 text-sm md:text-base">Admin</h2>
-        <button
-          data-testid="admin-login-button"
-          className="btn-admin text-xs md:text-sm"
-          onClick={() => togglePopup(true, false)}
-        >
-          Login
-        </button>
-        <button
-          className="btn-admin text-xs md:text-sm"
-          data-testid="admin-register-button"
-          onClick={() => togglePopup(true, true)}
-        >
-          Register
-        </button>
-      </div>
-
       <div className="h-96 bg-gradient-to-b from-[#622aff] to-[#622aff]/90 relative text-white">
         <div className="absolute top-0 w-full h-40 pixels"></div>
       </div>
@@ -115,4 +95,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default UserLogin;

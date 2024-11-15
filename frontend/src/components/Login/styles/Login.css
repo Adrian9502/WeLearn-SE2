@@ -1,0 +1,101 @@
+@font-face {
+  font-family: "Kemco";
+  src: url("../../data/font/Kemco Pixel Bold.ttf") format("truetype");
+}
+@font-face {
+  font-family: "DePixelKlein";
+  src: url("../../data/font/DePixelKlein.ttf") format("truetype");
+}
+@font-face {
+  font-family: "PressStart2p";
+  src: url("../../data/font/PressStart2P.ttf") format("truetype");
+}
+.kemco-font {
+  font-family: "Kemco", sans-serif;
+  font-weight: bold;
+}
+.font-outline {
+  text-shadow: 2px 7px #28248c;
+}
+.DePixelKlein {
+  font-family: "DePixelKlein", sans-serif;
+}
+/* buttons */
+.login-register-btn {
+  background-color: yellow;
+  color: #28248c;
+  transition: all;
+  padding: 13px 13px;
+}
+.login-register-btn,
+.form-container {
+  font-family: Kemco;
+  clip-path: polygon(
+    0 4px,
+    4px 4px,
+    4px 0,
+    calc(100% - 4px) 0,
+    calc(100% - 4px) 4px,
+    100% 4px,
+    100% calc(100% - 4px),
+    calc(100% - 4px) calc(100% - 4px),
+    calc(100% - 4px) 100%,
+    4px 100%,
+    4px calc(100% - 4px),
+    0 calc(100% - 4px)
+  );
+
+  box-shadow: inset -4px -4px 0px rgba(0, 0, 0, 0.3),
+    /* Inner shadow top-left */ inset 4px 4px 0px rgba(255, 255, 255, 0.2),
+    /* Inner shadow bottom-right */ 4px 4px 6px rgba(0, 0, 0, 0.4),
+    /* Bottom-right shadow */ 0px 4px 6px rgba(0, 0, 0, 0.4); /* Bottom shadow */
+}
+
+.form-container {
+  color: white;
+}
+.form-container h2 {
+  color: yellow;
+  text-shadow: 2px 6px #28248c;
+}
+
+/* popup form container */
+
+.form-container label {
+  font-family: "Kemco", sans-serif;
+}
+/* popup-overlay to center the login form */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+/* user container */
+.user-con {
+  border: 2px solid violet;
+  color: yellow;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+}
+.user-img-con {
+  width: 20px;
+  height: 20px;
+}
+.user-img-con img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.success-text {
+  color: green;
+}

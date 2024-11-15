@@ -27,7 +27,7 @@ const ManageAdmins = () => {
   const fetchAdminData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:5000/api/admins");
+      const response = await axios.get("/api/admins");
       const transformedData = response.data.map((admin) => ({
         ID: admin._id,
         Name: admin.fullName,

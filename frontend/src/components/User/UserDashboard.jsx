@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "./Sidebar";
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -7,6 +7,10 @@ import Placeholder from "./components/Placeholder";
 import { useUser } from "./UserContext";
 
 export default function UserDashboard() {
+  // ---- AUDIO -----
+  const audioRef = useRef(null);
+  const [isMuted, setIsMuted] = useState(false);
+  // ----------------------------------------------
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [userAnswer, setUserAnswer] = useState("");
   // get user id and coins from context
@@ -49,13 +53,49 @@ export default function UserDashboard() {
       fetchUserProgress();
     }
   }, [userId]);
-
+  // Change title
+  useEffect(() => {
+    document.title = "WeLearn - Play Game";
+  }, []);
   // Fetch progress when a new quiz is selected
   useEffect(() => {
     if (selectedQuiz && userId) {
       fetchQuizProgress();
     }
   }, [selectedQuiz, userId]);
+
+  // ---- AUDIO ------
+  useEffect(() => {
+    audioRef.current = new Audio("/music/Enchanted Festival.mp3");
+    audioRef.current.loop = true;
+    audioRef.current.volume = 0.7;
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+
+        audioRef.current.currentTime = 0;
+      }
+    };
+  }, []);
+  const playAudio = async () => {
+    if (audioRef.current) {
+      try {
+        await audioRef.current.play();
+      } catch (error) {
+        console.warn("Audio autoplay failed:", error);
+      }
+    }
+  };
+  useEffect(() => {
+    playAudio();
+  }, []);
+  const toggleMute = () => {
+    if (audioRef.current) {
+      audioRef.current.muted = !audioRef.current.muted;
+      setIsMuted((prevMuted) => !prevMuted);
+    }
+  };
 
   const fetchUserProgress = async () => {
     try {
@@ -336,22 +376,26 @@ export default function UserDashboard() {
       style={{ fontFamily: "Retro Gaming, Arial, Helvetica, sans-serif" }}
       className="custom-cursor flex h-screen overflow-hidden"
     >
+      {" "}
+      {/* Add audio control button */}
+      <button
+        onClick={toggleMute}
+        className="fixed top-4 right-4 z-50 px-4 py-2 bg-neutral-800 text-white rounded-full hover:bg-neutral-700 transition-colors"
+      >
+        {isMuted ? "🔇 Unmute" : "🔊 Mute"}
+      </button>
+      <button
+        onClick={playAudio} // Play audio directly on button click
+        className="fixed top-4 right-4 p-2 bg-green-500 text-white hover:bg-green-600 transition"
+      >
+        Play Audio
+      </button>
       <Sidebar
         onQuizSelect={handleQuizSelect}
         userProgress={userProgress}
         completedQuizzes={completedQuizzes}
       />
       <div className="main-content">
-        <div className="top-bar">
-          <div className="hamburger-menu">
-            <img
-              src="/hamburger.png"
-              id="hamburger"
-              title="Show sidebar"
-              alt="hamburger"
-            />
-          </div>
-        </div>
         <div className="exercise w-full">
           {selectedQuiz ? (
             <>

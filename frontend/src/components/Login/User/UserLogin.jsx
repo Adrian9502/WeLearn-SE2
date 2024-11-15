@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import Forms from "./Forms";
-
 const UserLogin = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
@@ -64,8 +63,9 @@ const UserLogin = () => {
       {/* Play Music Button */}
       {!isPlaying && (
         <button
+          style={{ fontFamily: "lexend" }}
           onClick={handlePlayMusic}
-          className="fixed DePixelKlein top-4 text-sm play-music left-4 p-2 bg-green-500 text-white hover:bg-green-600 transition"
+          className="fixed top-4 text-sm play-music left-4 p-2 bg-green-600 text-white hover:bg-green-700 transition"
         >
           Play Music
         </button>
@@ -74,9 +74,10 @@ const UserLogin = () => {
       {/* Mute/Unmute Button */}
       <button
         onClick={toggleMute}
-        className="fixed top-4 DePixelKlein mute-music text-sm right-4 p-2 bg-yellow-500 text-white hover:bg-yellow-600 transition"
+        style={{ fontFamily: "lexend" }}
+        className="fixed top-4 mute-music text-sm right-4 p-2 bg-sky-500 text-white hover:bg-sky-600 transition"
       >
-        {isMuted ? "Unmute" : "Mute"}
+        {isMuted ? "🔇 Unmute" : "🔊 Mute"}
       </button>
 
       {/* LOGO */}
@@ -92,22 +93,22 @@ const UserLogin = () => {
         <img
           src="https://cdn.prod.website-files.com/62be13fdb8a06d0f7cf4aa7b/62cedd0333b4d08248813ec8_cloud2.png"
           alt="cloud image"
-          className="cloud absolute animate-cloud1"
+          className="cloud pointer-events-none absolute animate-cloud1"
         />
         <img
           src="https://cdn.prod.website-files.com/62be13fdb8a06d0f7cf4aa7b/62cedd2a8d68d86bc3433530_cloud3.png"
           alt="cloud image"
-          className="cloud absolute animate-cloud2"
+          className="cloud pointer-events-none absolute animate-cloud2"
         />
         <img
           src="https://cdn.prod.website-files.com/62be13fdb8a06d0f7cf4aa7b/62cedd2a8d68d86bc3433530_cloud3.png"
           alt="cloud image"
-          className="cloud absolute animate-cloud3"
+          className="cloud pointer-events-none absolute animate-cloud3"
         />
         <img
           src="https://cdn.prod.website-files.com/62be13fdb8a06d0f7cf4aa7b/62cedce23075eeefa4391c3d_cloud1.png"
           alt="cloud image"
-          className="cloud absolute animate-cloud4"
+          className="cloud pointer-events-none absolute animate-cloud4"
         />
         {/* Text and user login/register */}
         <div

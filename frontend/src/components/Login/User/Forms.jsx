@@ -39,7 +39,6 @@ const Forms = ({
     },
     [setTouched]
   );
-  // TODO: TEST LOGIN/REGISTER IN FORMS.JSX
   const handleLoginSubmit = useCallback(async () => {
     setLoading(true);
     try {
@@ -49,7 +48,7 @@ const Forms = ({
         password,
       });
       if (response.data && response.data.user) {
-        setLoginMessage("User Login successful! Redirecting...");
+        setLoginMessage("Login successful! Redirecting...");
         localStorage.setItem("authToken", response.data.token);
         localStorage.setItem("username", response.data.username);
         localStorage.setItem("userRole", "user");
@@ -91,7 +90,7 @@ const Forms = ({
         dob,
       });
       setSuccessfulRegistration(true);
-      setRegistrationMessage("Admin registration successful! Please login.");
+      setRegistrationMessage("Registration successful! Please login.");
       setTimeout(() => {
         setIsPopupOpen(false);
       }, 2000);
@@ -236,13 +235,18 @@ const Forms = ({
 
       {registrationMessage && (
         <div
-          className={`mb-2 text-sm text-center p-3 ${
+          style={
             registrationMessage.toLowerCase().includes("failed")
-              ? "error-text bg-red-100 border border-red-400"
-              : "success-text bg-green-100 border border-green-400"
+              ? { fontFamily: "lexend" }
+              : {}
+          }
+          className={`mb-2 text-center p-3 ${
+            registrationMessage.toLowerCase().includes("failed")
+              ? "text-center text-base text-red-500 bg-yellow-500 font-medium"
+              : "text-center text-base success-text p-3 font-medium"
           }`}
         >
-          {registrationMessage} {errors}
+          {registrationMessage}
         </div>
       )}
       {formError && (
@@ -254,7 +258,7 @@ const Forms = ({
         </div>
       )}
       {loginMessage && (
-        <div className="mb-2 text-center text-lg success-text bg-green-100 border border-green-400 p-3">
+        <div className="text-center text-lg success-text p-3">
           {loginMessage}
         </div>
       )}

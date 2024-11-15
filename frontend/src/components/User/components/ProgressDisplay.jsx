@@ -91,7 +91,7 @@ export default function ProgressDisplay({ userProgress, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-slate-900 rounded-lg p-6 max-w-4xl min-h-[80vh] max-h-[80vh] overflow-y-auto relative w-full mx-4">
+      <div className="bg-gradient-to-br from-indigo-700 to-violet-800/90 rounded-lg p-6 max-w-4xl min-h-[80vh] max-h-[80vh] overflow-y-auto relative w-full mx-4">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-cyan-400 hover:text-cyan-600"
@@ -99,14 +99,14 @@ export default function ProgressDisplay({ userProgress, onClose }) {
           ✕
         </button>
 
-        <h3 className="text-cyan-400 text-3xl text-center mb-5">
+        <h3 className="text-center mb-5 text-slate-200 text-4xl">
           Completed Quizzes
         </h3>
 
         {userProgress.length > 0 ? (
           <div className="p-2">
-            {/* Search and Controls */}
-            <div className="mb-8">
+            {/* Search, Stats and Controls */}
+            <div className="mb-6">
               {/* Search Bar with Pixel Border */}
               <div className="relative mb-6">
                 <div className="relative">
@@ -115,19 +115,18 @@ export default function ProgressDisplay({ userProgress, onClose }) {
                     placeholder="Search quizzes..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-4 py-3 bg-neutral-800 text-white border-4 border-cyan-500 focus:border-cyan-400 outline-none 
-                           [image-rendering:pixelated] transition-all
-                           before:content-[''] before:absolute before:inset-0 before:border-4 before:border-black"
+                    className="w-full p-3 bg-slate-200 text-slate-900 btn"
                   />
                   <IoIosSearch
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-cyan-400"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-900"
                     size={24}
                   />
                 </div>
               </div>
 
               {/* Control Buttons */}
-              <div className="flex flex-wrap gap-4 mb-4">
+              <div className="flex flex-wrap items-center gap-4 mb-4">
+                <span className="text-slate-200">Sort by:</span>
                 {[
                   { key: "title", label: "Title" },
                   { key: "attempts", label: "Attempts" },
@@ -136,7 +135,7 @@ export default function ProgressDisplay({ userProgress, onClose }) {
                   <button
                     key={sort.key}
                     onClick={() => handleSort(sort.key)}
-                    className="px-2 bg-blue-700 text-white  transition-all progress-grid flex items-center gap-2"
+                    className="px-4 text-slate-200 bg-gradient-to-r from-fuchsia-600 to-fuchsia-700 py-1 rounded-lg transition-all flex items-center gap-2"
                   >
                     {sort.label}
                     {sortConfig.key === sort.key &&
@@ -149,14 +148,14 @@ export default function ProgressDisplay({ userProgress, onClose }) {
                 ))}
                 <button
                   onClick={handleReset}
-                  className="px-2 bg-blue-700 text-white  transition-all progress-grid flex items-center gap-2"
+                  className="px-4 text-slate-200 bg-gradient-to-r from-fuchsia-600 to-fuchsia-700 py-1 rounded-lg transition-all flex items-center gap-2"
                 >
                   <RefreshCcw size={16} /> Reset
                 </button>
               </div>
 
               {/* Stats */}
-              <div className="text-gray-400 text-sm px-2">
+              <div className="text-slate-200 text-sm px-2">
                 Showing {filteredProgress.length} of {userProgress.length}{" "}
                 quizzes
                 {sortConfig.key && (
@@ -180,43 +179,42 @@ export default function ProgressDisplay({ userProgress, onClose }) {
               {filteredProgress.map((quiz) => (
                 <div
                   key={quiz._id}
-                  className={`
-                 relative p-4 progress-grid
-                 ${quiz.completed ? "bg-rose-600" : "bg-neutral-800"}
-                 
-              
-               `}
+                  className={`relative p-4 ${
+                    quiz.completed ? "bg-fuchsia-600" : "bg-gray-800"
+                  } rounded-lg shadow-lg overflow-hidden border-4 border-yellow-500`}
                 >
                   {/* Title */}
-                  <h4 className="text-white text-xl mb-4 text-center px-2 py-1 bg-blue-600 border-b-4 border-blue-800">
+                  <h4 className="text-white mb-4 text-center px-4 py-2 bg-blue-700 border-b-4 border-blue-900 font-mono text-xl tracking-wider">
                     {quiz.quizId.title}
                   </h4>
 
                   {/* Stats Boxes */}
                   <div className="space-y-4">
-                    <div className="bg-blue-700 p-3 border-4 border-blue-900">
-                      <div className="text-sm text-gray-200 mb-1">
+                    <div className="bg-blue-700 p-4 border-4 border-blue-900 rounded-lg shadow-lg">
+                      <div className="text-xs text-gray-100 mb-1 uppercase pixel-font">
                         Total Attempts
                       </div>
-                      <div className="text-xl text-yellow-300 text-center">
+                      <div className="text-3xl text-yellow-400 text-center font-mono">
                         {quiz.exercisesCompleted}
                       </div>
                     </div>
 
-                    <div className="bg-blue-700 p-3 border-4 border-blue-900">
-                      <div className="text-sm text-gray-200 mb-1">
+                    <div className="bg-blue-700 p-4 border-4 border-blue-900 rounded-lg shadow-lg">
+                      <div className="text-xs text-gray-100 mb-1 uppercase pixel-font">
                         Time Spent
                       </div>
-                      <div className="text-xl text-yellow-300 text-center">
+                      <div className="text-3xl text-yellow-400 text-center font-mono">
                         {formatTimeSpent(quiz.totalTimeSpent)}
                       </div>
                     </div>
                   </div>
 
                   {/* Last Attempt Date */}
-                  <div className="mt-4 text-xs text-gray-200 border-t-2 border-yellow-500 pt-2">
+                  <div className="mt-4 text-xs text-gray-200 border-t-2 border-yellow-500 pt-2 uppercase font-mono">
                     Last Attempt:{" "}
-                    {new Date(quiz.lastAttemptDate).toLocaleDateString()}
+                    <span className="text-yellow-400">
+                      {new Date(quiz.lastAttemptDate).toLocaleDateString()}
+                    </span>
                   </div>
                 </div>
               ))}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Forms from "./Forms";
 
 const UserLogin = () => {
@@ -6,6 +6,9 @@ const UserLogin = () => {
   const [isRegister, setIsRegister] = useState(false);
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState("");
+  const [isMuted, setIsMuted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false); // Track if music is playing
+  const audioRef = useRef(null);
   const togglePopup = (register = false) => {
     setIsRegister(register);
     setIsPopupOpen((prevState) => {
@@ -16,16 +19,66 @@ const UserLogin = () => {
       return !prevState;
     });
   };
+  // -----------------MUSIC------------------
+  useEffect(() => {
+    // Initialize the audio object on mount
+    audioRef.current = new Audio(
+      "/music/Curious Critters (Extended Version) 1.mp3"
+    );
+    audioRef.current.loop = true;
+    audioRef.current.muted = isMuted;
 
+    // Clean up on unmount
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    // Mute/unmute the audio when isMuted changes
+    if (audioRef.current) {
+      audioRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
+
+  const handlePlayMusic = () => {
+    if (audioRef.current && !isPlaying) {
+      audioRef.current
+        .play()
+        .then(() => {
+          setIsPlaying(true); // Music starts playing
+        })
+        .catch((error) => {
+          console.warn("Audio playback failed: ", error);
+        });
+    }
+  };
+  const toggleMute = () => {
+    setIsMuted((prev) => !prev); // Toggle the mute state
+  };
   return (
-    <main
-      style={{ fontFamily: "HomeVideo, Arial, Helvetica, sans-serif" }}
-      className="bg-gradient-to-b from-[#622aff] to-[#622aff]/90 custom-cursor min-h-screen pt-4"
-    >
-      {/* for clouds */}
-      <img src="" alt="" />
-      <img src="" alt="" />
-      <img src="" alt="" />
+    <main className="bg-gradient-to-b from-[#622aff] to-[#622aff]/90 custom-cursor min-h-screen pt-4">
+      {/* Play Music Button */}
+      {!isPlaying && (
+        <button
+          onClick={handlePlayMusic}
+          className="fixed DePixelKlein top-4 text-sm play-music left-4 p-2 bg-green-500 text-white hover:bg-green-600 transition"
+        >
+          Play Music
+        </button>
+      )}
+
+      {/* Mute/Unmute Button */}
+      <button
+        onClick={toggleMute}
+        className="fixed top-4 DePixelKlein mute-music text-sm right-4 p-2 bg-yellow-500 text-white hover:bg-yellow-600 transition"
+      >
+        {isMuted ? "Unmute" : "Mute"}
+      </button>
+
       {/* LOGO */}
       <img
         src="/landing-page-logo.png"
@@ -34,7 +87,28 @@ const UserLogin = () => {
       />
 
       {/* main container */}
-      <div className="relative flex items-center justify-center min-h-[calc(100vh)]">
+      <div className="relative flex items-center justify-center min-h-[100vh]">
+        {/* Clouds with animation */}
+        <img
+          src="https://cdn.prod.website-files.com/62be13fdb8a06d0f7cf4aa7b/62cedd0333b4d08248813ec8_cloud2.png"
+          alt="cloud image"
+          className="cloud absolute animate-cloud1"
+        />
+        <img
+          src="https://cdn.prod.website-files.com/62be13fdb8a06d0f7cf4aa7b/62cedd2a8d68d86bc3433530_cloud3.png"
+          alt="cloud image"
+          className="cloud absolute animate-cloud2"
+        />
+        <img
+          src="https://cdn.prod.website-files.com/62be13fdb8a06d0f7cf4aa7b/62cedd2a8d68d86bc3433530_cloud3.png"
+          alt="cloud image"
+          className="cloud absolute animate-cloud3"
+        />
+        <img
+          src="https://cdn.prod.website-files.com/62be13fdb8a06d0f7cf4aa7b/62cedce23075eeefa4391c3d_cloud1.png"
+          alt="cloud image"
+          className="cloud absolute animate-cloud4"
+        />
         {/* Text and user login/register */}
         <div
           className="flex items-center justify-center mx-auto mb-32 w-full lg:w-[60%] flex-wrap p-4 lg:p-8"

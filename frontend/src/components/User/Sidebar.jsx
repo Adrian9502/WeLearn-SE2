@@ -298,8 +298,10 @@ export default function Sidebar({ onQuizSelect, userProgress }) {
   return (
     <aside
       style={{
-        backgroundImage:
-          "url(https://img.freepik.com/premium-vector/purple-brick-wall-seamless-texture-vector-illustration-industrial-background_520826-3748.jpg?semt=ais_hybrid)",
+        backgroundImage: "url(/user-dashboard/brick.png)",
+        boxShadow: "1px 0px 21px 18px rgba(0,0,0,0.75) inset",
+        WebkitBoxShadow: "1px 0px 21px 18px rgba(0,0,0,0.75) inset",
+        MozBoxShadow: "1px 0px 21px 18px rgba(0,0,0,0.75) inset",
       }}
       className="min-h-screen bg-gradient-to-b from-indigo-600 via-purple-600 to-indigo-700 overflow-auto p-3"
     >

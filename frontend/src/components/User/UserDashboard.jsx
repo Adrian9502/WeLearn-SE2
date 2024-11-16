@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "./Sidebar";
 import Swal from "sweetalert2";
 import axios from "axios";
-import TitleAndInstruction from "./components/TitleAndInstruction";
+import Title from "./components/Title";
 import Placeholder from "./components/Placeholder";
 import { useUser } from "./UserContext";
 
@@ -179,8 +179,8 @@ export default function UserDashboard() {
         "#fff url(https://cdn.vectorstock.com/i/1000v/38/53/pixel-art-style-purple-gradient-background-vector-8473853.jpg",
       customClass: {
         popup: "swal-font",
-        confirmButton: "btn-swal primary",
-        cancelButton: "btn-swal show-btn",
+        confirmButton: "btn primary",
+        cancelButton: "btn show-btn",
       },
     }).then(async (result) => {
       if (result.isConfirmed) {
@@ -281,8 +281,8 @@ export default function UserDashboard() {
         "#fff url(https://cdn.vectorstock.com/i/1000v/38/53/pixel-art-style-purple-gradient-background-vector-8473853.jpg",
       customClass: {
         popup: "swal-font",
-        confirmButton: "btn-swal primary",
-        cancelButton: "btn-swal show-btn",
+        confirmButton: "btn primary",
+        cancelButton: "btn show-btn",
       },
     }).then(async (result) => {
       if (result.isConfirmed) {
@@ -307,7 +307,7 @@ export default function UserDashboard() {
                 "#fff url(https://i.pinimg.com/736x/82/cf/92/82cf92145d8c60f274c05401094ea998.jpg)",
               customClass: {
                 popup: "swal-font",
-                confirmButton: "btn-swal secondary",
+                confirmButton: "btn secondary",
               },
             });
           } catch (error) {
@@ -325,7 +325,7 @@ export default function UserDashboard() {
               "#fff url(https://i.pinimg.com/736x/82/cf/92/82cf92145d8c60f274c05401094ea998.jpg)",
             customClass: {
               popup: "swal-font",
-              confirmButton: "btn-swal secondary",
+              confirmButton: "btn secondary",
             },
           });
         }
@@ -372,61 +372,69 @@ export default function UserDashboard() {
   };
 
   return (
+    // Main container
     <main
       style={{ fontFamily: "Retro Gaming, Arial, Helvetica, sans-serif" }}
       className="custom-cursor flex h-screen overflow-hidden"
     >
-      {" "}
-      {/* Add audio control button */}
+      {/* audio control button */}
       <button
         onClick={toggleMute}
-        className="fixed top-4 right-4 z-50 px-4 py-2 bg-neutral-800 text-white rounded-full hover:bg-neutral-700 transition-colors"
+        className="fixed top-4 right-4 z-50 px-4 py-2 btn bg-purple-700 text-white hover:bg-purple-800 transition-colors"
       >
         {isMuted ? "🔇 Unmute" : "🔊 Mute"}
       </button>
-      <button
-        onClick={playAudio} // Play audio directly on button click
-        className="fixed top-4 right-4 p-2 bg-green-500 text-white hover:bg-green-600 transition"
-      >
-        Play Audio
-      </button>
+      {/* sidebar */}
       <Sidebar
         onQuizSelect={handleQuizSelect}
         userProgress={userProgress}
         completedQuizzes={completedQuizzes}
       />
-      <div className="main-content">
-        <div className="exercise w-full">
+      {/* main quiz ui */}
+      <div
+        style={{
+          backgroundImage: "url(/user-dashboard/dungeon-bg-purple.png",
+          boxShadow: "1px 0px 21px 18px rgba(0,0,0,0.75) inset",
+        }}
+        className="flex-1 overflow-hidden px-9 py-10 "
+      >
+        <div className="flex flex-col h-full pt-12 w-full">
           {selectedQuiz ? (
             <>
-              {/* title and instruction component */}
-              <TitleAndInstruction selectedQuiz={selectedQuiz} />
+              {/* title */}
+              <Title selectedQuiz={selectedQuiz} />
 
-              <div className="exercise-area relative flex justify-around gap-5">
-                <div>
-                  <div className="text-slate-200 jetbrains mb-5">
-                    <div className="font-bold text-lg mb-2">Instructions:</div>
-                    <div className="font-semibold">
-                      {selectedQuiz.instruction}
+              <div className="flex justify-between gap-6 px-2">
+                {/* question container */}
+                <div
+                  style={{ boxShadow: "1px 1px 10px 10px rgba(0,0,0,0.75)" }}
+                  className="py-4 px-5 w-fit h-fit my-auto max-w-5xl rounded-lg bg-gradient-to-br border-2 from-slate-900 to-stone-950 border-purple-600 relative flex justify-center items-center"
+                >
+                  {/* quiz question */}
+                  <div className="max-w-full">
+                    <div className="text-slate-200 mb-5">
+                      <div className="text-lg mb-2">Instructions:</div>
+                      <div className="max-w-3xl">
+                        {selectedQuiz.instruction}
+                      </div>
+                    </div>
+                    <div className="p-3 w-fit mx-auto border-4 rounded-lg border-slate-500 relative bg-neutral-900">
+                      {/* Conditionally add/remove blur class based on isBlurred */}
+                      <div className={isBlurred ? "blur" : ""} />
+                      <pre className="jetbrains text-nowrap text-2xl">
+                        {selectedQuiz.question}
+                      </pre>
                     </div>
                   </div>
-                  <div className="p-3 min-w-1/2 relative border-4 bg-neutral-900">
-                    {/* Conditionally add/remove blur class based on isBlurred */}
-                    <div className={isBlurred ? "blur" : ""} />
-                    <pre className="jetbrains text-nowrap text-xl">
-                      {selectedQuiz.question}
-                    </pre>
-                  </div>
                 </div>
-
-                <div className="flex flex-col items-center justify-around">
-                  {/* input and submit button */}
-                  <div className="flex answer-container p-3 flex-col">
+                {/* input and submit button */}
+                <div className="flex flex-1 flex-col justify-center items-center">
+                  <div className="flex flex-col bg-gradient-to-br from-indigo-950 to-purple-950 p-8 border-2 border-purple-600 rounded-lg">
                     <div className="flex justify-around items-center">
                       <button
                         disabled={hasStarted || isQuizCompleted}
                         onClick={handleStart}
-                        className={`primary start-button ${
+                        className={`btn p-3 bg-gradient-to-r from-green-600 to-teal-600 text-slate-200 transition-colors hover:to-teal-500 hover:text-slate-100 ${
                           (isButtonDisabled && isQuizCompleted) || hasStarted
                             ? "cursor-not-allowed opacity-50"
                             : ""
@@ -434,55 +442,60 @@ export default function UserDashboard() {
                       >
                         START
                       </button>
-                      <div className="bg-zinc-950 text-lg text-cyan-400 px-6 py-1 timer">
+                      <div className="bg-zinc-950 border-2 border-slate-600 rounded-lg text-lg text-cyan-400 px-6 py-2">
                         <span>Time:</span>{" "}
                         <span className="tracking-widest">{formatTime()}</span>
                       </div>
                     </div>
-                    <label
-                      htmlFor="answer"
-                      className="mb-1 mt-6 text-xl jetbrains text-cyan-400 font-bold"
-                    >
-                      Answer:
-                    </label>
-
-                    <form
-                      className="flex gap-8"
-                      onSubmit={(event) => {
-                        event.preventDefault();
-                        handleSubmitAnswer();
-                      }}
-                    >
-                      <input
-                        type="text"
-                        disabled={isBlurred || isQuizCompleted}
-                        id="answer"
-                        value={userAnswer}
-                        onChange={(e) => setUserAnswer(e.target.value)}
-                        className="answer-input jetbrains p-2 text-xl"
-                        placeholder="Type your answer here..."
-                      />
-                      <button
-                        type="submit"
-                        disabled={isBlurred || isQuizCompleted}
-                        className="primary submit-answer-button"
+                    <div className="my-6 flex gap-2 flex-col">
+                      <label htmlFor="answer" className="text-xl text-cyan-400">
+                        Answer:
+                      </label>
+                      <form
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          handleSubmitAnswer();
+                        }}
+                        className="flex flex-col gap-10"
                       >
-                        Submit Answer &gt;
-                      </button>
-                    </form>
-                  </div>
-                  {/* show answer button */}
-                  <button
-                    className="ex-area-btn show-btn"
-                    onClick={handleShowAnswer}
-                    disabled={isBlurred || isQuizCompleted}
-                  >
-                    Show Answer (
-                    <div className="coin-show">
-                      <img src="/coin.gif" alt="coin" />
+                        <textarea
+                          type="text"
+                          disabled={isBlurred || isQuizCompleted}
+                          id="answer"
+                          value={userAnswer}
+                          onChange={(e) => setUserAnswer(e.target.value)}
+                          className="rounded-lg w-full max-w-full border-2 border-slate-600 text-cyan-400 bg-slate-950 jetbrains p-2 text-xl flex"
+                          placeholder="Type your answer here. If there are 2 or more answer, Separate it by comma ',' eg. 'print, print'"
+                        />
+                        <div className="flex p-1 gap-5 justify-around">
+                          <button
+                            type="submit"
+                            disabled={isBlurred || isQuizCompleted}
+                            className="btn bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-800 transition-colors px-5 py-3 flex items-center justify-center uppercase text-yellow-400"
+                          >
+                            Submit Answer &gt;
+                          </button>
+                          {/* show answer button */}
+                          <button
+                            className="btn bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-800 transition-colors px-4 py-3 flex items-center justify-center uppercase text-yellow-400"
+                            onClick={handleShowAnswer}
+                            disabled={isBlurred || isQuizCompleted}
+                          >
+                            Show Answer{" "}
+                            <div className="ml-1 flex items-center">
+                              (
+                              <img
+                                src="/coin.gif"
+                                className="w-4 h-6"
+                                alt="coin"
+                              />
+                              <div>300</div>)
+                            </div>
+                          </button>
+                        </div>
+                      </form>
                     </div>
-                    <span>- 300)</span>
-                  </button>
+                  </div>
                 </div>
               </div>
             </>

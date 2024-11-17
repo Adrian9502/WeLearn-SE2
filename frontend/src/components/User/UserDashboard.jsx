@@ -463,9 +463,10 @@ export default function UserDashboard() {
                           disabled={isBlurred || isQuizCompleted}
                           id="answer"
                           value={userAnswer}
+                          rows="4"
                           onChange={(e) => setUserAnswer(e.target.value)}
                           className="rounded-lg w-full max-w-full border-2 border-slate-600 text-cyan-400 bg-slate-950 jetbrains p-2 text-xl flex"
-                          placeholder="Type your answer here. If there are 2 or more answer, Separate it by comma ',' eg. 'print, print'"
+                          placeholder="Type your answer here. If there are two or more answers, separate them with a comma (','), e.g., 'print, 12'."
                         />
                         <div className="flex p-1 gap-5 justify-around">
                           <button
@@ -480,6 +481,7 @@ export default function UserDashboard() {
                             className="btn bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-800 transition-colors px-4 py-3 flex items-center justify-center uppercase text-yellow-400"
                             onClick={handleShowAnswer}
                             disabled={isBlurred || isQuizCompleted}
+                            type="button"
                           >
                             Show Answer{" "}
                             <div className="ml-1 flex items-center">

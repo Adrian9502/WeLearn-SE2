@@ -215,24 +215,37 @@ const Forms = ({
       !formData.email ||
       !formData.dob
     : !formData.username || !formData.password;
+  // Helper function for message styling
+  const getMessageStyles = (message, type = "error") => {
+    const baseStyles = "mb-2 text-center p-3 text-base font-medium";
+    const styles = {
+      error: "bg-yellow-400 text-red-500",
+      success: "success-text",
+      loading: "flex justify-center items-center mb-5",
+    };
+    return `${baseStyles} ${styles[type]}`;
+  };
   return (
     <form
-      className={`form-container p-6 ${
-        isRegister ? "w-[31rem]" : "w-[30rem]"
-      } md:p-9 lg:w-xl bg-violet-700 relative`}
+      className="form-container relative bg-violet-700 w-[90%] sm:w-full md:w-[31rem] p-5 sm:p-6 md:p-9 mx-auto"
       onSubmit={handleSubmit}
     >
+      {/* Close Button */}
       <button
         type="button"
         onClick={() => setIsPopupOpen(false)}
-        className="absolute bg-fuchsia-500 rounded right-4 top-2 text-white transition-colors"
+        className="absolute bg-fuchsia-500 rounded right-2 sm:right-4 top-2 text-white transition-colors hover:bg-fuchsia-600"
+        aria-label="Close"
       >
         <IoIosClose size={25} />
       </button>
-      <h2 className="text-center p-2 text-3xl lg:text-4xl mb-2 lg:mb-5">
+
+      {/* Form Title */}
+      <h2 className="text-center p-2 text-2xl sm:text-3xl lg:text-4xl mb-2 lg:mb-5">
         {isRegister ? "Create Account" : "Login"}
       </h2>
 
+      {/* Status Messages */}
       {registrationMessage && (
         <div
           style={
@@ -240,37 +253,41 @@ const Forms = ({
               ? { fontFamily: "lexend" }
               : {}
           }
-          className={`mb-2 text-center p-3 ${
+          className={getMessageStyles(
+            registrationMessage,
             registrationMessage.toLowerCase().includes("failed")
-              ? "text-center text-base text-red-500 bg-yellow-500 font-medium"
-              : "text-center text-base success-text p-3 font-medium"
-          }`}
+              ? "error"
+              : "success"
+          )}
         >
           {registrationMessage}
         </div>
       )}
+
       {formError && (
         <div
           style={{ fontFamily: "lexend" }}
-          className="mb-2 text-center p-1 text-sm rounded bg-yellow-400 text-red-500 font-medium"
+          className={getMessageStyles(formError, "error")}
         >
           {formError}
         </div>
       )}
+
       {loginMessage && (
-        <div className="text-center text-lg success-text p-3">
+        <div className={getMessageStyles(loginMessage, "success")}>
           {loginMessage}
         </div>
       )}
 
+      {/* Form Fields */}
       {!successfulLogin && !successfulRegistration && (
         <>
           {loading ? (
-            <div className="flex justify-center items-center mb-5">
+            <div className={getMessageStyles("", "loading")}>
               <div className="h-10 w-10 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
           ) : (
-            <div className="flex flex-col">
+            <div className="flex flex-col space-y-3 sm:space-y-4">
               {isRegister &&
                 renderField(
                   "Full Name",
@@ -278,50 +295,60 @@ const Forms = ({
                   "text",
                   validateFormField("fullName", formData.fullName)
                 )}
+
               {renderField(
-                isRegister ? "Username" : "Username",
+                "Username",
                 "username",
                 "text",
                 validateFormField("username", formData.username)
               )}
+
               {renderField(
-                isRegister ? "Password" : "Password",
+                "Password",
                 "password",
                 "password",
                 validateFormField("password", formData.password)
               )}
-              {isRegister &&
-                renderField(
-                  "Confirm Password",
-                  "confirmPassword",
-                  "password",
-                  validateFormField("confirmPassword", formData.confirmPassword)
-                )}
-              {isRegister &&
-                renderField(
-                  "Email",
-                  "email",
-                  "email",
-                  validateFormField("email", formData.email)
-                )}
-              {isRegister &&
-                renderField(
-                  "Date of Birth",
-                  "dob",
-                  "date",
-                  validateFormField("dob", formData.dob)
-                )}
+
+              {isRegister && (
+                <>
+                  {renderField(
+                    "Confirm Password",
+                    "confirmPassword",
+                    "password",
+                    validateFormField(
+                      "confirmPassword",
+                      formData.confirmPassword
+                    )
+                  )}
+
+                  {renderField(
+                    "Email",
+                    "email",
+                    "email",
+                    validateFormField("email", formData.email)
+                  )}
+
+                  {renderField(
+                    "Date of Birth",
+                    "dob",
+                    "date",
+                    validateFormField("dob", formData.dob)
+                  )}
+                </>
+              )}
             </div>
           )}
         </>
       )}
 
-      <div className="flex justify-center items-center mt-2">
+      {/* Submit Button */}
+      <div className="flex justify-center items-center mt-4 sm:mt-6">
         {!successfulLogin && !successfulRegistration && (
           <button
             type="submit"
             disabled={loading || disableSubmit}
-            className="px-4 py-1 text-lg hover:scale-105 transition-all duration-200 disabled:opacity-75 login-register-btn"
+            className="w-full sm:w-auto px-4 py-1 text-base sm:text-lg hover:scale-105 transition-all duration-200 disabled:opacity-75 disabled:hover:scale-100 login-register-btn"
           >
             {isRegister ? "Register" : "Login"}
           </button>

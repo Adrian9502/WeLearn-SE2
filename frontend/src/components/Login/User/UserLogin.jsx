@@ -68,14 +68,12 @@ const teamMembers = [
     role: "Full Stack Developer",
   },
   {
-    image:
-      "https://static.vecteezy.com/system/resources/previews/036/594/092/non_2x/man-empty-avatar-photo-placeholder-for-social-networks-resumes-forums-and-dating-sites-male-and-female-no-photo-images-for-unfilled-user-profile-free-vector.jpg",
+    image: "/team/derwin.jpg",
     name: "Derwin P. Elsenique",
     role: "Research Paper Scientist",
   },
   {
-    image:
-      "https://static.vecteezy.com/system/resources/previews/036/594/092/non_2x/man-empty-avatar-photo-placeholder-for-social-networks-resumes-forums-and-dating-sites-male-and-female-no-photo-images-for-unfilled-user-profile-free-vector.jpg",
+    image: "/team/ruis.jpg",
     name: "Ruis A. Lirag",
     role: "Research Paper Scientist",
   },

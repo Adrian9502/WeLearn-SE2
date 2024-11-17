@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import Forms from "./Forms";
+import { Splide, SplideSlide } from "@splidejs/react-splide";
+import "@splidejs/react-splide/css";
+import ProfileCard from "./components/ProfileCard";
+import { motion, useInView } from "framer-motion";
 const UserLogin = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
@@ -18,6 +22,33 @@ const UserLogin = () => {
       return !prevState;
     });
   };
+  // Animation variants
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 1,
+        ease: "easeOut",
+      },
+    },
+  };
+
+  const fadeIn = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 2,
+      },
+    },
+  };
+  const ref = useRef(null);
+  const { inView, ref: inViewRef } = useInView({
+    triggerOnce: true, // Ensures the animation only triggers once when the element comes into view
+    threshold: 0.1, // Adjust the threshold value to trigger the animation earlier or later
+  });
   // -----------------MUSIC------------------
   useEffect(() => {
     // Initialize the audio object on mount
@@ -58,6 +89,7 @@ const UserLogin = () => {
   const toggleMute = () => {
     setIsMuted((prev) => !prev); // Toggle the mute state
   };
+
   return (
     <main className="bg-gradient-to-b from-[#622aff] to-[#622aff]/90 custom-cursor min-h-screen pt-4">
       {/* Play Music Button */}
@@ -65,7 +97,7 @@ const UserLogin = () => {
         <button
           style={{ fontFamily: "lexend" }}
           onClick={handlePlayMusic}
-          className="fixed top-4 text-sm play-music left-4 p-2 bg-green-600 text-white hover:bg-green-700 transition"
+          className="fixed z-50 top-4 text-sm play-music left-4 p-2 bg-green-600 text-white hover:bg-green-700 transition"
         >
           Play Music
         </button>
@@ -75,16 +107,19 @@ const UserLogin = () => {
       <button
         onClick={toggleMute}
         style={{ fontFamily: "lexend" }}
-        className="fixed top-4 mute-music text-sm right-4 p-2 bg-sky-500 text-white hover:bg-sky-600 transition"
+        className="fixed z-50 top-4 mute-music text-sm right-4 p-2 bg-sky-500 text-white hover:bg-sky-600 transition"
       >
         {isMuted ? "🔇 Unmute" : "🔊 Mute"}
       </button>
 
       {/* LOGO */}
-      <img
+      <motion.img
         src="/landing-page-logo.png"
         className="w-[15%] mt-4 mx-auto pointer-events-none"
         alt="WeLearn logo"
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 1.5 }}
       />
 
       {/* main container */}
@@ -116,14 +151,28 @@ const UserLogin = () => {
           id="main-wrapper"
         >
           <div className="text-center tracking-wider px-4">
-            <h3 className="text-2xl mb-10 kemco-font font-outline text-white md:text-4xl lg:text-5xl leading-loose">
+            <motion.h3
+              variants={fadeInUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, threshold: 0.1 }}
+              animate={inView ? "visible" : "hidden"}
+              className="text-2xl mb-10 kemco-font font-outline text-white md:text-4xl lg:text-5xl leading-loose"
+            >
               Sharpen your skills <br /> and test your knowledge
-            </h3>
-            <p className="leading-snug DePixelKlein text-white lg:text-xl text-base">
+            </motion.h3>
+            <motion.p
+              variants={fadeIn}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, threshold: 0.1 }}
+              animate={inView ? "visible" : "hidden"}
+              className="leading-snug DePixelKlein text-white lg:text-xl text-base"
+            >
               Join exciting algorithm challenges to master binary and sorting
               concepts. Sign up now to track progress and boost your
               problem-solving skills!
-            </p>
+            </motion.p>
           </div>
           {/* USER REGISTER/LOGIN */}
           <div className="flex justify-center mt-10 gap-14">
@@ -162,9 +211,196 @@ const UserLogin = () => {
           </div>
         </div>
       )}
-
-      <div className="h-96 bg-gradient-to-b from-[#622aff] to-[#622aff]/90 relative text-white">
+      {/* Preview, Features  etc */}
+      <div className="pb-20 pt-20 flex flex-col bg-gradient-to-b from-[#622aff] to-[#622aff]/90 relative text-white">
+        {/* pixel (bottom of mountain image) */}
         <div className="absolute top-0 w-full h-40 pixels"></div>
+
+        {/* Overview */}
+        <div className="w-full px-52 mx-auto mt-40 flex gap-10">
+          {/* image */}
+          <Splide
+            aria-label="My Favorite Images"
+            options={{
+              width: 850, // width of the splide
+              type: "loop", // loop when at the last image
+              perPage: 1, // Number of slides per page
+              autoplay: true, // Automatically play slides
+              interval: 3000, // Autoplay interval in milliseconds
+              arrows: true, // Show navigation arrows
+              pagination: true, // show dot
+            }}
+          >
+            <SplideSlide>
+              <img
+                src="/user-login/overview.png"
+                className="rounded-lg shadow-2xl border-2 border-yellow-400"
+                alt="overview"
+              />
+            </SplideSlide>
+            <SplideSlide>
+              <img
+                src="/user-login/overview-1.png"
+                className="rounded-lg shadow-2xl border-2 border-yellow-400"
+                alt="overview 1"
+              />
+            </SplideSlide>
+            <SplideSlide>
+              <img
+                src="/user-login/overview-2.png"
+                className="rounded-lg shadow-2xl border-2 border-yellow-400"
+                alt="overview 2"
+              />
+            </SplideSlide>
+          </Splide>
+          {/* title and paragraph */}
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, threshold: 0.1 }}
+            animate={inView ? "visible" : "hidden"}
+            className="text-white flex-1"
+          >
+            <h3 className="text-2xl mb-10 kemco-font text-center font-outline text-white md:text-4xl lg:text-3xl leading-loose">
+              Enhance your coding skills
+            </h3>
+            <p className="leading-snug DePixelKlein text-white lg:text-xl text-base">
+              Sharpen your knowledge with fun, interactive challenges on sorting
+              algorithms and binary operations. <br /> <br /> Test your logic
+              and problem-solving abilities while mastering essential coding
+              concepts.
+            </p>
+          </motion.div>
+        </div>
+
+        {/* Playing gif */}
+        <div className="w-full px-52 mx-auto mt-48 flex gap-10">
+          {/* title and paragraph */}
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, threshold: 0.1 }}
+            animate={inView ? "visible" : "hidden"}
+            className="text-white flex-1"
+          >
+            <h3 className="text-2xl mb-10 text-center kemco-font font-outline text-white md:text-4xl lg:text-3xl leading-loose">
+              Level Up Your Coding Game
+            </h3>
+            <p className="leading-snug DePixelKlein text-white lg:text-xl text-base">
+              Take your coding skills to the next level with engaging challenges
+              in sorting algorithms and binary operations. <br /> <br />{" "}
+              Strengthen your problem-solving abilities while having fun and
+              mastering key programming concepts. <br />
+              <br /> Earn coins for each correct answer, and use them to reveal
+              answers when you&quot;re stuck!
+            </p>
+          </motion.div>
+
+          {/* image */}
+          <div className="flex-1">
+            <img
+              src="/user-login/playing-gif.gif"
+              className="w-full rounded-lg shadow-2xl border-2 border-yellow-400"
+              alt="overview"
+            />
+          </div>
+        </div>
+
+        {/* Progress gif */}
+        <div className="w-full px-52 mx-auto mt-48 flex gap-10">
+          {/* image */}
+          <div className="flex-1">
+            <img
+              src="/user-login/progress-gif.gif"
+              className="w-full rounded-lg shadow-2xl border-2 border-yellow-400"
+              alt="overview"
+            />
+          </div>
+          {/* title and paragraph */}
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, threshold: 0.1 }}
+            animate={inView ? "visible" : "hidden"}
+            className="text-white max-w-[42%]"
+          >
+            <h3 className="text-2xl mb-10 text-center kemco-font font-outline text-white md:text-4xl lg:text-3xl leading-loose">
+              Track Your Progress
+            </h3>
+            <p className="leading-snug DePixelKlein text-white lg:text-xl text-base">
+              Monitor your improvement over time! Search and sort your progress
+              by title, total attempts, and completion time to see how far
+              you&quot;ve come.
+            </p>
+          </motion.div>
+        </div>
+        {/* Ranking gif */}
+        <div className="w-full px-52 mx-auto mt-48 flex gap-10">
+          {/* title and paragraph */}
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, threshold: 0.1 }}
+            animate={inView ? "visible" : "hidden"}
+            className="text-white max-w-[42%]"
+          >
+            <h3 className="text-2xl mb-10 text-center kemco-font font-outline text-white md:text-4xl lg:text-3xl leading-loose">
+              Become a Coding Legend!
+            </h3>
+            <p className="leading-snug DePixelKlein text-white lg:text-xl text-base">
+              Challenge yourself with interactive coding quizzes and rise
+              through the ranks! Earn titles like Quiz Master, Speed Demon, Coin
+              Champion, Consistency King, and Efficiency Elite as you showcase
+              your skills in sorting algorithms and binary operations. <br />
+              <br /> Compete for the top spot and prove your coding prowess!
+            </p>
+          </motion.div>
+          {/* image */}
+          <div className="flex-1">
+            <img
+              src="/user-login/ranking-gif.gif"
+              className="w-full rounded-lg shadow-2xl border-2 border-yellow-400"
+              alt="overview"
+            />
+          </div>
+        </div>
+      </div>
+      {/* Developers */}
+      <div className="pb-20 bg-gradient-to-b pt-40 flex flex-col from-[#622aff]/90 via-indigo-600 to-rose-600/50 relative text-white">
+        <h3 className="text-2xl mb-10 kemco-font text-center font-outline text-white md:text-4xl lg:text-4xl leading-loose">
+          Our Software Engineering Team
+        </h3>
+        <div className="flex w-fit mx-auto p-5 justify-center gap-3">
+          <ProfileCard
+            image={"/team/adrian.png"}
+            name={"John Adrian D. Bonto"}
+            role={"Full Stack Developer"}
+          />
+
+          <ProfileCard
+            image={
+              "https://static.vecteezy.com/system/resources/previews/036/594/092/non_2x/man-empty-avatar-photo-placeholder-for-social-networks-resumes-forums-and-dating-sites-male-and-female-no-photo-images-for-unfilled-user-profile-free-vector.jpg"
+            }
+            name={"Derwin P. Elsenique"}
+            role={"Research Paper Scientist"}
+          />
+          <ProfileCard
+            image={
+              "https://static.vecteezy.com/system/resources/previews/036/594/092/non_2x/man-empty-avatar-photo-placeholder-for-social-networks-resumes-forums-and-dating-sites-male-and-female-no-photo-images-for-unfilled-user-profile-free-vector.jpg"
+            }
+            name={"Ruis A. Lirag"}
+            role={"Research Paper Scientist"}
+          />
+          <ProfileCard
+            image={"/team/jhade.png"}
+            name={"Jhade B. Piamonte"}
+            role={"Research Analyst"}
+          />
+        </div>
       </div>
     </main>
   );

@@ -13,7 +13,9 @@
     "test:login/forms": "jest src/__tests__/Login/Forms.test.js"
   },
   "dependencies": {
+    "@splidejs/react-splide": "^0.7.12",
     "axios": "^1.7.7",
+    "framer-motion": "^11.11.17",
     "lucide-react": "^0.454.0",
     "react": "^18.3.1",
     "react-copy-to-clipboard": "^5.1.0",

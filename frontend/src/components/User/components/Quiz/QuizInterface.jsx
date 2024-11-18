@@ -17,21 +17,31 @@ const QuizInterface = ({
   hasShownAnswer,
   handleAnswerChange,
 }) => (
-  <div className="flex justify-between gap-6 px-2">
+  <div className="flex flex-col 2xl:flex-row justify-between gap-6 px-2">
     <div
-      className="py-4 px-5 w-fit h-fit my-auto max-w-5xl rounded-lg bg-gradient-to-br border-2 from-slate-900 to-stone-950 border-purple-600 relative flex justify-center items-center"
+      className="py-4 sm:px-5 px-2 my-auto max-w-5xl rounded-lg bg-gradient-to-br border-2 from-slate-900 to-stone-950 border-purple-600 relative flex justify-center items-center"
       style={{ boxShadow: "1px 1px 10px 10px rgba(0,0,0,0.75)" }}
     >
       <div className="max-w-full">
         <div className="text-slate-200 mb-5">
-          <div className="text-lg mb-2">Instructions:</div>
-          <div className="max-w-3xl">{selectedQuiz.instruction}</div>
+          <div className="sm:text-lg mb-2">Instructions:</div>
+          <div className="max-w-lg sm:max-w-3xl">
+            {selectedQuiz.instruction}
+          </div>
         </div>
-        <div className="p-3 w-fit mx-auto border-4 rounded-lg border-slate-500 relative bg-neutral-900">
-          <div className={isBlurred ? "blur" : ""} />
-          <pre className="jetbrains text-nowrap text-2xl">
-            {selectedQuiz.question}
-          </pre>
+        <div className="p-3 relative mx-auto border-4 rounded-lg border-slate-500 bg-neutral-900 overflow-hidden">
+          {/* Added overflow-hidden */}
+          <div className="isolate relative h-full">
+            {/* Added h-full */}
+            <div className="overflow-auto relative max-h-[300px] sm:max-h-none">
+              {isBlurred && (
+                <div className="absolute rounded-lg w-[90vh] sm:w-auto inset-0 z-10 bg-white/10 backdrop-blur-[5px]" />
+              )}
+              <pre className="jetbrains text-nowrap text-xl sm:text-2xl relative">
+                {selectedQuiz.question}
+              </pre>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -67,7 +77,7 @@ QuizInterface.propTypes = {
   time: PropTypes.number.isRequired,
   hasStarted: PropTypes.bool.isRequired,
   handleStart: PropTypes.func.isRequired,
-  hasShownAnswer: PropTypes.bool.isRequired,
+  hasShownAnswer: PropTypes.bool,
   handleAnswerChange: PropTypes.func.isRequired,
 };
 export default QuizInterface;

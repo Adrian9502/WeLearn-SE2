@@ -16,8 +16,8 @@ const QuizControls = ({
   handleAnswerChange,
 }) => (
   <div className="flex flex-1 flex-col justify-center items-center">
-    <div className="flex flex-col bg-gradient-to-br from-indigo-950 to-purple-950 p-8 border-2 border-purple-600 rounded-lg">
-      <div className="flex justify-around items-center">
+    <div className="flex max-w-full flex-col bg-gradient-to-br from-indigo-950 to-purple-950 p-4 sm:p-8 border-2 border-purple-600 rounded-lg">
+      <div className="flex flex-col gap-5 sm:flex-row justify-around items-center">
         <button
           disabled={hasStarted || isQuizCompleted}
           onClick={handleStart}

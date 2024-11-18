@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useUser } from "./UserContext";
 import Swal from "sweetalert2";
-import UserInfo from "./components/UserInfo";
+import UserInfo from "./components/Sidebar/UserInfo";
 // Constants
 const QUIZ_TYPES = {
   BUBBLE: "bubble",
@@ -14,6 +14,7 @@ const QUIZ_TYPES = {
   SUBTRACTION: "subtraction",
   ALPHABET: "alphabet",
 };
+
 const INITIAL_EXPANDED_STATE = {
   [QUIZ_TYPES.BUBBLE]: false,
   [QUIZ_TYPES.MERGE]: false,
@@ -23,7 +24,7 @@ const INITIAL_EXPANDED_STATE = {
   [QUIZ_TYPES.SUBTRACTION]: false,
   [QUIZ_TYPES.ALPHABET]: false,
 };
-
+// Custom hook
 const useQuizzes = () => {
   const [quizzes, setQuizzes] = useState([]);
 
@@ -60,7 +61,7 @@ const QuizItem = ({ quiz, onClick, userProgress, completedQuizzes }) => {
       data-quiz-id={quiz._id}
       onClick={isCompleted ? undefined : onClick}
       className={`
-        relative bg-gradient-to-r overflow-hidden rounded-lg
+        relative btn bg-gradient-to-r overflow-hidden rounded-lg
         ${
           isCompleted
             ? "from-green-600 to-emerald-600 cursor-not-allowed"
@@ -69,13 +70,13 @@ const QuizItem = ({ quiz, onClick, userProgress, completedQuizzes }) => {
         transform ${
           !isCompleted && "hover:scale-105"
         } transition-all duration-200
-        p-3 shadow-lg`}
+        sm:p-3 p-2 shadow-lg`}
     >
       <div className="flex justify-between items-center">
-        <span className="text-white font-game text-lg">{quiz.title}</span>
+        <span className="text-white sm:text-lg">{quiz.title}</span>
         {isCompleted && (
           <div className="flex items-center">
-            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+            <div className="sm:w-6 sm:h-6 h-5 w-5 bg-green-500 rounded-full flex items-center justify-center">
               <span className="text-white font-bold">✓</span>
             </div>
           </div>
@@ -115,15 +116,15 @@ const QuizSection = ({
               ? "bg-gradient-to-r from-fuchsia-700 to-purple-600 hover:to-fuchsia-700"
               : "bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:to-indigo-700"
           }
-          p-3 transform transition-all duration-200
+          sm:p-3 p-2 transform transition-all duration-200
           shadow-lg
         `}
       >
         <div className="flex justify-between items-center">
-          <div className="text-white text-lg">{title}</div>
+          <div className="text-white sm:text-lg">{title}</div>
           {isSectionCompleted() && (
             <div className="flex items-center">
-              <div className="w-7 h-7 bg-green-500 rounded-full flex items-center justify-center">
+              <div className="sm:w-7 sm:h-7 h-5 w-5 bg-green-500 rounded-full flex items-center justify-center">
                 <span className="text-slate-200 font-bold">✓</span>
               </div>
             </div>
@@ -150,7 +151,13 @@ const QuizSection = ({
 };
 
 // Main Component
-export default function Sidebar({ onQuizSelect, userProgress }) {
+export default function Sidebar({
+  onQuizSelect,
+  userProgress,
+  onShowProgress,
+  onShowRankings,
+  onClose,
+}) {
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(INITIAL_EXPANDED_STATE);
   const quizzes = useQuizzes();
@@ -305,73 +312,85 @@ export default function Sidebar({ onQuizSelect, userProgress }) {
         WebkitBoxShadow: "1px 0px 21px 18px rgba(0,0,0,0.75) inset",
         MozBoxShadow: "1px 0px 21px 18px rgba(0,0,0,0.75) inset",
       }}
-      className="min-h-screen bg-gradient-to-b from-indigo-600 via-purple-600 to-indigo-700 overflow-auto p-3"
+      className="h-screen w-60 sm:w-72 bg-gradient-to-b from-indigo-600 via-purple-600 to-indigo-700 flex flex-col"
     >
-      <div className="max-w-60 mx-auto">
-        {/* Welearn Logo container */}
-        <div className="border-2 border-purple-700 rounded-lg diagonal flex flex-col items-center">
-          <img
-            src="/Welearn-small-logo.png"
-            className="w-44 my-2 pointer-events-none"
-            alt=""
-          />
-        </div>
-        {/* Text below logo */}
-        <h1 className="text-xl text-center text-yellow-300 mt-3 mb-8">
-          Master Sorting Algorithm & Binary Operations
-        </h1>
-        {/* Completed Quizzes */}
-        <div className="border border-purple-500 relative bg-gradient-to-b from-purple-800/50 to-indigo-800/50 rounded-xl p-4 mb-8">
-          <img
-            src="/torch-gif.gif"
-            className="w-6 absolute left-2  pointer-events-none"
-            alt="torch gif"
-          />
-          <img
-            src="/torch-gif.gif"
-            className="w-6 absolute right-2 pointer-events-none"
-            alt="torch gif"
-          />
-          <div className="text-center space-y-2">
-            <span className="text-white text-lg">Completed</span>
-            <div className="text-3xl font-game">
-              <span className="text-yellow-400">{userQuizCompleted}</span>
-              <span className="text-white mx-2">of</span>
-              <span className="text-yellow-400">{totalQuizzes}</span>
+      {/* Scrollable container for sidebar content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-3">
+          <div className="max-w-60 mx-auto">
+            {/* Fixed position elements */}
+            <div className="border-2 mt-14 lg:mt-4 border-purple-700 rounded-lg diagonal flex flex-col items-center">
+              <img
+                src="/Welearn-small-logo.png"
+                className="w-36 sm:w-44 my-2 pointer-events-none"
+                alt="WeLearn logo"
+              />
             </div>
-            <span className="text-white text-lg">exercises</span>
-          </div>
-        </div>
-        {/* User Info */}
-        <UserInfo
-          onLogout={handleLogout}
-          username={username}
-          coins={user?.coins || 0}
-          userProgress={userProgress}
-        />
-        {/* Quiz Titles */}
-        <div className="space-y-6">
-          {quizzesTitles.map((section) => (
-            <div
-              key={section.sectionTitle}
-              className="bg-gradient-to-b from-slate-950/80 to-indigo-950/80 rounded p-2"
-            >
-              <h2 className="text-2xl text-center text-yellow-400 mb-4">
-                {section.sectionTitle}
-              </h2>
-              {section.quizzes.map((quiz) => (
-                <QuizSection
-                  key={quiz.title}
-                  title={quiz.title}
-                  quizzes={quiz.quizzes}
-                  isExpanded={isExpanded}
-                  onToggle={toggleQuizzes}
-                  onQuizSelect={handleQuizSelect}
-                  userProgress={userProgress}
-                />
+
+            {/* Text below logo */}
+            <h1 className="text-base border-2 diagonal border-purple-600 rounded-lg p-2 sm:text-xl text-center text-yellow-400 mt-3 mb-8">
+              Master Sorting Algorithm & Binary Operations
+            </h1>
+
+            {/* Completed Quizzes */}
+            <div className="border border-purple-500 relative bg-gradient-to-b from-purple-800/50 to-indigo-800/50 rounded-xl p-2 sm:p-4">
+              <img
+                src="/torch-gif.gif"
+                className="w-5 sm:w-6 absolute left-2 pointer-events-none"
+                alt="torch gif"
+              />
+              <img
+                src="/torch-gif.gif"
+                className="w-5 sm:w-6 absolute right-2 pointer-events-none"
+                alt="torch gif"
+              />
+              <div className="text-center space-y-2">
+                <span className="text-white sm:text-lg">Completed</span>
+                <div className="text-2xl sm:text-3xl font-game">
+                  <span className="text-yellow-400">{userQuizCompleted}</span>
+                  <span className="text-white mx-2">of</span>
+                  <span className="text-yellow-400">{totalQuizzes}</span>
+                </div>
+                <span className="text-white lg:text-lg">exercises</span>
+              </div>
+            </div>
+
+            {/* User Info */}
+            <UserInfo
+              onLogout={handleLogout}
+              username={username}
+              coins={user?.coins || 0}
+              userProgress={userProgress}
+              onShowProgress={onShowProgress}
+              onShowRankings={onShowRankings}
+              onClose={onClose}
+            />
+
+            {/* Quiz Titles */}
+            <div className="space-y-3 sm:space-y-6">
+              {quizzesTitles.map((section) => (
+                <div
+                  key={section.sectionTitle}
+                  className="bg-gradient-to-b from-slate-950/80 to-indigo-950/80 rounded p-2"
+                >
+                  <h2 className="text-xl sm:text-2xl text-center text-yellow-400 mb-4">
+                    {section.sectionTitle}
+                  </h2>
+                  {section.quizzes.map((quiz) => (
+                    <QuizSection
+                      key={quiz.title}
+                      title={quiz.title}
+                      quizzes={quiz.quizzes}
+                      isExpanded={isExpanded}
+                      onToggle={toggleQuizzes}
+                      onQuizSelect={handleQuizSelect}
+                      userProgress={userProgress}
+                    />
+                  ))}
+                </div>
               ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </aside>

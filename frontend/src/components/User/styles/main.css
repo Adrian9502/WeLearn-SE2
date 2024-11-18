@@ -1,15 +1,4 @@
-/* Main content styles */
-
-.blur {
-  background: rgba(255, 255, 255, 0);
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  backdrop-filter: blur(0.1px);
-  -webkit-backdrop-filter: blur(0.1px);
-}
+/* User Dashboard styles */
 pre {
   color: rgb(0, 255, 221);
   line-height: 40px;

@@ -2,31 +2,32 @@ import React from "react";
 
 export default function Placeholder() {
   return (
-    <div className="flex flex-col justify-around gap-20">
-      <div className="py-3 px-10 relative diagonal border-2 rounded-lg border-purple-600 w-fit ">
+    <div className="flex flex-col justify-around pb-5 gap-20">
+      <div className="py-3 px-5 flex justify-between items-center gap-5 diagonal mx-auto border-2 rounded-lg border-purple-600 w-fit ">
         <img
           src="/torch-gif.gif"
-          className="w-6 absolute left-2 bottom-0 pointer-events-none"
+          className="w-6 pointer-events-none"
           alt="torch gif"
         />
-        <img
-          src="/torch-gif.gif"
-          className="w-6 absolute right-2 bottom-0 pointer-events-none"
-          alt="torch gif"
-        />
-
-        <h1 className="text-4xl text-yellow-400">
+        <h1 className="text-xl text-center sm:text-2xl md:text-3xl lg:text-4xl text-yellow-400">
           Choose an Exercise on the left!
         </h1>
+        <img
+          src="/torch-gif.gif"
+          className="w-6 pointer-events-none"
+          alt="torch gif"
+        />
       </div>
 
       <div
         style={{ boxShadow: "5px 6px 19px -1px rgba(0,0,0,0.75)" }}
-        className="rounded-lg bg-gradient-to-br from-indigo-950 to-purple-950 p-8 border-2 border-purple-600 "
+        className="rounded-lg bg-gradient-to-br from-indigo-950 to-purple-950 p-4 sm:p-8 border-2 border-purple-600 "
       >
-        <div className="text-2xl text-slate-200 jetbrains">
-          <div className="font-bold my-2">Instructions:</div>
-          <div>
+        <div className="sm:text-lg md:text-xl lg:text-2xl text-slate-200 jetbrains">
+          <div className="font-bold my-2 text-center sm:text-start">
+            Instructions:
+          </div>
+          <div className="">
             1.{" "}
             <span className="font-bold text-yellow-300">Choose a Topic: </span>
             Click on a topic in the sidebar.

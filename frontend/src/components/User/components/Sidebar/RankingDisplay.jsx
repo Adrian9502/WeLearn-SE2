@@ -47,10 +47,10 @@ export default function RankingsDisplay({ onClose }) {
         {rankingData.map((user, index) => (
           <div
             key={user.userId}
-            className="flex items-center justify-between p-4 bg-slate-950 rounded-lg border-2 border-slate-500"
+            className="flex flex-col sm:flex-row gap-2 items-center justify-between p-2 sm:p-4 bg-slate-950 rounded-lg border-2 border-slate-500"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-8 text-center">
+            <div className="flex p-4 sm:p-0 max-w-full items-center gap-1 sm:gap-3">
+              <div className="w-8 text-center ">
                 {index < 3 ? (
                   <Trophy
                     size={24}
@@ -66,11 +66,11 @@ export default function RankingsDisplay({ onClose }) {
                   <span className="text-gray-400">#{index + 1}</span>
                 )}
               </div>
-              <span className="text-white">
+              <span className="text-white text-base truncate">
                 {index + 1}. {user.username}
               </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex border-2 p-2 rounded-lg border-yellow-400 sm:border-none sm:rounded-none sm:p-0 items-center gap-2">
               {categoryConfig.icon}
               <span className="text-yellow-400">
                 {categoryConfig.formatScore(user[categoryConfig.scoreField])}
@@ -121,19 +121,19 @@ export default function RankingsDisplay({ onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-gradient-to-b from-indigo-700 rounded-lg to-purple-800/90 shadow-xl w-full max-w-4xl max-h-[80vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center px-3 justify-center z-50">
+      <div className="bg-gradient-to-b from-indigo-700 rounded-lg to-purple-800/90 shadow-xl w-full max-w-4xl max-h-[80vh] overflow-y-auto">
         {/* Header */}
         <div className="p-2">
           <div className="flex items-center px-2 justify-between">
             <div className="flex-grow text-center">
-              <h2 className="text-4xl  mt-4 text-slate-200 inline-block">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl mt-4 text-slate-200 inline-block">
                 Rankings
               </h2>
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 transition-colors hover:text-gray-200 text-xl"
+              className="text-slate-200 transition-colors hover:text-slate-300 text-lg"
             >
               ✕
             </button>
@@ -141,9 +141,9 @@ export default function RankingsDisplay({ onClose }) {
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="sm:p-6 p-3">
           {/* Tabs */}
-          <div className="grid grid-cols-5 gap-4 p-1 rounded-lg mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4 p-1 rounded-lg mb-6">
             {Object.entries(rankingCategories).map(([key, category]) => (
               <button
                 key={key}
@@ -156,21 +156,21 @@ export default function RankingsDisplay({ onClose }) {
               >
                 <div className="flex flex-col items-center gap-1">
                   {category.icon}
-                  <span className="text-sm">{category.title}</span>
+                  <span className="text-xs sm:text-sm">{category.title}</span>
                 </div>
               </button>
             ))}
           </div>
 
           {/* Tab Content */}
-          <div className="mt-4 p-3 rounded-lg bg-indigo-600 overflow-y-auto max-h-[60vh]">
+          <div className="mt-4 p-2 sm:p-3 rounded-lg bg-indigo-600 overflow-y-auto max-h-[60vh]">
             {Object.entries(rankingCategories).map(([key, category]) => (
               <div
                 key={key}
                 className={`${activeTab === key ? "block" : "hidden"}`}
               >
                 <div className="mb-4">
-                  <h3 className="text-3xl my-2 text-center font-medium text-yellow-400">
+                  <h3 className="text-2xl sm:text-3xl my-2 text-center font-medium text-yellow-400">
                     {category.title}
                   </h3>
                   <p className="text-gray-200 text-center text-sm">

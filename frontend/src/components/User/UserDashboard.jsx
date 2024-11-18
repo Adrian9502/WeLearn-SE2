@@ -2,12 +2,19 @@ import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "./Sidebar";
 import Swal from "sweetalert2";
 import axios from "axios";
-import Title from "./components/Title";
-import Placeholder from "./components/Placeholder";
+import Title from "./components/Sidebar/Title";
+import Placeholder from "./components/Quiz/Placeholder";
 import { useUser } from "./UserContext";
 import QuizInterface from "./components/Quiz/QuizInterface";
+import ProgressDisplay from "./components/Sidebar/ProgressDisplay";
+import RankingsDisplay from "./components/Sidebar/RankingDisplay";
 
 export default function UserDashboard() {
+  // pop up component onclick
+  const [isProgressVisible, setIsProgressVisible] = useState(false);
+  const [isRankingVisible, setIsRankingVisible] = useState(false);
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const audioRef = useRef(null);
   const [isMuted, setIsMuted] = useState(false);
   const [selectedQuiz, setSelectedQuiz] = useState(null);
@@ -21,6 +28,10 @@ export default function UserDashboard() {
   const [userProgress, setUserProgress] = useState(null);
   const [completedQuizzes, setCompletedQuizzes] = useState(new Set());
   const [hasShownAnswer, setHasShownAnswer] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
   useEffect(() => {
     // change the title
     document.title = "WeLearn - Play";
@@ -237,7 +248,6 @@ export default function UserDashboard() {
       }
     });
   };
-
   const handleShowAnswer = () => {
     if (!user?.coins || hasShownAnswer) return;
 
@@ -312,7 +322,6 @@ export default function UserDashboard() {
     setHasStarted(false);
     setHasShownAnswer(false);
   };
-
   const handleStart = () => {
     if (!hasStarted) {
       setIsActive(true);
@@ -321,7 +330,6 @@ export default function UserDashboard() {
       setTime(0);
     }
   };
-
   const handleQuizSelect = (quiz) => {
     // Check if quiz is completed
     const isCompleted =
@@ -337,7 +345,6 @@ export default function UserDashboard() {
       setIsQuizCompleted(false);
     }
   };
-
   const formatTime = () => {
     const minutes = Math.floor(time / 60)
       .toString()
@@ -346,31 +353,64 @@ export default function UserDashboard() {
     return `${minutes}:${seconds}`;
   };
 
+  const handleShowProgress = () => {
+    setIsProgressVisible(true);
+  };
+  const handleShowRanking = () => {
+    setIsRankingVisible(true);
+  };
+  const handleClose = () => {
+    setIsProgressVisible(false);
+    setIsRankingVisible(false);
+  };
   return (
     // Main container
     <main
       style={{ fontFamily: "Retro Gaming, Arial, Helvetica, sans-serif" }}
-      className="custom-cursor flex h-screen overflow-hidden"
+      className="custom-cursor flex h-screen w-full overflow-y-auto relative"
     >
+      {/* Hamburger Menu Button (visible on mobile) */}
+      <button
+        onClick={toggleSidebar}
+        className="lg:hidden fixed top-4 left-4 z-50 px-4 py-2 btn bg-purple-700 text-white hover:bg-purple-800 transition-colors"
+      >
+        {isSidebarOpen ? "✕" : "☰"}
+      </button>
       {/* audio control button */}
       <button
         onClick={() => {
           audioRef.current.muted = !audioRef.current.muted;
           setIsMuted(!isMuted);
         }}
-        className="fixed top-4 right-4 z-50 px-4 py-2 btn bg-purple-700 text-white hover:bg-purple-800 transition-colors"
+        className="fixed top-4 right-4 z-50 px-2 py-1.5 text-sm sm:px-4 sm:py-2 btn bg-purple-700 text-slate-200 hover:bg-purple-800 transition-colors"
       >
         {isMuted ? "🔇 Unmute" : "🔊 Mute"}
       </button>
-      {/* sidebar */}
-      <Sidebar
-        onQuizSelect={handleQuizSelect}
-        userProgress={userProgress}
-        completedQuizzes={completedQuizzes}
-      />
+      {/* Sidebar with responsive classes */}
+      <div
+        className={`${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } transform transition-transform duration-300 ease-in-out fixed lg:relative lg:translate-x-0 z-40 h-full`}
+      >
+        <Sidebar
+          onQuizSelect={(quiz) => {
+            handleQuizSelect(quiz);
+            if (window.innerWidth < 1024) {
+              setIsSidebarOpen(false);
+            }
+          }}
+          userProgress={userProgress}
+          completedQuizzes={completedQuizzes}
+          onShowProgress={handleShowProgress}
+          onShowRankings={handleShowRanking}
+          onClose={handleClose}
+        />
+      </div>
       {/* main quiz ui */}
       <div
-        className="flex-1 overflow-hidden px-9 py-10"
+        className={`flex-1 overflow-auto px-4 sm:px-6 md:px-9 py-6 md:py-10 transition-all duration-300 ${
+          isSidebarOpen ? "lg:ml-0" : "ml-0"
+        }`}
         style={{
           backgroundImage: "url(/user-dashboard/dungeon-bg-purple.png",
           boxShadow: "1px 0px 21px 18px rgba(0,0,0,0.75) inset",
@@ -400,6 +440,16 @@ export default function UserDashboard() {
           )}
         </div>
       </div>
+
+      {isProgressVisible && (
+        <ProgressDisplay
+          userProgress={userProgress}
+          onClose={() => setIsProgressVisible(false)}
+        />
+      )}
+      {isRankingVisible && (
+        <RankingsDisplay onClose={() => setIsRankingVisible(false)} />
+      )}
     </main>
   );
 }

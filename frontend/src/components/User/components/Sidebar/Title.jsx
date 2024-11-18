@@ -24,7 +24,7 @@ export default function Title({ selectedQuiz }) {
           style={{
             textShadow: "0px 5px 5px rgba(0,0,0,0.6)",
           }}
-          className="text-5xl text-yellow-400"
+          className="text-xl text-center sm:text-2xl md:text-3xl lg:text-4xl text-yellow-400"
         >
           {selectedQuiz.title}
         </h1>

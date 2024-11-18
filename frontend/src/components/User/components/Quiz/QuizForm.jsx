@@ -12,7 +12,7 @@ const QuizForm = ({
   handleAnswerChange,
 }) => (
   <div className="my-6 flex gap-2 flex-col">
-    <label htmlFor="answer" className="text-xl text-cyan-400">
+    <label htmlFor="answer" className="sm:text-xl text-cyan-400">
       Answer:
     </label>
     <form
@@ -20,7 +20,7 @@ const QuizForm = ({
         e.preventDefault();
         handleSubmitAnswer();
       }}
-      className="flex flex-col gap-10"
+      className="flex flex-col gap-5 sm:gap-10"
     >
       <textarea
         disabled={isBlurred || isQuizCompleted}
@@ -30,7 +30,7 @@ const QuizForm = ({
         placeholder="Type your answer here. If there are two or more answers, separate them with a comma (','), e.g., 'print, 12'."
         rows="4"
       />
-      <div className="flex p-1 gap-5 justify-around">
+      <div className="flex flex-col sm:flex-row p-1 gap-5 justify-around">
         <button
           type="submit"
           disabled={isBlurred || isQuizCompleted}
@@ -49,7 +49,7 @@ const QuizForm = ({
           type="button"
         >
           Show Answer{" "}
-          <div className="ml-1 flex items-center">
+          <div className="flex items-center">
             (<img src="/coin.gif" className="w-4 h-6" alt="coin" />
             <div>300</div>)
           </div>

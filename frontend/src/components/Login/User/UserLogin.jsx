@@ -266,7 +266,7 @@ const UserLogin = () => {
           {/* Auth Buttons */}
           <div className="flex justify-center mt-10 gap-14">
             <button
-              className="text-sm hover:scale-105 z-20 transition-transform md:text-xl login-register-btn"
+              className="text-sm transition-transform hover:scale-105 z-20 md:text-xl login-register-btn"
               data-testid="user-login-button"
               onClick={() => togglePopup(false)}
             >
@@ -274,7 +274,7 @@ const UserLogin = () => {
             </button>
             <button
               data-testid="user-register-button"
-              className="login-register-btn hover:scale-105 z-20 transition-transform text-sm md:text-xl"
+              className="login-register-btn transition-transform hover:scale-105 z-20 text-sm md:text-xl"
               onClick={() => togglePopup(true)}
             >
               Register

@@ -2,7 +2,7 @@ import React from "react";
 
 export default function ProfileCard({ image, name, role }) {
   return (
-    <div className="w-full max-w-[280px] sm:max-w-[320px] md:max-w-sm btn overflow-hidden shadow-xl bg-gradient-to-b from-purple-600 via-indigo-600 to-blue-600 transition-transform hover:scale-105">
+    <div className="w-full max-w-[280px] sm:max-w-[320px] md:max-w-sm btn overflow-hidden shadow-xl bg-gradient-to-b from-purple-600 via-indigo-600 to-blue-600">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Image Container with Border Effect */}
         <div className="relative mx-auto w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40">

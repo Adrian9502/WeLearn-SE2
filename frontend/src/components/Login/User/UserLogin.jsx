@@ -220,7 +220,7 @@ const UserLogin = () => {
       {/* Logo */}
       <motion.img
         src="/landing-page-logo.png"
-        className="w-60 md:w-80 mt-4 mx-auto pointer-events-none"
+        className="w-60 md:w-80 mt-10 sm:mt-4 mx-auto pointer-events-none"
         alt="WeLearn logo"
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

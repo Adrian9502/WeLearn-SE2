@@ -8,8 +8,13 @@ import { useUser } from "./UserContext";
 import QuizInterface from "./components/Quiz/QuizInterface";
 import ProgressDisplay from "./components/Sidebar/ProgressDisplay";
 import RankingsDisplay from "./components/Sidebar/RankingDisplay";
+import correctSound from "/music/Victory.mp3";
+import wrongSound from "/music/losetrumpet.mp3";
 
 export default function UserDashboard() {
+  // sound
+  const correctAudioRef = useRef(null);
+  const wrongAudioRef = useRef(null);
   // pop up component onclick
   const [isProgressVisible, setIsProgressVisible] = useState(false);
   const [isRankingVisible, setIsRankingVisible] = useState(false);
@@ -28,7 +33,11 @@ export default function UserDashboard() {
   const [userProgress, setUserProgress] = useState(null);
   const [completedQuizzes, setCompletedQuizzes] = useState(new Set());
   const [hasShownAnswer, setHasShownAnswer] = useState(false);
-
+  // Correct and wrong answer sound
+  useEffect(() => {
+    correctAudioRef.current = new Audio(correctSound);
+    wrongAudioRef.current = new Audio(wrongSound);
+  }, []);
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -84,7 +93,7 @@ export default function UserDashboard() {
   const updateProgress = async (isCorrect, timeSpent) => {
     try {
       // Make the progress update API call
-      const progressResponse = await axios.post(
+      await axios.post(
         `/api/progress/${user.userId}/${selectedQuiz._id}/answer`,
         {
           questionId: selectedQuiz._id,
@@ -198,30 +207,49 @@ export default function UserDashboard() {
         try {
           if (isCorrect) {
             setCompletedQuizzes((prev) => new Set([...prev, selectedQuiz._id]));
+            audioRef.current.pause(); // Pause main audio
+            correctAudioRef.current.play(); // Play correct sound
+            // Resume main audio after correct sound finishes
+            correctAudioRef.current.onended = () => {
+              audioRef.current.play();
+            };
             Swal.fire({
               title: "Correct!",
               text: `You earned 100 coins! Your new coins is ${updatedUserCoins}`,
               width: 500,
               padding: "1em",
-              color: "#f00c45",
+              color: "#ccc616",
               background:
-                "#fff url(https://i.pinimg.com/736x/82/cf/92/82cf92145d8c60f274c05401094ea998.jpg)",
+                "#fff url(https://st4.depositphotos.com/18899402/24653/i/450/depositphotos_246531954-stock-photo-abstract-purple-blue-gradient-background.jpg)",
+              backdrop: `
+                  rgba(0,0,123,0.4)
+                  url("/toothless-dancing.gif")
+                  left top
+                  no-repeat
+                `,
               customClass: {
                 popup: "swal-font",
-                confirmButton: "btn secondary",
+                confirmButton: "btn swal-btn",
               },
             });
             setIsQuizCompleted(true);
             resetQuizState();
           } else {
+            audioRef.current.pause(); // Pause main audio
+            wrongAudioRef.current.play(); // Play wrong sound
+
+            // Resume main audio after wrong sound finishes
+            wrongAudioRef.current.onended = () => {
+              audioRef.current.play();
+            };
             Swal.fire({
               title: "Wrong answer!",
               text: "That's okay, Try again!",
               width: 500,
               padding: "1em",
-              color: "#f00c45",
+              color: "#ccc616",
               background:
-                "#fff url(https://i.pinimg.com/736x/82/cf/92/82cf92145d8c60f274c05401094ea998.jpg)",
+                "#fff url(https://media.istockphoto.com/id/1279840017/vector/pixel-art-dithering-gradient-color.jpg?s=612x612&w=0&k=20&c=TWKixYnLQeosnr0ykK2CxoTAeNAuNqtNZxx_e5V7XGE=)",
               backdrop: `
               rgba(0,0,123,0.4)
               url("/cute-sad.gif")
@@ -230,7 +258,7 @@ export default function UserDashboard() {
             `,
               customClass: {
                 popup: "swal-font",
-                confirmButton: "btn-swal secondary",
+                confirmButton: "btn swal-btn",
               },
             });
 

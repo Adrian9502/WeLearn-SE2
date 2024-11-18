@@ -65,7 +65,7 @@ QuizForm.propTypes = {
   handleSubmitAnswer: PropTypes.func.isRequired,
   handleShowAnswer: PropTypes.func.isRequired,
   isQuizCompleted: PropTypes.bool.isRequired,
-  hasShownAnswer: PropTypes.bool.isRequired,
+  hasShownAnswer: PropTypes.bool,
   handleAnswerChange: PropTypes.func.isRequired,
 };
 export default QuizForm;

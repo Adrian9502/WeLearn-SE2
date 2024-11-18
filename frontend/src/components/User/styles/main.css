@@ -6,6 +6,10 @@ pre {
   margin-top: 10px;
   display: block;
 }
+.swal-btn {
+  background-color: blueviolet;
+  color: rgb(207, 207, 17);
+}
 /* sweet alert custom */
 @font-face {
   font-family: "Retro Gaming";

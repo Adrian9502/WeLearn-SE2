@@ -381,11 +381,20 @@ export default function Sidebar({ onQuizSelect, userProgress }) {
 // Prop types
 Sidebar.propTypes = {
   onQuizSelect: PropTypes.func.isRequired,
-  // userProgress: PropTypes.array,
   completedQuizzes: PropTypes.instanceOf(Set),
+  userProgress: PropTypes.arrayOf(
+    PropTypes.shape({
+      quizId: PropTypes.shape({
+        _id: PropTypes.string.isRequired,
+        title: PropTypes.string.isRequired,
+      }),
+      completed: PropTypes.bool.isRequired,
+    })
+  ),
 };
 
 QuizItem.propTypes = {
+  completedQuizzes: PropTypes.instanceOf(Set),
   quiz: PropTypes.shape({
     _id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
@@ -422,4 +431,5 @@ QuizSection.propTypes = {
       completed: PropTypes.bool.isRequired,
     })
   ),
+  completedQuizzes: PropTypes.instanceOf(Set),
 };

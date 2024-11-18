@@ -6,7 +6,6 @@ import Title from "./components/Title";
 import Placeholder from "./components/Placeholder";
 import { useUser } from "./UserContext";
 import QuizInterface from "./components/Quiz/QuizInterface";
-// component
 
 export default function UserDashboard() {
   const audioRef = useRef(null);

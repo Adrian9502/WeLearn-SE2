@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 const QuizForm = ({
   isBlurred,
@@ -57,5 +58,14 @@ const QuizForm = ({
     </form>
   </div>
 );
-
+QuizForm.propTypes = {
+  isBlurred: PropTypes.bool.isRequired,
+  userAnswer: PropTypes.string.isRequired,
+  setUserAnswer: PropTypes.func.isRequired,
+  handleSubmitAnswer: PropTypes.func.isRequired,
+  handleShowAnswer: PropTypes.func.isRequired,
+  isQuizCompleted: PropTypes.bool.isRequired,
+  hasShownAnswer: PropTypes.bool.isRequired,
+  handleAnswerChange: PropTypes.func.isRequired,
+};
 export default QuizForm;

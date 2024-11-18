@@ -1,5 +1,6 @@
 import React from "react";
 import QuizControls from "./QuizControls";
+import PropTypes from "prop-types";
 
 const QuizInterface = ({
   selectedQuiz,
@@ -50,4 +51,23 @@ const QuizInterface = ({
     />
   </div>
 );
+
+QuizInterface.propTypes = {
+  selectedQuiz: PropTypes.shape({
+    instruction: PropTypes.string.isRequired,
+    question: PropTypes.string.isRequired,
+  }).isRequired,
+  isBlurred: PropTypes.bool.isRequired,
+  userAnswer: PropTypes.string.isRequired,
+  setUserAnswer: PropTypes.func.isRequired,
+  handleSubmitAnswer: PropTypes.func.isRequired,
+  handleShowAnswer: PropTypes.func.isRequired,
+  isQuizCompleted: PropTypes.bool.isRequired,
+  formatTime: PropTypes.func.isRequired,
+  time: PropTypes.number.isRequired,
+  hasStarted: PropTypes.bool.isRequired,
+  handleStart: PropTypes.func.isRequired,
+  hasShownAnswer: PropTypes.bool.isRequired,
+  handleAnswerChange: PropTypes.func.isRequired,
+};
 export default QuizInterface;

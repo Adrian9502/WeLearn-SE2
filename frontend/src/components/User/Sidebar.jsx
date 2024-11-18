@@ -51,23 +51,25 @@ const findQuizProgress = (quizId, userProgress) => {
 };
 const QuizItem = ({ quiz, onClick, userProgress, completedQuizzes }) => {
   const isCompleted =
-    userProgress?.find(
+    userProgress?.some(
       (progress) => progress.quizId._id === quiz._id && progress.completed
     ) || completedQuizzes?.has(quiz._id);
 
   return (
     <div
       data-quiz-id={quiz._id}
-      onClick={onClick}
+      onClick={isCompleted ? undefined : onClick}
       className={`
         relative bg-gradient-to-r overflow-hidden rounded-lg
         ${
           isCompleted
-            ? "from-green-600 to-emerald-600  hover:bg-emerald-600 pointer-events-none"
-            : "from-yellow-600 to-amber-600/80 hover:bg-amber-700"
+            ? "from-green-600 to-emerald-600 cursor-not-allowed"
+            : "from-yellow-600 to-amber-600/80 hover:bg-amber-700 cursor-pointer"
         }
-        transform hover:scale-105 transition-all duration-200
-        p-3 btn cursor-pointer shadow-lg`}
+        transform ${
+          !isCompleted && "hover:scale-105"
+        } transition-all duration-200
+        p-3 shadow-lg`}
     >
       <div className="flex justify-between items-center">
         <span className="text-white font-game text-lg">{quiz.title}</span>
@@ -379,7 +381,7 @@ export default function Sidebar({ onQuizSelect, userProgress }) {
 // Prop types
 Sidebar.propTypes = {
   onQuizSelect: PropTypes.func.isRequired,
-  userProgress: PropTypes.array,
+  // userProgress: PropTypes.array,
   completedQuizzes: PropTypes.instanceOf(Set),
 };
 

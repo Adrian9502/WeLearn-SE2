@@ -10,7 +10,7 @@ import ProgressDisplay from "./components/Sidebar/ProgressDisplay";
 import RankingsDisplay from "./components/Sidebar/RankingDisplay";
 import correctSound from "/music/Victory.mp3";
 import wrongSound from "/music/losetrumpet.mp3";
-import DailyRewards from "./DailyRewards";
+import DailyRewards from "./components/Sidebar/DailyRewards";
 
 export default function UserDashboard() {
   // sound

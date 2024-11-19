@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Calendar, Coins, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import Swal from "sweetalert2";
 const DailyRewards = ({
   userId,
@@ -147,7 +147,7 @@ const DailyRewards = ({
         key={index}
         onClick={isToday && canClaim ? claimReward : undefined}
         className={`
-          relative py-2 px-3 rounded-lg bg-gradient-to-r transition-all duration-200
+          relative sm:py-2 py-1 px-2 sm:px-3 rounded-lg bg-gradient-to-r transition-all duration-200
           ${
             isPast && !isClaimed
               ? "from-red-700/40 to-red-800/60 border border-red-500"
@@ -171,12 +171,12 @@ const DailyRewards = ({
         `}
       >
         <div className="text-center">
-          <div className="text-lg font-medium text-indigo-100">
+          <div className="text-base sm:text-lg font-medium text-indigo-100">
             {date.getDate()}
           </div>
           <div className="flex items-center justify-center gap-1">
-            <img src="/coin.png" alt="coin" className="w-5 h-5" />
-            <span className="mb-1 text-yellow-400">
+            <img src="/coin.png" alt="coin" className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-yellow-400 text-xs sm:text-sm">
               {getRewardForDate(date)}
             </span>
           </div>
@@ -194,7 +194,7 @@ const DailyRewards = ({
           </div>
         )}
         {isPast && !isClaimed && (
-          <div className="inset-0 flex items-center p-1 justify-center bg-red-950/20 rounded-lg">
+          <div className="inset-0 flex items-center sm:p-1 justify-center bg-red-950/20 rounded-lg">
             <span className="text-red-400 text-xs">✗ Missed</span>
           </div>
         )}
@@ -208,18 +208,19 @@ const DailyRewards = ({
   };
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="w-full p-6 max-w-4xl bg-gradient-to-b from-indigo-600 via-sky-600 to-blue-600/90 shadow-2xl btn">
+      <div className="w-full p-3 sm:p-6 relative max-w-4xl bg-gradient-to-b from-indigo-600 via-sky-600 to-blue-600/90 shadow-2xl btn">
+        <button
+          onClick={onClose}
+          className="p-2 absolute top-2 right-0 hover:bg-indigo-800/50 rounded-lg transition-colors"
+        >
+          <X className="w-6 h-6 text-indigo-300" />
+        </button>
         {/* Header */}
-        <div className="py-3 mb-5 relative flex flex-col items-center justify-center">
-          <button
-            onClick={onClose}
-            className="p-2 absolute right-0 hover:bg-indigo-800/50 rounded-lg transition-colors"
-          >
-            <X className="w-6 h-6 text-indigo-300" />
-          </button>
-          <div className="flex items-center gap-3">
-            <Calendar className="w-6 h-6 text-yellow-400" />
-            <h2 className="text-3xl text-yellow-400">Daily Rewards</h2>
+        <div className="py-3 mb-5 flex flex-col items-center justify-center">
+          <div className="flex items-center">
+            <h2 className="text-2xl sm:text-3xl text-yellow-400">
+              Daily Rewards
+            </h2>
           </div>
         </div>
 
@@ -237,7 +238,7 @@ const DailyRewards = ({
             >
               <ChevronLeft className="w-5 h-5 text-slate-200" />
             </button>
-            <h3 className="text-3xl text-slate-100">
+            <h3 className="text-xl text-center sm:text-3xl text-slate-100">
               {currentMonth.toLocaleString("default", {
                 month: "long",
                 year: "numeric",
@@ -256,17 +257,26 @@ const DailyRewards = ({
           </div>
 
           {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-2">
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-              <div
-                key={day}
-                className="text-center font-medium text-white py-2"
-              >
-                {day}
-              </div>
-            ))}
+          <div className="overflow-x-auto relative">
+            <div className="grid grid-cols-7 gap-1 sm:gap-2 min-w-max">
+              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                <div
+                  key={day}
+                  className="text-center font-medium text-white py-1 sm:py-2"
+                >
+                  {day}
+                </div>
+              ))}
 
-            {monthDays.map((date, index) => renderCalendarCell(date, index))}
+              {monthDays.map((date, index) => renderCalendarCell(date, index))}
+            </div>
+          </div>
+          <div className="border-2 text-sm sm:text-base mt-2 bg-gradient-to-r from-indigo-950 text-yellow-400 to-purple-950 border-purple-500 p-2 rounded-lg flex items-center justify-center">
+            <span>Your coins:</span>
+            <span className="ml-2">
+              <img src="/coin.gif" className="w-5 h-5" alt="" />{" "}
+            </span>
+            <span>{userCoins}</span>
           </div>
         </div>
       </div>

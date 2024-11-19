@@ -259,6 +259,24 @@ export default function ProgressDisplay({ userProgress, onClose }) {
                         {quiz.completed ? "Completed ✔" : "Unanswered ✖"}
                       </div>
                     </div>
+                    <div className="text-slate-200 text-xs">
+                      {new Date(quiz.lastAttemptDate).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )}{" "}
+                      at{" "}
+                      {new Date(quiz.lastAttemptDate).toLocaleTimeString(
+                        "en-US",
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

@@ -166,22 +166,29 @@ export default function Sidebar({
   const userId = user?.userId;
 
   const [userQuizCompleted, setUserQuizCompleted] = useState(null);
-
+  const [userQuizUnanswered, setUserQuizUnanswered] = useState(null);
   // Function to fetch user count of completed quiz in quizzes
-  const fetchUserQuizCompleted = async () => {
+  const fetchUserQuizProgress = async () => {
     try {
       const response = await fetch(`/api/progress/user/${userId}/summary`);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
+
       // Parse the JSON from the response
       const data = await response.json();
-      // Calculate the count of quizzes completed
-      const completedQuizzesCount = data.quizzes.reduce((count, quiz) => {
+      console.log(data);
+
+      // Calculate the count of completed and not completed quizzes
+      const answeredQuizzesCount = data.quizzes.reduce((count, quiz) => {
         return quiz.completed ? count + 1 : count;
       }, 0);
-      // Set the count of completed quizzes in state
-      setUserQuizCompleted(completedQuizzesCount);
+
+      const unansweredQuizzesCount = data.quizzes.length - answeredQuizzesCount;
+
+      // Update the states for completed and not completed quizzes
+      setUserQuizCompleted(answeredQuizzesCount);
+      setUserQuizUnanswered(unansweredQuizzesCount);
     } catch (error) {
       console.error("Error fetching user progress:", error);
     }
@@ -189,7 +196,7 @@ export default function Sidebar({
 
   useEffect(() => {
     if (userId) {
-      fetchUserQuizCompleted();
+      fetchUserQuizProgress();
     }
   }, [userId]);
 

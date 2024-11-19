@@ -284,7 +284,7 @@ export default function ProgressDisplay({ userProgress, onClose }) {
           </div>
         ) : (
           <div className="text-center text-gray-400 py-8 border-4 border-dashed border-rose-600">
-            No progress data available
+            You don&apos;t have progress yet. Play now to track your progress!
           </div>
         )}
       </div>

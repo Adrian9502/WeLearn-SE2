@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaUser, FaQuestionCircle, FaCogs, FaChartLine } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { RiLogoutBoxLine, RiMenuLine, RiCloseLine } from "react-icons/ri";
+import { MdAdminPanelSettings } from "react-icons/md";
+
 import { RiAdminFill } from "react-icons/ri";
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -9,6 +11,16 @@ const AdminSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [username, setUsername] = useState("");
+
+  // get the admin username to display
+  useEffect(() => {
+    // Get the username from localStorage
+    const storedUsername = localStorage.getItem("username");
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+  }, []);
 
   const handleLogout = () => {
     Swal.fire({
@@ -119,15 +131,23 @@ const AdminSidebar = () => {
             </span>
           </div>
         </div>
-
         <nav className="mt-6 px-3">
+          {/* admin */}
+          <div className="px-3 py-2 border-b-2 border-cyan-500/30 my-4 sm:mt-6 text-cyan-400 flex items-center justify-center">
+            <div className="min-w-fit">
+              <MdAdminPanelSettings size={30} />
+            </div>
+            <span className="ml-2 truncate text-xl font-semibold text-slate-200">
+              {username ? username : "Guest"}
+            </span>
+          </div>
           {links.map((link, index) => {
             const isActive = location.pathname === link.path;
             return (
               <Link
                 key={index}
                 to={link.path}
-                className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-all duration-200
+                className={`flex items-center space-x-3 p-4 rounded-lg mb-4 transition-all duration-200
                   ${
                     isActive
                       ? "bg-gradient-to-r from-indigo-500/20 to-cyan-500/20 text-cyan-400 border border-indigo-500/20"
@@ -154,7 +174,7 @@ const AdminSidebar = () => {
 
           <button
             onClick={handleLogout}
-            className="flex items-center space-x-3 p-3 rounded-lg w-full mt-8 hover:bg-red-500/10 transition-all duration-200 text-red-400 group"
+            className="flex items-center space-x-3 p-4 rounded-lg w-full mt-8 hover:bg-red-500/10 transition-all duration-200 text-red-400 group"
           >
             <RiLogoutBoxLine size={20} />
             <span className="font-medium">Logout</span>

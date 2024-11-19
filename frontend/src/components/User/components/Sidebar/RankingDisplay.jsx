@@ -7,6 +7,7 @@ import {
 import { GiTargeting as Target } from "react-icons/gi";
 import { MdEmojiEvents as Award } from "react-icons/md";
 import { IoFlash as Zap } from "react-icons/io5";
+import { useUser } from "../../UserContext";
 
 export default function RankingsDisplay({ onClose }) {
   const [rankings, setRankings] = useState({
@@ -17,7 +18,7 @@ export default function RankingsDisplay({ onClose }) {
     efficiency: [],
   });
   const [activeTab, setActiveTab] = useState("quizCompletion");
-
+  const { user } = useUser();
   useEffect(() => {
     const fetchRankings = async () => {
       try {
@@ -44,40 +45,55 @@ export default function RankingsDisplay({ onClose }) {
   const renderRankingList = (rankingData, categoryConfig) => {
     return (
       <div className="space-y-4">
-        {rankingData.map((user, index) => (
-          <div
-            key={user.userId}
-            className="flex flex-col sm:flex-row gap-2 items-center justify-between p-2 sm:p-4 bg-slate-950 rounded-lg border-2 border-slate-500"
-          >
-            <div className="flex p-4 sm:p-0 max-w-full items-center gap-1 sm:gap-3">
-              <div className="w-8 text-center ">
-                {index < 3 ? (
-                  <Trophy
-                    size={24}
-                    className={
-                      index === 0
-                        ? "text-yellow-400"
-                        : index === 1
-                        ? "text-gray-300"
-                        : "text-orange-600"
-                    }
-                  />
-                ) : (
-                  <span className="text-gray-400">#{index + 1}</span>
-                )}
+        {rankingData.map((rankUser, index) => {
+          const isCurrentUser = rankUser.userId === user?.userId;
+
+          return (
+            <div
+              key={rankUser.userId}
+              className={`flex flex-col sm:flex-row gap-2 items-center justify-between p-2 sm:p-4 rounded-lg border-2 
+                ${
+                  isCurrentUser
+                    ? "bg-stone-950 border-yellow-400 shadow-lg shadow-yellow-500/20"
+                    : "bg-slate-950 border-slate-500"
+                }`}
+            >
+              <div className="flex p-4 sm:p-0 max-w-full items-center gap-1 sm:gap-3">
+                <div className="w-8 text-center">
+                  {index < 3 ? (
+                    <Trophy
+                      size={24}
+                      className={
+                        index === 0
+                          ? "text-yellow-400"
+                          : index === 1
+                          ? "text-gray-300"
+                          : "text-orange-600"
+                      }
+                    />
+                  ) : (
+                    <span className="text-gray-400">#{index + 1}</span>
+                  )}
+                </div>
+                <span
+                  className={`text-base truncate ${
+                    isCurrentUser ? "text-yellow-400 text-lg" : "text-white"
+                  }`}
+                >
+                  {index + 1}. {rankUser.username}
+                </span>
               </div>
-              <span className="text-white text-base truncate">
-                {index + 1}. {user.username}
-              </span>
+              <div className="flex border-2 p-2 rounded-lg border-yellow-400 sm:border-none sm:rounded-none sm:p-0 items-center gap-2">
+                {categoryConfig.icon}
+                <span className="text-yellow-400">
+                  {categoryConfig.formatScore(
+                    rankUser[categoryConfig.scoreField]
+                  )}
+                </span>
+              </div>
             </div>
-            <div className="flex border-2 p-2 rounded-lg border-yellow-400 sm:border-none sm:rounded-none sm:p-0 items-center gap-2">
-              {categoryConfig.icon}
-              <span className="text-yellow-400">
-                {categoryConfig.formatScore(user[categoryConfig.scoreField])}
-              </span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   };
@@ -167,7 +183,9 @@ export default function RankingsDisplay({ onClose }) {
             {Object.entries(rankingCategories).map(([key, category]) => (
               <div
                 key={key}
-                className={`${activeTab === key ? "block" : "hidden"}`}
+                className={`${
+                  activeTab === key ? "block max-h-screen" : "hidden"
+                }`}
               >
                 <div className="mb-4">
                   <h3 className="text-2xl sm:text-3xl my-2 text-center font-medium text-yellow-400">

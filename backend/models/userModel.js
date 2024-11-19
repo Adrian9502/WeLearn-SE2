@@ -11,6 +11,10 @@ const userSchema = new mongoose.Schema({
   coins: { type: Number, default: 600 },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
+  lastRewardClaim: {
+    type: Date,
+    default: null,
+  },
 });
 // Prevent changing createdAt on updates
 userSchema.pre("save", function (next) {

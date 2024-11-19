@@ -27,7 +27,6 @@ const verifyToken = (req, res, next) => {
 // Route for user login
 router.post("/user", async (req, res) => {
   try {
-    console.log("Request Body:", req.body); // Log request body for debugging
     const user = await userModel.findOne({ username: req.body.username });
     if (!user) {
       console.log("User not found");

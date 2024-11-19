@@ -156,6 +156,7 @@ export default function Sidebar({
   userProgress,
   onShowProgress,
   onShowRankings,
+  onShowDailyRewards,
   onClose,
 }) {
   const navigate = useNavigate();
@@ -177,7 +178,6 @@ export default function Sidebar({
 
       // Parse the JSON from the response
       const data = await response.json();
-      console.log(data);
 
       // Calculate the count of completed and not completed quizzes
       const answeredQuizzesCount = data.quizzes.reduce((count, quiz) => {
@@ -370,6 +370,7 @@ export default function Sidebar({
               userProgress={userProgress}
               onShowProgress={onShowProgress}
               onShowRankings={onShowRankings}
+              onShowDailyRewards={onShowDailyRewards}
               onClose={onClose}
             />
 

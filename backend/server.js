@@ -54,6 +54,7 @@ const adminRoutes = require("./API/adminsRoutes");
 const quizRoutes = require("./API/quizRoutes");
 const userProgressRoutes = require("./API/userProgressRoutes");
 const analyticsRoutes = require("./API/analyticsRoute");
+const rewardsRoutes = require("./API/rewardsRoutes");
 
 // ---------- API ROUTING --------------------
 app.use("/api/register", registerRoutes);
@@ -63,6 +64,7 @@ app.use("/api/admins", adminRoutes);
 app.use("/api/quizzes", quizRoutes);
 app.use("/api/progress", userProgressRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/rewards", rewardsRoutes);
 
 // ---------- LOGOUT ROUTE --------------------
 app.post("/api/logout", (req, res) => {

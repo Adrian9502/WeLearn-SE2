@@ -10,6 +10,7 @@ import ProgressDisplay from "./components/Sidebar/ProgressDisplay";
 import RankingsDisplay from "./components/Sidebar/RankingDisplay";
 import correctSound from "/music/Victory.mp3";
 import wrongSound from "/music/losetrumpet.mp3";
+import DailyRewards from "./DailyRewards";
 
 export default function UserDashboard() {
   // sound
@@ -18,6 +19,7 @@ export default function UserDashboard() {
   // pop up component onclick
   const [isProgressVisible, setIsProgressVisible] = useState(false);
   const [isRankingVisible, setIsRankingVisible] = useState(false);
+  const [isDailyRewardsVisible, setIsDailyRewardsVisible] = useState(false);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const audioRef = useRef(null);
@@ -33,6 +35,38 @@ export default function UserDashboard() {
   const [userProgress, setUserProgress] = useState(null);
   const [completedQuizzes, setCompletedQuizzes] = useState(new Set());
   const [hasShownAnswer, setHasShownAnswer] = useState(false);
+  // Check for unclaimed rewards when component mounts
+  useEffect(() => {
+    const checkDailyRewards = async () => {
+      if (!user?.userId) return;
+
+      try {
+        const response = await fetch(`/api/rewards/${user.userId}/last-claim`);
+        const data = await response.json();
+
+        if (data.lastClaim) {
+          const lastClaim = new Date(data.lastClaim);
+          const today = new Date();
+
+          // Reset hours to compare dates only
+          lastClaim.setHours(0, 0, 0, 0);
+          today.setHours(0, 0, 0, 0);
+
+          // If last claim was before today, show rewards popup
+          if (lastClaim < today) {
+            setIsDailyRewardsVisible(true);
+          }
+        } else {
+          // No claims yet, show rewards popup
+          setIsDailyRewardsVisible(true);
+        }
+      } catch (error) {
+        console.error("Error checking daily rewards:", error);
+      }
+    };
+
+    checkDailyRewards();
+  }, [user?.userId]);
   // Correct and wrong answer sound
   useEffect(() => {
     correctAudioRef.current = new Audio(correctSound);
@@ -391,6 +425,14 @@ export default function UserDashboard() {
     setIsProgressVisible(false);
     setIsRankingVisible(false);
   };
+  const handleShowDailyRewards = () => {
+    setIsDailyRewardsVisible(true);
+  };
+  const handleRewardClaimed = (newCoins) => {
+    updateUser({ ...user, coins: newCoins });
+    localStorage.setItem("coins", newCoins.toString());
+    setIsDailyRewardsVisible(false); // Hide popup after claiming
+  };
   return (
     // Main container
     <main
@@ -431,6 +473,7 @@ export default function UserDashboard() {
           completedQuizzes={completedQuizzes}
           onShowProgress={handleShowProgress}
           onShowRankings={handleShowRanking}
+          onShowDailyRewards={handleShowDailyRewards}
           onClose={handleClose}
         />
       </div>
@@ -477,6 +520,15 @@ export default function UserDashboard() {
       )}
       {isRankingVisible && (
         <RankingsDisplay onClose={() => setIsRankingVisible(false)} />
+      )}
+      {isDailyRewardsVisible && (
+        <DailyRewards
+          onClose={() => setIsDailyRewardsVisible(false)}
+          userId={user.userId}
+          userCoins={user.coins}
+          onRewardClaimed={handleRewardClaimed}
+          autoPopup={true}
+        />
       )}
     </main>
   );

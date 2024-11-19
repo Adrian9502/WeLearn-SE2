@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { FaTrophy, FaSignOutAlt, FaChartLine } from "react-icons/fa";
+import { FaGift } from "react-icons/fa6";
+
 import PropTypes from "prop-types";
 import ProgressDisplay from "./ProgressDisplay";
 import RankingsDisplay from "./RankingDisplay";
@@ -7,9 +9,9 @@ export default function UserInfo({
   onLogout,
   username,
   coins,
-
   onShowProgress,
   onShowRankings,
+  onShowDailyRewards,
 }) {
   return (
     <div className="relative p-6 my-8 bg-gradient-to-b from-purple-800/80 to-indigo-700/80 rounded-xl shadow-2xl">
@@ -56,8 +58,15 @@ export default function UserInfo({
         {/* Action Buttons */}
         <div className="space-y-2">
           <button
+            onClick={onShowDailyRewards}
+            className="btn text-sm sm:text-base w-full bg-gradient-to-r from-sky-600 to-blue-600 hover:to-blue-700 text-white py-2 px-2 sm:py-3 sm:px-6 rounded-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2"
+          >
+            <FaGift className="text-2xl" />
+            DAILY REWARDS
+          </button>
+          <button
             onClick={onShowProgress}
-            className="btn text-sm sm:text-base w-full bg-gradient-to-r from-fuchsia-600 to-rose-600  hover:to-rose-700 text-white py-2 px-5 sm:py-3 sm:px-6 rounded-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2"
+            className="btn text-sm sm:text-base w-full bg-gradient-to-r from-fuchsia-600 to-rose-600 hover:to-rose-700 text-white py-2 px-5 sm:py-3 sm:px-6 rounded-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2"
           >
             <FaChartLine className="text-xl" />
             PROGRESS

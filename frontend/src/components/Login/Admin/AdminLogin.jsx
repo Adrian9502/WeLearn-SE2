@@ -104,8 +104,14 @@ const AdminLogin = () => {
     }
   }, [isLogin]);
   useEffect(() => {
+    const originalTitle = document.title;
     document.title = "WeLearn - Admin";
+
+    return () => {
+      document.title = originalTitle;
+    };
   }, []);
+
   const handleModeSwitch = () => {
     setIsAnimating(true);
     setFormData({

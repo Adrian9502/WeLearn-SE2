@@ -194,7 +194,14 @@ const UserLogin = () => {
         .catch((error) => console.warn("Audio playback failed: ", error));
     }
   };
+  useEffect(() => {
+    const originalTitle = document.title;
+    document.title = "WeLearn - Sharpen your skills and test your knowledge";
 
+    return () => {
+      document.title = originalTitle;
+    };
+  }, []);
   return (
     <main className="bg-gradient-to-b from-[#622aff] to-[#622aff]/90 custom-cursor min-h-screen pt-4">
       {/* Audio Controls */}

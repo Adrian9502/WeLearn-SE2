@@ -65,7 +65,17 @@ app.use("/api/quizzes", quizRoutes);
 app.use("/api/progress", userProgressRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/rewards", rewardsRoutes);
-
+// User profile
+app.use("/uploads", express.static("uploads"));
+app.use((error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    return res.status(400).json({
+      message: "Error uploading file",
+      error: error.message,
+    });
+  }
+  next(error);
+});
 // ---------- LOGOUT ROUTE --------------------
 app.post("/api/logout", (req, res) => {
   req.session.destroy((err) => {

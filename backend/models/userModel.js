@@ -9,6 +9,10 @@ const userSchema = new mongoose.Schema({
   isAdmin: { type: Boolean, default: false },
   dob: { type: Date, required: true },
   coins: { type: Number, default: 600 },
+  profilePicture: {
+    type: String,
+    default: "https://cdn-icons-png.freepik.com/512/6858/6858441.png",
+  },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
   lastRewardClaim: {

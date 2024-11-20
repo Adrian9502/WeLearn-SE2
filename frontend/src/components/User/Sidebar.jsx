@@ -165,9 +165,26 @@ export default function Sidebar({
   const { user } = useUser();
   const username = user?.username;
   const userId = user?.userId;
-
   const [userQuizCompleted, setUserQuizCompleted] = useState(null);
+  const [userData, setUserData] = useState(null);
   const [userQuizUnanswered, setUserQuizUnanswered] = useState(null);
+
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch(`/api/users/${userId}`);
+      const data = await response.json();
+      setUserData(data);
+      console.log(data);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+  const handleUserDataUpdate = (newUserData) => {
+    setUserData(newUserData);
+  };
+  useEffect(() => {
+    fetchUserData();
+  }, [userId]);
   // Function to fetch user count of completed quiz in quizzes
   const fetchUserQuizProgress = async () => {
     try {
@@ -372,6 +389,8 @@ export default function Sidebar({
               onShowRankings={onShowRankings}
               onShowDailyRewards={onShowDailyRewards}
               onClose={onClose}
+              userData={userData}
+              onUserDataUpdate={handleUserDataUpdate}
             />
 
             {/* Quiz Titles */}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-// import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { MdAdminPanelSettings } from "react-icons/md";
+
 import axios from "axios";
 import {
   LineChart,
@@ -118,9 +119,6 @@ export default function AdminDashboard() {
         const totalUsers = users.length;
         const totalAdmins = admin.length;
         const totalQuizzes = quizzes.length;
-        const totalQuestions = quizzes.reduce((count, quiz) => {
-          return count + (quiz.question ? 1 : 0);
-        }, 0);
 
         // Fetch completion rate
         const fetchCompletionRate = await axios.get(
@@ -131,7 +129,6 @@ export default function AdminDashboard() {
         setOverviewData({
           quizzes: totalQuizzes,
           users: totalUsers,
-          questions: totalQuestions,
           admins: totalAdmins,
           completionRate: fetchCompletionRate.data.completionRate,
         });
@@ -181,9 +178,9 @@ export default function AdminDashboard() {
             Icon={FaUsers}
           />
           <OverviewCard
-            title="Total Questions"
-            count={overviewData.questions}
-            Icon={FaQuestionCircle}
+            title="Total Admins"
+            count={overviewData.admins}
+            Icon={MdAdminPanelSettings}
           />
           <OverviewCard
             title="Completion Rate"

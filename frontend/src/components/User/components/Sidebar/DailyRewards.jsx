@@ -10,7 +10,6 @@ const DailyRewards = ({
 }) => {
   const [lastClaimDate, setLastClaimDate] = useState(null);
   const [canClaim, setCanClaim] = useState(false);
-  const [rewardAmount, setRewardAmount] = useState(0);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [autoClosing, setAutoClosing] = useState(false);
   useEffect(() => {
@@ -74,11 +73,12 @@ const DailyRewards = ({
       if (data.success) {
         setLastClaimDate(today);
         setCanClaim(false);
-        setRewardAmount(amount);
+
+        onRewardClaimed(data.newCoins);
         // Show SweetAlert2 notification
         Swal.fire({
           title: "Reward Claimed!",
-          text: `+${rewardAmount} coins added to your balance`,
+          text: `+${amount} coins added to your balance`,
           icon: "success",
           confirmButtonText: "Awesome",
           color: "#c3e602",
@@ -91,7 +91,6 @@ const DailyRewards = ({
           },
           timer: 3000, // Automatically closes after 3 seconds
         });
-        onRewardClaimed(data.newCoins);
       }
     } catch (error) {
       console.error("Error claiming reward:", error);

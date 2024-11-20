@@ -476,7 +476,7 @@ const AdminLogin = () => {
                     <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </span>
                   {loading ? (
-                    <div className="animate-spin rounded-full h-9 w-9 border-t-2 border-b-2 border-indigo-500"></div>
+                    <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-indigo-500"></div>
                   ) : (
                     <span>{isLogin ? "Sign In" : "Create Account"}</span>
                   )}

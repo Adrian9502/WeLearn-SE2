@@ -30,6 +30,7 @@ const ManageAdmins = () => {
       const response = await axios.get("/api/admins");
       const transformedData = response.data.map((admin) => ({
         ID: admin._id,
+        Profile: admin.profilePicture,
         Name: admin.fullName,
         Username: admin.username,
         Email: admin.email,
@@ -142,6 +143,7 @@ const ManageAdmins = () => {
         handleOpenModal={handleOpenModal}
         tableColumns={[
           "ID",
+          "Profile",
           "Name",
           "Username",
           "Email",

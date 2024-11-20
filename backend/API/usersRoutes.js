@@ -1,7 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const { body, validationResult } = require("express-validator");
-const userModel = require("../models/userModel"); // Adjust path as necessary
+const userModel = require("../models/userModel");
 const router = express.Router();
 const multer = require("multer");
 const path = require("path");

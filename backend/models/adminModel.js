@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
 const adminSchema = new mongoose.Schema({
+  profilePicture: {
+    type: String,
+    default: "/uploads/default-profile.png",
+  },
   fullName: { type: String, required: true },
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },

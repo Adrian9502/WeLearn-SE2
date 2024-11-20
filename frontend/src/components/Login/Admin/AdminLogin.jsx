@@ -193,6 +193,7 @@ const AdminLogin = () => {
           localStorage.setItem("authToken", response.data.token);
           localStorage.setItem("userRole", "admin"); // Save role
           localStorage.setItem("username", response.data.admin.username);
+          localStorage.setItem("adminId", response.data.admin._id);
           Swal.fire({
             title: "Login Successful!",
             html: "Redirecting...",

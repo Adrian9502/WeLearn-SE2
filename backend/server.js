@@ -6,7 +6,6 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const connectDB = require("./db");
 const session = require("express-session"); // Add express-session for session handling
-
 // Initialize express app
 const app = express();
 
@@ -76,6 +75,7 @@ app.use((error, req, res, next) => {
   }
   next(error);
 });
+
 // ---------- LOGOUT ROUTE --------------------
 app.post("/api/logout", (req, res) => {
   req.session.destroy((err) => {

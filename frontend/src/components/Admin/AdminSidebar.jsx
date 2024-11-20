@@ -1,5 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { FaUser, FaQuestionCircle, FaCogs, FaChartLine } from "react-icons/fa";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  FaUser,
+  FaQuestionCircle,
+  FaChartLine,
+  FaCamera,
+} from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { RiLogoutBoxLine, RiMenuLine, RiCloseLine } from "react-icons/ri";
 import { MdAdminPanelSettings } from "react-icons/md";
@@ -12,22 +17,44 @@ const AdminSidebar = () => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [username, setUsername] = useState("");
-
+  const [profilePicture, setProfilePicture] = useState("");
+  const [isHovering, setIsHovering] = useState(false);
+  const fileInputRef = useRef(null);
   useEffect(() => {
     const originalTitle = document.title;
     document.title = "WeLearn - Admin";
 
-    return () => {
-      document.title = originalTitle;
+    // Get the admin data
+    const fetchAdminData = async () => {
+      try {
+        const adminId = localStorage.getItem("adminId");
+        if (adminId) {
+          const response = await axios.get(
+            `/api/admins/${adminId}/profile-picture`,
+            {
+              withCredentials: true,
+            }
+          );
+          setProfilePicture(
+            `http://localhost:5000${response.data.profilePicture}`
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching profile picture:", error);
+        setProfilePicture("/uploads/default-profile.png"); // Fallback to default
+      }
     };
-  }, []);
-  // get the admin username to display
-  useEffect(() => {
-    // Get the username from localStorage
+
     const storedUsername = localStorage.getItem("username");
     if (storedUsername) {
       setUsername(storedUsername);
     }
+
+    fetchAdminData();
+
+    return () => {
+      document.title = originalTitle;
+    };
   }, []);
 
   const handleLogout = () => {
@@ -105,7 +132,86 @@ const AdminSidebar = () => {
       label: "Manage Admins",
     },
   ];
+  const handleProfilePictureUpdate = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
 
+    // Validate file type
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      Swal.fire({
+        title: "Error",
+        text: "Please select a valid image file (JPEG, PNG, or GIF)",
+        icon: "error",
+        background: "#1e293b",
+        color: "#fff",
+      });
+      return;
+    }
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      Swal.fire({
+        title: "Error",
+        text: "File size must be less than 5MB",
+        icon: "error",
+        background: "#1e293b",
+        color: "#fff",
+      });
+      return;
+    }
+
+    // Show loading state
+    Swal.fire({
+      title: "Uploading...",
+      text: "Please wait while we update your profile picture",
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      background: "#1e293b",
+      color: "#fff",
+      willOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    try {
+      const formData = new FormData();
+      formData.append("profilePicture", file);
+
+      const adminId = localStorage.getItem("adminId");
+      const response = await axios.put(
+        `/api/admins/${adminId}/profile-picture`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      setProfilePicture(`http://localhost:5000${response.data.profilePicture}`);
+
+      Swal.fire({
+        title: "Success",
+        text: "Profile picture updated successfully",
+        icon: "success",
+        background: "#1e293b",
+        color: "#fff",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      console.error("Error updating profile picture:", error);
+      Swal.fire({
+        title: "Error",
+        text: "Failed to update profile picture. Please try again.",
+        icon: "error",
+        background: "#1e293b",
+        color: "#fff",
+      });
+    }
+  };
   return (
     <>
       {/* Mobile Menu Button */}
@@ -119,6 +225,14 @@ const AdminSidebar = () => {
           <RiMenuLine size={24} className="text-white" />
         )}
       </button>
+      {/* Hidden file input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept="image/jpeg,image/png,image/gif"
+        onChange={handleProfilePictureUpdate}
+      />
       {/* Backdrop for mobile */}
       {isOpen && (
         <div
@@ -141,13 +255,43 @@ const AdminSidebar = () => {
         </div>
         <nav className="mt-6 px-3">
           {/* admin */}
-          <div className="px-3 py-2 border-b-2 border-cyan-500/30 my-4 sm:mt-6 text-cyan-400 flex items-center justify-center">
-            <div className="min-w-fit">
-              <MdAdminPanelSettings size={30} />
+          <div className="px-3 py-4 border-b-2 border-cyan-500/30 my-4 sm:mt-6 text-cyan-400">
+            <div className="flex flex-col items-center space-y-3">
+              <div
+                className="relative group cursor-pointer"
+                onMouseEnter={() => setIsHovering(true)}
+                onMouseLeave={() => setIsHovering(false)}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <img
+                  src={profilePicture || "/uploads/default-profile.png"}
+                  alt="Admin Profile"
+                  className="w-[80px] h-[80px] rounded-full object-cover border-2 border-cyan-400 transition-opacity duration-200"
+                />
+
+                {/* Hover Overlay */}
+                <div
+                  className={`absolute inset-0 bg-black/50 rounded-full flex items-center justify-center transition-opacity duration-200 ${
+                    isHovering ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  <div className="flex flex-col items-center">
+                    <FaCamera size={20} className="text-white" />
+                    <span className="text-white text-xs mt-1">
+                      Change <br /> Photo
+                    </span>
+                  </div>
+                </div>
+
+                {/* Admin Badge */}
+                <div className="absolute bottom-0 right-0 bg-cyan-400 rounded-full p-1">
+                  <MdAdminPanelSettings size={20} className="text-slate-950" />
+                </div>
+              </div>
+              <span className="text-xl font-semibold text-slate-200 text-center">
+                {username ? username : "Guest"}
+              </span>
             </div>
-            <span className="ml-2 truncate text-xl font-semibold text-slate-200">
-              {username ? username : "Guest"}
-            </span>
           </div>
           {links.map((link, index) => {
             const isActive = location.pathname === link.path;

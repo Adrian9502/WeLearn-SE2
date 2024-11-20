@@ -28,7 +28,6 @@ const ManageUsers = () => {
     setLoading(true);
     try {
       const response = await axios.get("/api/users");
-      console.log(response);
 
       const transformedData = response.data.map((user) => ({
         ID: user._id,

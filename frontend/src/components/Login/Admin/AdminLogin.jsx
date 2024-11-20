@@ -105,7 +105,7 @@ const AdminLogin = () => {
   }, [isLogin]);
   useEffect(() => {
     const originalTitle = document.title;
-    document.title = "WeLearn - Admin";
+    document.title = "WeLearn - Admin Login";
 
     return () => {
       document.title = originalTitle;

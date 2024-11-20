@@ -13,6 +13,14 @@ const AdminSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [username, setUsername] = useState("");
 
+  useEffect(() => {
+    const originalTitle = document.title;
+    document.title = "WeLearn - Admin";
+
+    return () => {
+      document.title = originalTitle;
+    };
+  }, []);
   // get the admin username to display
   useEffect(() => {
     // Get the username from localStorage

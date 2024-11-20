@@ -17,8 +17,7 @@ export default function UserInfo({
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPicture, setCurrentPicture] = useState(
-    userData?.profilePicture ||
-      "https://cdn-icons-png.freepik.com/512/6858/6858441.png"
+    userData?.profilePicture
   );
 
   // Fetch user profile only when userId is defined

@@ -374,8 +374,8 @@ const AdminLogin = () => {
               </p>
             </div>
             <p className="text-slate-400 text-sm md:text-base lg:text-lg max-w-md mx-auto leading-relaxed">
-              An interactive web-game simulation designed for DCI students to
-              learn sorting algorithms and binary operations.
+              An interactive web-based game learning system designed to help
+              students learn sorting algorithms and binary operations.
             </p>
           </div>
 

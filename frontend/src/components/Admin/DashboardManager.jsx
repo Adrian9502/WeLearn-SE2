@@ -130,6 +130,12 @@ const Table = ({ columns, rows, onSort, sortConfig }) => {
                       <code className="jetbrains text-sm whitespace-pre-wrap text-slate-300">
                         {row[column]}
                       </code>
+                    ) : column === "Profile" ? (
+                      <img
+                        src={`http://localhost:5000${row[column]}`}
+                        alt={`${row["Name"]}'s profile`}
+                        className="w-10 h-10 rounded-full"
+                      />
                     ) : (
                       row[column]
                     )}

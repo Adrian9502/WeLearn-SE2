@@ -28,8 +28,11 @@ const ManageUsers = () => {
     setLoading(true);
     try {
       const response = await axios.get("/api/users");
+      console.log(response);
+
       const transformedData = response.data.map((user) => ({
         ID: user._id,
+        Profile: user.profilePicture,
         Name: user.fullName,
         Coins: user.coins,
         Username: user.username,
@@ -144,6 +147,7 @@ const ManageUsers = () => {
         handleOpenModal={handleOpenModal}
         tableColumns={[
           "ID",
+          "Profile",
           "Name",
           "Coins",
           "Username",

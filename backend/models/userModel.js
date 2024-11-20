@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
   coins: { type: Number, default: 600 },
   profilePicture: {
     type: String,
-    default: "https://cdn-icons-png.freepik.com/512/6858/6858441.png",
+    default: "/uploads/default-profile.png",
   },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },

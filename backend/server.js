@@ -1,15 +1,19 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const connectDB = require("./db");
-const session = require("express-session"); // Add express-session for session handling
+const session = require("express-session");
+const mongoose = require("mongoose");
+const { GridFsStorage } = require("multer-gridfs-storage");
+const multer = require("multer");
+const crypto = require("crypto");
+const path = require("path");
 // Initialize express app
 const app = express();
 
 dotenv.config();
+
+const PUBLIC_URL = process.env.PUBLIC_URL || "http://localhost:5000";
 
 // ----------------MODEL----------------------
 // USER MODEL
@@ -21,12 +25,15 @@ const adminModel = require("./models/adminModel");
 // ----------------MIDDLEWARE-----------------
 app.use(
   cors({
-    origin: "http://localhost:3000",
-    credentials: true, // Allow cookies to be sent with requests
+    origin: "http://localhost:5173",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    exposedHeaders: ["Content-Disposition"],
   })
 );
-
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // ---------MONGODB CONNECTION----------------
 connectDB();
@@ -34,16 +41,28 @@ connectDB();
 // ----------------SESSION CONFIGURATION----------------
 app.use(
   session({
-    secret: "your-secret-key", // Replace with a more secure key
+    secret: process.env.SESSION_SECRET || "your-secret-key",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      httpOnly: true, // Prevent JavaScript from accessing the cookie
-      secure: false, // Set to true if using HTTPS in production
-      maxAge: 1000 * 60 * 60 * 24, // Session duration (1 day)
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
   })
 );
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    message: "Something broke!",
+    error:
+      process.env.NODE_ENV === "development"
+        ? err.message
+        : "Internal server error",
+  });
+});
+app.options("*", cors());
 
 // ---------- IMPORT ROUTES ------------------
 const registerRoutes = require("./API/registerRoutes");
@@ -64,17 +83,6 @@ app.use("/api/quizzes", quizRoutes);
 app.use("/api/progress", userProgressRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/rewards", rewardsRoutes);
-// User profile
-app.use("/uploads", express.static("uploads"));
-app.use((error, req, res, next) => {
-  if (error instanceof multer.MulterError) {
-    return res.status(400).json({
-      message: "Error uploading file",
-      error: error.message,
-    });
-  }
-  next(error);
-});
 
 // ---------- LOGOUT ROUTE --------------------
 app.post("/api/logout", (req, res) => {
@@ -85,6 +93,10 @@ app.post("/api/logout", (req, res) => {
     res.clearCookie("connect.sid"); // Clear the session cookie
     res.status(200).json({ message: "Logged out successfully" });
   });
+});
+app.use((req, res, next) => {
+  console.log(`Request received: ${req.method} ${req.url}`);
+  next();
 });
 
 // --------------------------------------

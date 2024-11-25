@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
+import axios from "axios";
 const ProfilePictureModal = ({
   isOpen,
   onClose,
@@ -11,49 +12,89 @@ const ProfilePictureModal = ({
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-  const handleFileSelect = (e) => {
-    const file = e.target.files[0];
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      setError(null);
+      setUploadProgress(0);
+    }
+  }, [isOpen]);
+
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        // 5MB limit
-        setError("File size too large. Please select an image under 5MB.");
+      const validTypes = ["image/jpeg", "image/png", "image/gif"];
+      if (!validTypes.includes(file.type)) {
+        setError("Please select a valid image file (JPEG, PNG, or GIF)");
         return;
       }
+
+      if (file.size > 5 * 1024 * 1024) {
+        setError("File size must be less than 5MB");
+        return;
+      }
+
       setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
       setError(null);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = async () => {
-    if (!selectedFile || !userId) return;
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!selectedFile) {
+      setError("Please select a file");
+      return;
+    }
 
     setIsUploading(true);
     setError(null);
+    setUploadProgress(0);
+
+    const formData = new FormData();
+    formData.append("profilePicture", selectedFile);
 
     try {
-      const formData = new FormData();
-      formData.append("profilePicture", selectedFile);
-
-      const response = await fetch(`/api/users/${userId}/profile-picture`, {
-        method: "PUT",
-        body: formData,
+      const response = await axios({
+        method: "POST",
+        url: `/api/users/${userId}/profile-picture`,
+        data: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true,
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setUploadProgress(percentCompleted);
+        },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.message || "Failed to update profile picture"
-        );
+      if (response.data.success) {
+        // Force a cache-busting timestamp
+        const timestamp = new Date().getTime();
+        const newPictureUrl = `/api/users/${userId}/profile-picture?t=${timestamp}`;
+        onUpdate(newPictureUrl);
+        onClose();
+      } else {
+        throw new Error(response.data.message || "Upload failed");
       }
-
-      const data = await response.json();
-      onUpdate(`http://localhost:5000${data.profilePicture}`);
-      onClose();
     } catch (error) {
       console.error("Error updating profile picture:", error);
-      setError(error.message || "Failed to update profile picture");
+      setError(
+        error.response?.data?.message ||
+          error.message ||
+          "Error uploading profile picture. Please try again."
+      );
     } finally {
       setIsUploading(false);
     }
@@ -67,59 +108,64 @@ const ProfilePictureModal = ({
       <div className="relative bg-gradient-to-b from-purple-800 to-indigo-700 btn p-4 max-w-md w-full mx-4">
         <button
           onClick={onClose}
-          className="absolute right-4 top-2 text-white/80 hover:text-white"
+          className="absolute right-4 top-4 text-white/80 hover:text-white"
         >
-          <X size={20} />
+          <X size={18} />
         </button>
 
-        <h2 className="text-center text-sm text-yellow-400 sm:text-xl mb-6">
+        <h2 className="text-center text-sm text-yellow-400 sm:text-lg">
           Update Profile Picture
         </h2>
 
-        <div className="space-y-6">
-          {/* Current/Preview Image */}
-          <div className="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto">
-            <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-purple-500 to-yellow-400 rounded-full p-1">
-              <div className="w-full h-full rounded-full overflow-hidden bg-indigo-900">
-                <img
-                  src={previewUrl || currentPicture || "/user-profile.png"}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
+        <div className="mt-4">
+          <img
+            src={previewUrl || currentPicture}
+            alt="Preview"
+            className="w-24 h-24 border-4 border-yellow-400 mb-2 object-cover rounded-full mx-auto"
+          />
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <label className="block text-center text-sm font-medium text-slate-200">
+              Select Image
+            </label>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/gif"
+              onChange={handleFileSelect}
+              className="w-full text-xs text-pink-500 block
+                file:mr-2 file:py-2 file:px-2.5
+                file:rounded-full file:border-0
+                 file:font-semibold file:cursor-pointer transition-colors
+                file:bg-blue-100 file:text-blue-700
+                hover:file:bg-blue-100"
+            />
           </div>
 
-          {/* File Input */}
-          <div className="flex flex-col items-center gap-4">
-            <label className="w-full">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-              <div className="btn w-full bg-gradient-to-r from-sky-600 to-blue-600 hover:to-blue-700 text-white py-2 px-3 sm:py-3 sm:px-6 transition-all duration-200 text-center">
-                Choose Image
-              </div>
-            </label>
+          {isUploading && (
+            <div className="w-full my-2 bg-gray-200 rounded-full h-2.5">
+              <div
+                className="bg-blue-600 h-2.5 rounded-full"
+                style={{ width: `${uploadProgress}%` }}
+              ></div>
+              <p className="text-xs text-slate-200 my-1 text-center">
+                {uploadProgress}%
+              </p>
+            </div>
+          )}
 
+          {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
+
+          <div className="flex justify-center space-x-2 pt-4">
             <button
-              onClick={handleSubmit}
+              type="submit"
+              className="px-4 py-2 btn cursor-pointer transition-colors text-sm font-medium text-slate-200 bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
               disabled={!selectedFile || isUploading}
-              className={`w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:to-emerald-700 text-white py-2 px-3 sm:py-3 sm:px-6 btn transition-all duration-200 ${
-                (!selectedFile || isUploading) &&
-                "opacity-50 cursor-not-allowed"
-              }`}
             >
-              {isUploading ? "Uploading..." : "Update Picture"}
+              {isUploading ? "Uploading..." : "Upload"}
             </button>
           </div>
-          {/* Error */}
-          {error && (
-            <div className="text-red-400 text-sm text-center mt-2">{error}</div>
-          )}
-        </div>
+        </form>
       </div>
     </div>
   );

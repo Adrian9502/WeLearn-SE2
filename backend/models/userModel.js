@@ -1,25 +1,30 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
-const userSchema = new mongoose.Schema({
-  fullName: { type: String, required: true },
-  username: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  isAdmin: { type: Boolean, default: false },
-  dob: { type: Date, required: true },
-  coins: { type: Number, default: 600 },
-  profilePicture: {
-    type: String,
-    default: "/uploads/default-profile.png",
+const userSchema = new mongoose.Schema(
+  {
+    fullName: { type: String, required: true },
+    username: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    isAdmin: { type: Boolean, default: false },
+    dob: { type: Date, required: true },
+    coins: { type: Number, default: 600 },
+    profilePicture: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: "/uploads/default-profile.png",
+    },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now },
+    lastRewardClaim: {
+      type: Date,
+      default: null,
+    },
   },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-  lastRewardClaim: {
-    type: Date,
-    default: null,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 // Prevent changing createdAt on updates
 userSchema.pre("save", function (next) {
   this.updatedAt = Date.now(); // Set updatedAt to the current date

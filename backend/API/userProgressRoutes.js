@@ -258,7 +258,7 @@ router.get("/completion-stats", async (req, res) => {
   }
 });
 
-// Helper function to calculate trend (optional)
+// Helper function to calculate trend
 function calculateTrend(allProgress) {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);

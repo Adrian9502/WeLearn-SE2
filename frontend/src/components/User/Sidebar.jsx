@@ -174,7 +174,6 @@ export default function Sidebar({
       const response = await fetch(`/api/users/${userId}`);
       const data = await response.json();
       setUserData(data);
-      console.log(data);
     } catch (error) {
       console.error("Error fetching user data:", error);
     }

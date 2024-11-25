@@ -19,22 +19,32 @@ export default function UserInfo({
   const [currentPicture, setCurrentPicture] = useState(
     userData?.profilePicture
   );
-
-  // Fetch user profile only when userId is defined
-  const fetchUserProfile = async () => {
-    if (!userId) return;
-
-    try {
-      const response = await fetch(`/api/users/${userId}/profile-picture`);
-      const data = await response.json();
-      setCurrentPicture(`http://localhost:5000${data.profilePicture}`);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    }
-  };
-
-  // Fetch profile picture when userId becomes available
   useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!userId) return;
+
+      try {
+        const response = await fetch(`/api/users/${userId}/profile-picture`, {
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch profile picture");
+        }
+
+        const blob = await response.blob();
+        const imageUrl = URL.createObjectURL(blob);
+        setCurrentPicture(imageUrl);
+
+        // Clean up the blob URL when component unmounts
+        return () => URL.revokeObjectURL(imageUrl);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        // Set default profile picture
+        setCurrentPicture("/default-profile.png"); // Update this path to your default image
+      }
+    };
+
     fetchUserProfile();
   }, [userId]);
 
@@ -71,14 +81,19 @@ export default function UserInfo({
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-purple-500 to-yellow-400 rounded-full p-1">
                 <div className="w-full h-full rounded-full overflow-hidden relative">
                   <img
-                    src={currentPicture}
+                    src={
+                      currentPicture ||
+                      "https://cdn-icons-png.freepik.com/512/6858/6858441.png"
+                    }
                     alt={`${username}'s profile`}
                     className="w-full h-full object-cover"
                     onError={(e) => {
+                      console.error("Error loading image:", e);
                       e.target.src =
                         "https://cdn-icons-png.freepik.com/512/6858/6858441.png";
                     }}
                   />
+
                   {/* Hover overlay */}
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 rounded-full group-hover:opacity-100 transition-opacity duration-200">
                     <span className="text-center text-white text-xs">

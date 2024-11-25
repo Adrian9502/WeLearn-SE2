@@ -3,6 +3,7 @@ import {
   FaTrophy as Trophy,
   FaClock as Clock,
   FaCoins as Coins,
+  FaUserCircle as DefaultProfile,
 } from "react-icons/fa";
 import { GiTargeting as Target } from "react-icons/gi";
 import { MdEmojiEvents as Award } from "react-icons/md";
@@ -41,6 +42,33 @@ export default function RankingsDisplay({ onClose }) {
 
     fetchRankings();
   }, []);
+  // GET PROFILE PICTURE OF EACH USER
+  const ProfilePicture = ({ userId, username }) => {
+    const [imgError, setImgError] = useState(false);
+
+    if (imgError) {
+      return (
+        <div className={`flex items-center justify-center rounded-full`}>
+          <img
+            src={`/default-profile.png`}
+            className="w-10 h-10 object-cover"
+            onError={() => setImgError(true)}
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div className="rounded-full w-10 h-10 overflow-hidden">
+        <img
+          src={`/api/users/${userId}/profile-picture`}
+          alt={`${username}'s profile`}
+          className="w-full h-full object-cover"
+          onError={() => setImgError(true)}
+        />
+      </div>
+    );
+  };
 
   const renderRankingList = (rankingData, categoryConfig) => {
     return (
@@ -51,18 +79,19 @@ export default function RankingsDisplay({ onClose }) {
           return (
             <div
               key={rankUser.userId}
-              className={`flex flex-col sm:flex-row gap-2 items-center justify-between p-2 sm:p-4 rounded-lg border-2 
+              className={`flex flex-col sm:flex-row border-2 gap-2 items-center justify-between p-2 sm:p-4 rounded-lg  
                 ${
                   isCurrentUser
-                    ? "bg-stone-950 border-yellow-400 shadow-lg shadow-yellow-500/20"
-                    : "bg-slate-950 border-slate-500"
+                    ? "bg-neutral-950 border-yellow-400"
+                    : "bg-slate-900 border-indigo-400"
                 }`}
             >
-              <div className="flex p-4 sm:p-0 max-w-full items-center gap-1 sm:gap-3">
-                <div className="w-8 text-center">
+              <div className="flex px-2 py-4 sm:p-0 max-w-full items-center justify-around sm:justify-center gap-1 sm:gap-3">
+                {/* Trophy */}
+                <div className="mr-1">
                   {index < 3 ? (
                     <Trophy
-                      size={24}
+                      size={32}
                       className={
                         index === 0
                           ? "text-yellow-400"
@@ -75,6 +104,11 @@ export default function RankingsDisplay({ onClose }) {
                     <span className="text-gray-400">#{index + 1}</span>
                   )}
                 </div>
+                {/* Profile Picture */}
+                <ProfilePicture
+                  userId={rankUser.userId}
+                  username={rankUser.username}
+                />
                 <span
                   className={`text-base truncate ${
                     isCurrentUser ? "text-yellow-400 text-lg" : "text-white"

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -108,7 +108,7 @@ const Forms = ({
     async (e) => {
       e.preventDefault();
       let formDataValid = true;
-
+      setFormError("");
       const validationErrors = {
         username: validateFormField("username", formData.username),
         password: validateFormField("password", formData.password),
@@ -132,10 +132,18 @@ const Forms = ({
       });
 
       if (formDataValid) {
-        if (isRegister) {
-          await handleRegistrationSubmit();
-        } else {
-          await handleLoginSubmit();
+        try {
+          if (isRegister) {
+            await handleRegistrationSubmit();
+            // Reset errors after successful registration
+            setErrors({});
+          } else {
+            await handleLoginSubmit();
+            // Reset errors after successful login
+            setErrors({});
+          }
+        } catch (error) {
+          console.log("formDataValid line 134 error: ", error);
         }
       } else {
         setFormError("Error: Check the details below.");
@@ -150,7 +158,33 @@ const Forms = ({
       handleLoginSubmit,
     ]
   );
+  const resetForm = useCallback(() => {
+    // Reset form data
+    setFormData({
+      fullName: "",
+      username: "",
+      password: "",
+      confirmPassword: "",
+      email: "",
+      dob: "",
+    });
 
+    // Reset errors
+    setErrors({});
+    setFormError("");
+
+    // Reset touched state
+    setTouched({});
+
+    // Reset other states
+    setRegistrationMessage("");
+    setLoginMessage("");
+    setSuccessfulRegistration(false);
+    setSuccessfulLogin(false);
+  }, [setErrors, setFormError]);
+  useEffect(() => {
+    resetForm();
+  }, [isRegister, resetForm]);
   const renderField = useCallback(
     (label, name, type, errorMessage) => {
       const shouldShowPasswordToggle =

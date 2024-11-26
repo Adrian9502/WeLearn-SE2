@@ -11,8 +11,19 @@ const userSchema = new mongoose.Schema(
     dob: { type: Date, required: true },
     coins: { type: Number, default: 600 },
     profilePicture: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.Mixed, // Allow both ObjectId and string
       default: "/uploads/default-profile.png",
+      // Optional: add a custom validator
+      validate: {
+        validator: function (v) {
+          // If it's an ObjectId or a string path, it's valid
+          return (
+            mongoose.Types.ObjectId.isValid(v) ||
+            (typeof v === "string" && v.startsWith("/uploads/"))
+          );
+        },
+        message: (props) => `${props.value} is not a valid profile picture!`,
+      },
     },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
@@ -25,6 +36,24 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+// If profilePicture is a string path and needs to be an ObjectId,
+// you might want to add a pre-save hook to handle conversion
+userSchema.pre("save", function (next) {
+  // If profilePicture is a string path, you might want to handle it
+  // This could involve uploading the file and getting its ObjectId
+  // or keeping it as a string if that's acceptable
+  if (typeof this.profilePicture === "string") {
+    // Option 1: Keep as string if it's a valid path
+    if (this.profilePicture.startsWith("/uploads/")) {
+      return next();
+    }
+
+    // Option 2: Set to default if not a valid path
+    // this.profilePicture = "/uploads/default-profile.png";
+  }
+
+  next();
+});
 // Prevent changing createdAt on updates
 userSchema.pre("save", function (next) {
   this.updatedAt = Date.now(); // Set updatedAt to the current date

@@ -8,20 +8,20 @@ const DailyRewards = ({
   onClose,
   autoPopup,
 }) => {
-  const [lastClaimDate, setLastClaimDate] = useState(null);
+  const [claimedDates, setClaimedDates] = useState([]);
   const [canClaim, setCanClaim] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [autoClosing, setAutoClosing] = useState(false);
   useEffect(() => {
     checkLastClaim();
   }, [userId]);
-  // Auto-closing effect that doesn't interfere with the dialog
+
   useEffect(() => {
     if (autoPopup && !canClaim && !autoClosing) {
       setAutoClosing(true);
       const timer = setTimeout(() => {
         onClose();
-      }, 500); // Close automatically if no rewards to claim
+      }, 500);
 
       return () => clearTimeout(timer);
     }
@@ -30,22 +30,41 @@ const DailyRewards = ({
   const checkLastClaim = async () => {
     try {
       const response = await fetch(`/api/rewards/${userId}/last-claim`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
 
-      if (data.lastClaim) {
-        const lastClaim = new Date(data.lastClaim);
-        const today = new Date();
+      if (data.claimedDates) {
+        const parsedClaimedDates = data.claimedDates.map(
+          (date) => new Date(date)
+        );
+        setClaimedDates(parsedClaimedDates);
 
-        lastClaim.setHours(0, 0, 0, 0);
+        const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        setLastClaimDate(lastClaim); // Store the actual date object
-        setCanClaim(lastClaim < today);
+        // Check if today is already claimed
+        const todayClaimed = parsedClaimedDates.some((claimedDate) =>
+          isSameDate(claimedDate, today)
+        );
+
+        setCanClaim(!todayClaimed);
       } else {
         setCanClaim(true);
       }
     } catch (error) {
       console.error("Error checking last claim:", error);
+
+      // Show error to user
+      Swal.fire({
+        title: "Error",
+        text: "Failed to check reward status. Please try again.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
   };
 
@@ -67,15 +86,27 @@ const DailyRewards = ({
           rewardAmount: amount,
         }),
       });
+      // Log raw response for debugging
+      const responseText = await response.text();
+      console.log("Raw response:", responseText);
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("JSON parsing error:", parseError);
+        throw new Error("Invalid server response: " + responseText);
+      }
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.details || "Failed to claim reward");
+      }
 
       if (data.success) {
-        setLastClaimDate(today);
+        // Update claimed dates locally
+        setClaimedDates([...claimedDates, today]);
         setCanClaim(false);
 
         onRewardClaimed(data.newCoins);
-        // Show SweetAlert2 notification
         Swal.fire({
           title: "Reward Claimed!",
           text: `+${amount} coins added to your balance`,
@@ -89,11 +120,19 @@ const DailyRewards = ({
             confirmButton: "btn primary",
             cancelButton: "btn show-btn",
           },
-          timer: 3000, // Automatically closes after 3 seconds
+          timer: 3000,
         });
       }
     } catch (error) {
       console.error("Error claiming reward:", error);
+
+      // Show error to user
+      Swal.fire({
+        title: "Error",
+        text: error.message || "Failed to claim reward. Please try again.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
   };
 
@@ -136,9 +175,14 @@ const DailyRewards = ({
       return <div key={`empty-${index}`} className="p-2" />;
     }
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const isPast = date < today;
     const isToday = isSameDate(date, today);
-    const isClaimed = lastClaimDate && isSameDate(date, lastClaimDate);
+    const isClaimed = claimedDates.some((claimedDate) =>
+      isSameDate(claimedDate, date)
+    );
     const isFuture = date > today;
 
     return (

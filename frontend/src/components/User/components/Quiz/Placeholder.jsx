@@ -56,8 +56,10 @@ export default function Placeholder() {
           <br />
           <div className="font-bold my-2">Additional Information:</div>
           <div>
-            - <span className="font-bold text-yellow-300">Correct Answer:</span>{" "}
-            You will earn 100 coins for each correct answer.
+            -{" "}
+            <span className="font-bold text-yellow-300">Correct Answer: </span>{" "}
+            You will earn <span className="font-bold text-yellow-300">50</span>{" "}
+            coins for each correct answer.
           </div>
           <div>
             - <span className="font-bold text-yellow-300">Show Answer:</span> If

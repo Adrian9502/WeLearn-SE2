@@ -141,7 +141,7 @@ export default function UserDashboard() {
       if (isCorrect) {
         // Update coins
         const updatedUser = await axios.put(`/api/users/${user.userId}/coins`, {
-          coins: 100,
+          coins: 50,
           operation: "add",
         });
 
@@ -249,7 +249,7 @@ export default function UserDashboard() {
             };
             Swal.fire({
               title: "Correct!",
-              text: `You earned 100 coins! Your new coins is ${updatedUserCoins}`,
+              text: `You earned 50 coins! Your new coins is ${updatedUserCoins}`,
               width: 500,
               padding: "1em",
               color: "#ccc616",
@@ -257,7 +257,7 @@ export default function UserDashboard() {
                 "#fff url(https://st4.depositphotos.com/18899402/24653/i/450/depositphotos_246531954-stock-photo-abstract-purple-blue-gradient-background.jpg)",
               backdrop: `
                   rgba(0,0,123,0.4)
-                  url("/toothless-dancing.gif")
+                  url("/toothless-dancing-resized.gif")
                   left top
                   no-repeat
                 `,

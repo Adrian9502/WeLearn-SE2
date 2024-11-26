@@ -48,11 +48,10 @@ export default function RankingsDisplay({ onClose }) {
 
     if (imgError) {
       return (
-        <div className={`flex items-center justify-center rounded-full`}>
+        <div className="rounded-full w-10 h-10 overflow-hidden">
           <img
             src={`/default-profile.png`}
             className="w-10 h-10 object-cover"
-            onError={() => setImgError(true)}
           />
         </div>
       );

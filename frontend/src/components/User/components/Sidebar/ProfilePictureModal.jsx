@@ -113,17 +113,19 @@ const ProfilePictureModal = ({
           <X size={18} />
         </button>
 
-        <h2 className="text-center text-sm text-yellow-400 sm:text-lg">
+        <h2 className="text-center text-sm text-yellow-400 mb-4 sm:text-lg">
           Update Profile Picture
         </h2>
 
-        <div className="mt-4">
-          <img
-            src={previewUrl || currentPicture}
-            alt="Preview"
-            className="w-24 h-24 border-4 border-yellow-400 mb-2 object-cover rounded-full mx-auto"
-          />
-        </div>
+        {previewUrl && (
+          <div className="">
+            <img
+              src={previewUrl || currentPicture || "/default-profile.png"}
+              alt="Preview"
+              className="w-24 h-24 border-4 border-yellow-400 mb-2 object-cover rounded-full mx-auto"
+            />
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label className="block text-center text-sm font-medium text-slate-200">

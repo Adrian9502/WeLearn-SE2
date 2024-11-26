@@ -361,22 +361,29 @@ router.post("/:id/profile-picture", (req, res) => {
 router.get("/:id/profile-picture", async (req, res) => {
   try {
     const user = await userModel.findById(req.params.id);
-    if (!user || !user.profilePicture) {
-      return res.status(404).json({
-        success: false,
-        message: "No profile picture found",
-      });
+    if (!user) {
+      return res.redirect("/uploads/default-profile.png");
     }
 
-    const file = await gfs.files.findOne({
-      _id: new mongoose.Types.ObjectId(user.profilePicture),
-    });
+    // If no profile picture, use default
+    if (!user.profilePicture) {
+      return res.redirect("/uploads/default-profile.png");
+    }
 
-    if (!file) {
-      return res.status(404).json({
-        success: false,
-        message: "No file exists",
+    // Try to find the file
+    let file;
+    try {
+      file = await gfs.files.findOne({
+        _id: new mongoose.Types.ObjectId(user.profilePicture),
       });
+    } catch (error) {
+      // If file lookup fails, use default
+      return res.redirect("/uploads/default-profile.png");
+    }
+
+    // If no file found, use default
+    if (!file) {
+      return res.redirect("/uploads/default-profile.png");
     }
 
     // Set proper content type
@@ -392,17 +399,11 @@ router.get("/:id/profile-picture", async (req, res) => {
 
     downloadStream.on("error", (error) => {
       console.error("Error streaming file:", error);
-      res.status(500).json({
-        success: false,
-        message: "Error streaming file",
-      });
+      res.redirect("/uploads/default-profile.png");
     });
   } catch (error) {
     console.error("Error serving file:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error retrieving file",
-    });
+    res.redirect("/uploads/default-profile.png");
   }
 });
 module.exports = router;

@@ -123,7 +123,6 @@ export default function UserDashboard() {
     }
     return () => clearInterval(interval);
   }, [isActive]);
-
   const updateProgress = async (isCorrect, timeSpent) => {
     try {
       // Make the progress update API call

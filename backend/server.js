@@ -83,7 +83,8 @@ app.use("/api/quizzes", quizRoutes);
 app.use("/api/progress", userProgressRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/rewards", rewardsRoutes);
-
+// for default profile picture
+app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 // ---------- LOGOUT ROUTE --------------------
 app.post("/api/logout", (req, res) => {
   req.session.destroy((err) => {

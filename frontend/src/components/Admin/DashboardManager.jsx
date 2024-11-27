@@ -132,9 +132,13 @@ const Table = ({ columns, rows, onSort, sortConfig }) => {
                       </code>
                     ) : column === "Profile" ? (
                       <img
-                        src={`http://localhost:5000${row[column]}`}
+                        src={row[column]}
                         alt={`${row["Name"]}'s profile`}
                         className="w-10 h-10 rounded-full"
+                        onError={(e) => {
+                          e.target.src =
+                            "https://cdn-icons-png.freepik.com/512/6858/6858441.png";
+                        }}
                       />
                     ) : (
                       row[column]

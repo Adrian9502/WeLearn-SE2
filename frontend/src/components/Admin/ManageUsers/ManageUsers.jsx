@@ -31,7 +31,7 @@ const ManageUsers = () => {
 
       const transformedData = response.data.map((user) => ({
         ID: user._id,
-        Profile: user.profilePicture,
+        Profile: `/api/users/${user._id}/profile-picture`,
         Name: user.fullName,
         Coins: user.coins,
         Username: user.username,
@@ -51,6 +51,7 @@ const ManageUsers = () => {
           hour12: true,
         }),
       }));
+      console.log(transformedData);
 
       setUserData(transformedData);
     } catch (err) {

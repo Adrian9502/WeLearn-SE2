@@ -25,8 +25,8 @@ import {
 } from "react-icons/fa";
 
 const OverviewCard = ({ title, count, Icon }) => (
-  <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-[1px] transition-all hover:scale-[1.02]">
-    <div className="relative rounded-xl bg-slate-950 p-6 h-full">
+  <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-[1px] transition-all scale-[1.02]">
+    <div className="relative rounded-xl bg-slate-950 p-7 h-full">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-medium text-slate-400 mb-2">{title}</h2>

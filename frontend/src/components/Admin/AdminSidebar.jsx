@@ -57,53 +57,50 @@ const AdminSidebar = () => {
     };
   }, []);
 
-  const handleLogout = () => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "You will be logged out of the admin dashboard",
-      icon: "warning",
-      showCancelButton: true,
+  const handleLogout = async () => {
+    try {
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "You will be logged out of the admin dashboard",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, logout",
+        background: "#1e293b",
+        color: "#fff",
+      });
 
-      confirmButtonText: "Yes, logout",
-      background: "#1e293b", // Dark background
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      color: "#fff", // White text
-      customClass: {
-        popup: "border border-slate-700",
-      },
-    }).then((result) => {
       if (result.isConfirmed) {
-        // Send logout request to server
-        axios
-          .post("/api/logout", {}, { withCredentials: true }) // Make sure to include credentials
-          .then(() => {
-            localStorage.removeItem("authToken");
-            localStorage.removeItem("userRole");
-            localStorage.removeItem("username");
-            Swal.fire({
-              title: "Logged Out!",
-              text: "You have been successfully logged out.",
-              icon: "success",
-              background: "#1e293b",
-              color: "#fff",
-              showConfirmButton: false,
-              timer: 1500,
-            }).then(() => {
-              navigate("/admin"); // Redirect to login page
-            });
-          })
-          .catch((error) => {
-            Swal.fire({
-              title: "Error",
-              text: "There was an error logging you out. Please try again.",
-              icon: "error",
-              background: "#1e293b",
-              color: "#fff",
-            });
-          });
+        await axios.post("/api/logout", {}, { withCredentials: true });
+
+        // Clear localStorage
+        localStorage.removeItem("adminId");
+        localStorage.removeItem("username");
+        localStorage.removeItem("authToken");
+
+        Swal.fire({
+          title: "Logged Out!",
+          text: "You have been successfully logged out.",
+          icon: "success",
+          background: "#1e293b",
+          color: "#fff",
+          showConfirmButton: false,
+          timer: 1500,
+        }).then(() => {
+          navigate("/admin"); // Redirect to login page
+        });
       }
-    });
+    } catch (error) {
+      console.error("Logout failed:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Logout Failed",
+        text: "There was an error logging out. Please try again.",
+        background: "#1e293b",
+        color: "#fff",
+      });
+    }
   };
 
   const toggleSidebar = () => {
@@ -216,6 +213,7 @@ const AdminSidebar = () => {
     <>
       {/* Mobile Menu Button */}
       <button
+        data-testid="mobile-menu-button"
         className="fixed top-4 left-4 z-50 lg:hidden bg-slate-800 p-2 rounded-lg"
         onClick={toggleSidebar}
       >
@@ -227,6 +225,7 @@ const AdminSidebar = () => {
       </button>
       {/* Hidden file input */}
       <input
+        data-testid="profile-picture-input"
         type="file"
         ref={fileInputRef}
         className="hidden"
@@ -242,13 +241,17 @@ const AdminSidebar = () => {
       )}
       {/* Sidebar */}
       <aside
+        data-testid="admin-sidebar"
         className={`fixed inset-y-0 left-0 bg-slate-950 text-white w-64 transform transition-transform duration-300 ease-in-out z-50 
         ${isOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0
         border-r border-slate-800/50`}
       >
         <div className="p-6">
           <div className="flex items-center justify-center">
-            <span className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+            <span
+              data-testid="admin-logo"
+              className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent"
+            >
               WeLearn <span className="text-sm">Admin</span>
             </span>
           </div>
@@ -258,12 +261,14 @@ const AdminSidebar = () => {
           <div className="px-3 py-4 border-b-2 border-cyan-500/30 my-4 sm:mt-6 text-cyan-400">
             <div className="flex flex-col items-center space-y-3">
               <div
+                data-testid="profile-picture-container"
                 className="relative group cursor-pointer"
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => setIsHovering(false)}
                 onClick={() => fileInputRef.current?.click()}
               >
                 <img
+                  data-testid="admin-profile-image"
                   src={profilePicture || "/uploads/default-profile.png"}
                   alt="Admin Profile"
                   className="w-[80px] h-[80px] rounded-full object-cover border-2 border-cyan-400 transition-opacity duration-200"
@@ -288,7 +293,10 @@ const AdminSidebar = () => {
                   <MdAdminPanelSettings size={20} className="text-slate-950" />
                 </div>
               </div>
-              <span className="text-xl font-semibold text-slate-200 text-center">
+              <span
+                data-testid="admin-username"
+                className="text-xl font-semibold text-slate-200 text-center"
+              >
                 {username ? username : "Guest"}
               </span>
             </div>
@@ -298,6 +306,9 @@ const AdminSidebar = () => {
             return (
               <Link
                 key={index}
+                data-testid={`nav-link-${link.label
+                  .toLowerCase()
+                  .replace(" ", "-")}`}
                 to={link.path}
                 className={`flex items-center space-x-3 p-4 rounded-lg mb-4 transition-all duration-200
                   ${
@@ -325,6 +336,7 @@ const AdminSidebar = () => {
           })}
 
           <button
+            data-testid="logout-button"
             onClick={handleLogout}
             className="flex items-center space-x-3 p-4 rounded-lg w-full mt-8 hover:bg-red-500/10 transition-all duration-200 text-red-400 group"
           >

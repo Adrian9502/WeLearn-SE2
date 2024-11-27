@@ -3,15 +3,15 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for src/components/Admin/AdminPages.jsx</title>
+    <title>Code coverage report for src/components/Login/User/components/ProfileCard.jsx</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="../../../prettify.css" />
-    <link rel="stylesheet" href="../../../base.css" />
-    <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.png" />
+    <link rel="stylesheet" href="../../../../../prettify.css" />
+    <link rel="stylesheet" href="../../../../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../../../../favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style type='text/css'>
         .coverage-summary .sorter {
-            background-image: url(../../../sort-arrow-sprite.png);
+            background-image: url(../../../../../sort-arrow-sprite.png);
         }
     </style>
 </head>
@@ -19,7 +19,7 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../../index.html">All files</a> / <a href="index.html">src/components/Admin</a> AdminPages.jsx</h1>
+        <h1><a href="../../../../../index.html">All files</a> / <a href="index.html">src/components/Login/User/components</a> ProfileCard.jsx</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
@@ -86,12 +86,17 @@
 <a name='L21'></a><a href='#L21'>21</a>
 <a name='L22'></a><a href='#L22'>22</a>
 <a name='L23'></a><a href='#L23'>23</a>
-<a name='L24'></a><a href='#L24'>24</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -109,26 +114,51 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import AdminSidebar from "./AdminSidebar";
-import { Routes, Route } from "react-router-dom";
-import ManageQuizzes from "./ManageQuiz/ManageQuizzes";
-import ManageUsers from "./ManageUsers/ManageUsers";
-import AdminDashboard from "./AdminDashboard";
-import ManageAdmins from "./ManageAdmins/ManageAdmins";
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React from "react";
 &nbsp;
-export default function <span class="fstat-no" title="function not covered" >AdminPages(</span>) {
+export default function <span class="fstat-no" title="function not covered" >ProfileCard(</span>{ image, name, role }) {
 <span class="cstat-no" title="statement not covered" >  return (</span>
-    &lt;div className="min-h-screen bg-slate-900"&gt;
-      &lt;AdminSidebar /&gt;
-      &lt;main className="lg:ml-64 min-h-screen"&gt;
-        &lt;Routes&gt;
-          &lt;Route path="/" element={&lt;AdminDashboard /&gt;} /&gt;
+    &lt;div className="w-full max-w-[280px] sm:max-w-[320px] md:max-w-sm btn overflow-hidden shadow-xl bg-gradient-to-b from-purple-600 via-indigo-600 to-blue-600"&gt;
+      &lt;div className="p-4 sm:p-6 space-y-4 sm:space-y-6"&gt;
+        {/* Image Container with Border Effect */}
+        &lt;div className="relative mx-auto w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40"&gt;
+          {/* Animated gradient border */}
+          &lt;div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full animate-pulse"&gt;&lt;/div&gt;
+          {/* White background ring */}
+          &lt;div className="absolute inset-1 bg-white rounded-full"&gt;&lt;/div&gt;
+          {/* Profile image */}
+          &lt;img
+            src={image}
+            alt={name}
+            className="absolute inset-2 rounded-full object-cover w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 pointer-events-none"
+          /&gt;
+        &lt;/div&gt;
 &nbsp;
-          &lt;Route path="manage-quizzes" element={&lt;ManageQuizzes /&gt;} /&gt;
-          &lt;Route path="manage-users" element={&lt;ManageUsers /&gt;} /&gt;
-          &lt;Route path="manage-admins" element={&lt;ManageAdmins /&gt;} /&gt;
-        &lt;/Routes&gt;
-      &lt;/main&gt;
+        {/* Text Content */}
+        &lt;div className="text-center space-y-2 sm:space-y-3"&gt;
+          &lt;h1 className="text-lg sm:text-xl md:text-2xl font-bold truncate px-2"&gt;
+            {name}
+          &lt;/h1&gt;
+          &lt;h3 className="text-sm sm:text-base font-medium tracking-wider truncate px-2"&gt;
+            {role}
+          &lt;/h3&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
     &lt;/div&gt;
   );
 }
@@ -141,14 +171,14 @@ export default function <span class="fstat-no" title="function not covered" >Adm
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
                 at 2024-11-27T12:06:25.388Z
             </div>
-        <script src="../../../prettify.js"></script>
+        <script src="../../../../../prettify.js"></script>
         <script>
             window.onload = function () {
                 prettyPrint();
             };
         </script>
-        <script src="../../../sorter.js"></script>
-        <script src="../../../block-navigation.js"></script>
+        <script src="../../../../../sorter.js"></script>
+        <script src="../../../../../block-navigation.js"></script>
     </body>
 </html>
     

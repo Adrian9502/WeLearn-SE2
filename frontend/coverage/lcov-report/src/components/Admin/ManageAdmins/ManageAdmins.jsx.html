@@ -237,18 +237,7 @@
 <a name='L172'></a><a href='#L172'>172</a>
 <a name='L173'></a><a href='#L173'>173</a>
 <a name='L174'></a><a href='#L174'>174</a>
-<a name='L175'></a><a href='#L175'>175</a>
-<a name='L176'></a><a href='#L176'>176</a>
-<a name='L177'></a><a href='#L177'>177</a>
-<a name='L178'></a><a href='#L178'>178</a>
-<a name='L179'></a><a href='#L179'>179</a>
-<a name='L180'></a><a href='#L180'>180</a>
-<a name='L181'></a><a href='#L181'>181</a>
-<a name='L182'></a><a href='#L182'>182</a>
-<a name='L183'></a><a href='#L183'>183</a>
-<a name='L184'></a><a href='#L184'>184</a>
-<a name='L185'></a><a href='#L185'>185</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L175'></a><a href='#L175'>175</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -279,6 +268,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -376,18 +366,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -398,6 +376,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -435,7 +415,6 @@
 import ManageAdminsModal from "./ManageAdminsModal";
 import DashboardManager from "../DashboardManager";
 import axios from "axios";
-import { ThreeDots } from "react-loader-spinner";
 &nbsp;
 // MAIN COMPONENT
 const ManageAdmins = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
@@ -461,9 +440,10 @@ const ManageAdmins = <span class="cstat-no" title="statement not covered" ><span
   const fetchAdminData = <span class="cstat-no" title="statement not covered" >useCallback(<span class="fstat-no" title="function not covered" >as</span>ync () =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    setLoading(true);</span>
 <span class="cstat-no" title="statement not covered" >    try {</span>
-      const response = <span class="cstat-no" title="statement not covered" >await axios.get("http://localhost:5000/api/admins");</span>
+      const response = <span class="cstat-no" title="statement not covered" >await axios.get("/api/admins");</span>
       const transformedData = <span class="cstat-no" title="statement not covered" >response.data.map(<span class="fstat-no" title="function not covered" >(a</span>dmin) =&gt; (<span class="cstat-no" title="statement not covered" >{</span></span>
         ID: admin._id,
+        Profile: admin.profilePicture,
         Name: admin.fullName,
         Username: admin.username,
         Email: admin.email,
@@ -554,20 +534,8 @@ const ManageAdmins = <span class="cstat-no" title="statement not covered" ><span
   // LOADING STATE
 <span class="cstat-no" title="statement not covered" >  if (loading) {</span>
 <span class="cstat-no" title="statement not covered" >    return (</span>
-      &lt;div
-        className="flex h-screen items-center justify-center mb-5"
-        data-testid="loading-spinner"
-      &gt;
-        &lt;ThreeDots
-          visible={true}
-          height="80"
-          width="80"
-          color="#6d28d9"
-          radius="9"
-          ariaLabel="three-dots-loading"
-          wrapperStyle={{}}
-          wrapperClass=""
-        /&gt;
+      &lt;div className="min-h-screen bg-slate-900 flex items-center justify-center"&gt;
+        &lt;div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"&gt;&lt;/div&gt;
       &lt;/div&gt;
     );
   }
@@ -588,6 +556,7 @@ const ManageAdmins = <span class="cstat-no" title="statement not covered" ><span
         handleOpenModal={handleOpenModal}
         tableColumns={[
           "ID",
+          "Profile",
           "Name",
           "Username",
           "Email",
@@ -600,6 +569,7 @@ const ManageAdmins = <span class="cstat-no" title="statement not covered" ><span
         onSearchChange={handleSearch}
         sortConfig={sortConfig}
         onSort={handleSort}
+        sortTitle={"Name"}
       /&gt;
       &lt;ManageAdminsModal
         isOpen={isModalOpen}
@@ -622,7 +592,7 @@ export default ManageAdmins;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2024-11-08T04:00:55.735Z
+                at 2024-11-27T12:06:25.388Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

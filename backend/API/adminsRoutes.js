@@ -181,11 +181,19 @@ router.get("/:id/profile-picture", async (req, res) => {
       .findById(req.params.id)
       .select("profilePicture");
     if (!admin) {
-      return res.status(404).json({ message: "Admin not found" });
+      return res.status(404).json({
+        profilePicture:
+          "https://cdn-icons-png.freepik.com/512/6858/6858441.png",
+        message: "Admin not found",
+      });
     }
 
     if (!admin.profilePicture) {
-      return res.status(404).json({ message: "No profile picture found" });
+      return res.json({
+        profilePicture:
+          "https://cdn-icons-png.freepik.com/512/6858/6858441.png",
+        message: "No profile picture found",
+      });
     }
 
     // Handle external URLs
@@ -220,6 +228,7 @@ router.get("/:id/profile-picture", async (req, res) => {
   } catch (error) {
     console.error("Error retrieving profile picture:", error);
     return res.status(500).json({
+      profilePicture: "https://cdn-icons-png.freepik.com/512/6858/6858441.png",
       message: "Error retrieving profile picture",
       error: error.message,
     });

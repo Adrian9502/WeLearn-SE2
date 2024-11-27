@@ -35,9 +35,7 @@ const AdminSidebar = () => {
               withCredentials: true,
             }
           );
-          setProfilePicture(
-            `http://localhost:5000${response.data.profilePicture}`
-          );
+          setProfilePicture(response.data.profilePicture);
         }
       } catch (error) {
         console.error("Error fetching profile picture:", error);
@@ -186,8 +184,13 @@ const AdminSidebar = () => {
           },
         }
       );
+      console.log(response.data.profilePicture);
 
-      setProfilePicture(`http://localhost:5000${response.data.profilePicture}`);
+      setProfilePicture(
+        response.data.profilePicture.startsWith("http")
+          ? response.data.profilePicture
+          : response.data.profilePicture
+      );
 
       Swal.fire({
         title: "Success",
@@ -272,6 +275,10 @@ const AdminSidebar = () => {
                   src={profilePicture || "/uploads/default-profile.png"}
                   alt="Admin Profile"
                   className="w-[80px] h-[80px] rounded-full object-cover border-2 border-cyan-400 transition-opacity duration-200"
+                  onError={(e) => {
+                    e.target.src =
+                      "https://cdn-icons-png.freepik.com/512/6858/6858441.png";
+                  }}
                 />
 
                 {/* Hover Overlay */}

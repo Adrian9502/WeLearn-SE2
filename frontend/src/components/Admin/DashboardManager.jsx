@@ -261,7 +261,7 @@ CopyableID.propTypes = {
 
 ActionButton.propTypes = {
   label: PropTypes.any.isRequired,
-  action: PropTypes.func.isRequired,
+  action: PropTypes.func,
 };
 Table.propTypes = {
   columns: PropTypes.arrayOf(PropTypes.string).isRequired,

@@ -32,12 +32,12 @@ describe("ManageUsersModal", () => {
   test("validates form before submission", async () => {
     render(
       <ManageUsersModal isOpen={true} type="create" onClose={jest.fn()} />
-    ); // Ensure modal is open
+    );
 
     // Check if the modal is displayed
-    expect(screen.getByText(/create user/i)).toBeInTheDocument(); // Change to the correct title text
+    expect(screen.getByTestId("modal-title")).toHaveTextContent(/create user/i);
 
-    // Fill in the form fields with values less than 5 characters
+    // Fill in the form fields with invalid values
     fireEvent.change(screen.getByTestId("fullName"), {
       target: { value: "as" },
     });
@@ -55,17 +55,20 @@ describe("ManageUsersModal", () => {
     });
 
     // Submit the form
-    fireEvent.click(screen.getByRole("button", { name: /Create/i }));
+    fireEvent.click(screen.getByTestId("submit-button"));
 
-    // Assert that SweetAlert was called
+    // Assert that SweetAlert was called with the validation error message
     await waitFor(() => {
-      expect(Swal.fire).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: "Error",
-          text: "All fields are required and must be at least 5 characters long.",
-          icon: "error",
-        })
-      );
+      expect(Swal.fire).toHaveBeenCalledWith({
+        title: "Validation Error",
+        text: "Please check all fields and try again",
+        icon: "error",
+        background: "#1e293b",
+        color: "#fff",
+        customClass: {
+          popup: "border border-slate-700",
+        },
+      });
     });
   });
 
@@ -76,39 +79,61 @@ describe("ManageUsersModal", () => {
 
     render(<ManageUsersModal {...mockProps} />);
 
-    const fullNameInput = screen.getByLabelText("Full Name:");
-    const usernameInput = screen.getByLabelText("Username:");
-    const emailInput = screen.getByLabelText("Email:");
-    const passwordInput = screen.getByLabelText("Password:");
-    const dobInput = screen.getByLabelText("Birthday:");
+    // Using data-testid to find elements
+    const fullNameInput = screen.getByTestId("fullName");
+    const usernameInput = screen.getByTestId("username");
+    const emailInput = screen.getByTestId("email");
+    const passwordInput = screen.getByTestId("password");
+    const dobInput = screen.getByTestId("dob");
+    const submitButton = screen.getByTestId("submit-button");
 
+    // Fill in form with valid data that meets all validation requirements
     fireEvent.change(fullNameInput, { target: { value: "John Doe" } });
-    fireEvent.change(usernameInput, { target: { value: "johndoe" } });
+    fireEvent.change(usernameInput, { target: { value: "johndoe123" } }); // Added numbers for validation
     fireEvent.change(emailInput, { target: { value: "john@example.com" } });
-    fireEvent.change(passwordInput, { target: { value: "password123" } });
+    fireEvent.change(passwordInput, {
+      target: { value: "Password123!" }, // Meets password requirements
+    });
     fireEvent.change(dobInput, { target: { value: "1990-01-01" } });
 
-    const submitButton = screen.getByText("Create");
-    fireEvent.click(submitButton);
+    // Trigger blur events to ensure validation runs
+    fireEvent.blur(fullNameInput);
+    fireEvent.blur(usernameInput);
+    fireEvent.blur(emailInput);
+    fireEvent.blur(passwordInput);
+    fireEvent.blur(dobInput);
+
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
 
     await waitFor(() => {
       expect(axios).toHaveBeenCalledWith({
         method: "POST",
-        url: "http://localhost:5000/api/users",
+        url: "/api/users",
         data: {
           fullName: "John Doe",
-          username: "johndoe",
+          username: "johndoe123",
           email: "john@example.com",
-          password: "password123",
+          password: "Password123!",
           dob: "1990-01-01",
           userId: "",
         },
       });
+
+      // Check for success message
       expect(Swal.fire).toHaveBeenCalledWith({
         title: "Success!",
         text: "User created successfully",
         icon: "success",
+        background: "#1e293b",
+        color: "#fff",
+        customClass: {
+          popup: "border border-slate-700",
+        },
       });
+
+      // Check if callbacks were called
       expect(mockProps.onUserCreated).toHaveBeenCalled();
       expect(mockProps.onClose).toHaveBeenCalled();
     });
@@ -118,42 +143,60 @@ describe("ManageUsersModal", () => {
     const errorMessage = "An error occurred";
     axios.mockRejectedValueOnce({
       response: {
-        data: {
-          errors: [{ path: "password", msg: errorMessage }],
-        },
+        status: 400,
+        message: errorMessage,
       },
     });
 
     render(<ManageUsersModal {...mockProps} />);
 
-    // Fill out the form
-    const fullNameInput = screen.getByLabelText("Full Name:");
-    const usernameInput = screen.getByLabelText("Username:");
-    const emailInput = screen.getByLabelText("Email:");
-    const passwordInput = screen.getByLabelText("Password:");
-    const dobInput = screen.getByLabelText("Birthday:");
+    // Fill out the form with valid data
+    const fullNameInput = screen.getByTestId("fullName");
+    const usernameInput = screen.getByTestId("username");
+    const emailInput = screen.getByTestId("email");
+    const passwordInput = screen.getByTestId("password");
+    const dobInput = screen.getByTestId("dob");
 
+    // Fill in form with valid data that meets all validation requirements
     fireEvent.change(fullNameInput, { target: { value: "John Doe" } });
-    fireEvent.change(usernameInput, { target: { value: "johndoe" } });
+    fireEvent.change(usernameInput, { target: { value: "johndoe123" } });
     fireEvent.change(emailInput, { target: { value: "john@example.com" } });
-    fireEvent.change(passwordInput, { target: { value: "password123" } });
+    fireEvent.change(passwordInput, {
+      target: { value: "Password123!" },
+    });
     fireEvent.change(dobInput, { target: { value: "1990-01-01" } });
 
-    const submitButton = screen.getByText("Create");
-    fireEvent.click(submitButton);
+    // Trigger blur events to ensure validation runs
+    fireEvent.blur(fullNameInput);
+    fireEvent.blur(usernameInput);
+    fireEvent.blur(emailInput);
+    fireEvent.blur(passwordInput);
+    fireEvent.blur(dobInput);
 
+    // Submit form
+    const submitButton = screen.getByTestId("submit-button");
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    // Check error message matches component implementation
     await waitFor(() => {
       expect(Swal.fire).toHaveBeenCalledWith({
         title: "Error",
-        text: errorMessage,
+        text: `Error 400: An error occurred`,
         icon: "error",
+        background: "#1e293b",
+        color: "#fff",
+        customClass: {
+          popup: "border border-slate-700",
+        },
       });
     });
   });
 
   test("closes modal when close button is clicked", () => {
     render(<ManageUsersModal {...mockProps} />);
-    const closeButton = screen.getByText("Close");
+    const closeButton = screen.getByTestId("close-button");
     fireEvent.click(closeButton);
     expect(mockProps.onClose).toHaveBeenCalled();
   });
@@ -162,9 +205,9 @@ describe("ManageUsersModal", () => {
     const existingUser = {
       userId: "123",
       fullName: "John Doe",
-      username: "johndoe",
+      username: "johndoe123", // Updated to meet validation
       email: "john@example.com",
-      password: "password123",
+      password: "Password123!", // Updated to meet validation
       dob: "1990-01-01",
     };
 
@@ -188,84 +231,87 @@ describe("ManageUsersModal", () => {
     render(<ManageUsersModal {...mockProps} />);
 
     // Fill the form with existing user data
-    fireEvent.change(screen.getByLabelText("User ID:"), {
-      target: { value: existingUser.userId },
-    });
-    fireEvent.change(screen.getByLabelText("Full Name:"), {
-      target: { value: existingUser.fullName },
-    });
-    fireEvent.change(screen.getByLabelText("Username:"), {
-      target: { value: existingUser.username },
-    });
-    fireEvent.change(screen.getByLabelText("Email:"), {
-      target: { value: existingUser.email },
-    });
-    fireEvent.change(screen.getByLabelText("Password:"), {
-      target: { value: existingUser.password },
-    });
-    fireEvent.change(screen.getByLabelText("Birthday:"), {
-      target: { value: existingUser.dob },
+    const inputs = {
+      userId: screen.getByTestId("userId"),
+      fullName: screen.getByTestId("fullName"),
+      username: screen.getByTestId("username"),
+      email: screen.getByTestId("email"),
+      password: screen.getByTestId("password"),
+      dob: screen.getByTestId("dob"),
+    };
+
+    // Fill initial data
+    Object.entries(existingUser).forEach(([field, value]) => {
+      fireEvent.change(inputs[field], { target: { value } });
+      fireEvent.blur(inputs[field]); // Trigger validation
     });
 
-    // Update some fields
-    fireEvent.change(screen.getByLabelText("Full Name:"), {
+    // Update specific fields
+    fireEvent.change(inputs.fullName, {
       target: { value: updatedUser.fullName },
     });
-    fireEvent.change(screen.getByLabelText("Email:"), {
-      target: { value: updatedUser.email },
-    });
+    fireEvent.blur(inputs.fullName);
+
+    fireEvent.change(inputs.email, { target: { value: updatedUser.email } });
+    fireEvent.blur(inputs.email);
 
     // Submit the form
-    fireEvent.click(screen.getByText("Update"));
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("submit-button"));
+    });
 
     await waitFor(() => {
-      // Check if the correct API call was made
+      // Check API call
       expect(axios).toHaveBeenCalledWith({
         method: "PUT",
-        url: `http://localhost:5000/api/users/${existingUser.userId}`,
+        url: `/api/users/${existingUser.userId}`,
         data: updatedUser,
       });
 
-      // Check if success message was shown
+      // Check success message
       expect(Swal.fire).toHaveBeenCalledWith({
         title: "Success!",
         text: "User updated successfully",
         icon: "success",
+        background: "#1e293b",
+        color: "#fff",
+        customClass: {
+          popup: "border border-slate-700",
+        },
       });
 
-      // Check if onUserUpdated callback was called
+      // Check callbacks
       expect(mockProps.onUserUpdated).toHaveBeenCalled();
-
-      // Check if modal was closed
       expect(mockProps.onClose).toHaveBeenCalled();
     });
   });
+
   test("renders correctly for create type", () => {
     render(<ManageUsersModal {...mockProps} />);
-    expect(screen.getByText("Create User")).toBeInTheDocument();
-    expect(screen.getByLabelText("Full Name:")).toBeInTheDocument();
-    expect(screen.getByLabelText("Username:")).toBeInTheDocument();
-    expect(screen.getByLabelText("Email:")).toBeInTheDocument();
-    expect(screen.getByLabelText("Password:")).toBeInTheDocument();
-    expect(screen.getByLabelText("Birthday:")).toBeInTheDocument();
+    expect(screen.getByTestId("modal-title")).toHaveTextContent("Create User");
+    expect(screen.getByTestId("fullName")).toBeInTheDocument();
+    expect(screen.getByTestId("username")).toBeInTheDocument();
+    expect(screen.getByTestId("email")).toBeInTheDocument();
+    expect(screen.getByTestId("password")).toBeInTheDocument();
+    expect(screen.getByTestId("dob")).toBeInTheDocument();
   });
 
   test("renders correctly for update type", () => {
     render(<ManageUsersModal {...mockProps} type="update" />);
-    expect(screen.getByText("Update User")).toBeInTheDocument();
-    expect(screen.getByLabelText("User ID:")).toBeInTheDocument();
+    expect(screen.getByTestId("modal-title")).toHaveTextContent("Update User");
+    expect(screen.getByTestId("userId")).toBeInTheDocument();
   });
 
   test("renders correctly for delete type", () => {
     render(<ManageUsersModal {...mockProps} type="delete" />);
-    expect(screen.getByText("Delete User")).toBeInTheDocument();
-    expect(screen.getByLabelText("User ID:")).toBeInTheDocument();
-    expect(screen.queryByLabelText("Full Name:")).not.toBeInTheDocument();
+    expect(screen.getByTestId("modal-title")).toHaveTextContent("Delete User");
+    expect(screen.getByTestId("userId")).toBeInTheDocument();
+    expect(screen.queryByTestId("fullName")).not.toBeInTheDocument();
   });
 
   test("handles input changes", () => {
     render(<ManageUsersModal {...mockProps} />);
-    const fullNameInput = screen.getByLabelText("Full Name:");
+    const fullNameInput = screen.getByTestId("fullName");
     fireEvent.change(fullNameInput, { target: { value: "John Doe" } });
     expect(fullNameInput.value).toBe("John Doe");
   });

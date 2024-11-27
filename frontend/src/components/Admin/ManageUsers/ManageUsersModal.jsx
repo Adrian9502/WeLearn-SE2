@@ -109,6 +109,7 @@ const InputField = ({
       <input
         id={name}
         name={name}
+        data-testid={name}
         // Conditionally set the type for password field
         type={name === "password" ? (showPassword ? "text" : "password") : type}
         value={value}
@@ -438,10 +439,14 @@ const ManageUsersModal = ({
     >
       <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-[1px]">
         <div className="rounded-xl relative bg-slate-900 text-slate-200 p-8 w-80 lg:w-96">
-          <h2 className="text-xl md:text-2xl text-center font-medium mb-4">
+          <h2
+            data-testid="modal-title"
+            className="text-xl md:text-2xl text-center font-medium mb-4"
+          >
             {type.charAt(0).toUpperCase() + type.slice(1)} User
           </h2>
           <button
+            data-testid="close-button"
             onClick={onClose}
             className="text-white absolute right-4 top-4"
           >
@@ -456,6 +461,7 @@ const ManageUsersModal = ({
               <div>{renderForm()}</div>
               <div className="flex justify-around">
                 <button
+                  data-testid="submit-button"
                   type="submit"
                   className={`rounded-md py-2 px-4 text-white bg-gradient-to-l ${
                     type === "delete"

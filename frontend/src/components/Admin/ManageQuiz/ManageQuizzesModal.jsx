@@ -9,7 +9,7 @@ const API_BASE_URL = "/api/quizzes";
 const validateField = (name, value, actionType) => {
   switch (name) {
     case "quizId":
-      if (actionType === "create") return ""; // Skip validation for `create` action
+      if (actionType === "create") return "";
       if (!value) return "Quiz ID is required";
       if (!/^[A-Za-z0-9-_]+$/.test(value))
         return "Quiz ID can only contain letters, numbers, hyphens and underscores";
@@ -20,11 +20,11 @@ const validateField = (name, value, actionType) => {
       if (value.length < 3) return "Title must be at least 3 characters";
       if (value.length > 100) return "Title must not exceed 100 characters";
       return "";
-    case "instruction":
+    case "instructions":
       if (!value) return "Instructions are required";
       if (value.length < 8) return "Instructions must be at least 8 characters";
       return "";
-    case "question":
+    case "questions":
       if (!value) return "Question is required";
       if (value.length < 5) return "Question must be at least 5 characters";
       return "";
@@ -32,8 +32,30 @@ const validateField = (name, value, actionType) => {
       if (!value) return "Answer is required";
       if (value.length < 1) return "Answer must be at least 1 character";
       return "";
+    case "type": {
+      if (!value) return "Type is required";
+      const validTypes = [
+        "Bubble Sort",
+        "Insertion Sort",
+        "Merge Sort",
+        "Selection Sort",
+        "Addition",
+        "Subtraction",
+        "Multiplication",
+        "Alphabet",
+      ];
+      if (!validTypes.includes(value)) return "Invalid quiz type";
+      return "";
+    }
+    case "difficulty":
+      if (!value) return "Difficulty is required";
+      if (!["Easy", "Medium", "Hard"].includes(value))
+        return "Invalid difficulty level";
+      return "";
     case "category":
       if (!value) return "Category is required";
+      if (!["Sorting Algorithms", "Binary Operations"].includes(value))
+        return "Invalid category";
       return "";
     default:
       return "";
@@ -95,6 +117,7 @@ const TextAreaField = ({
   value,
   onChange,
   placeholder,
+  rows,
   error,
 }) => (
   <div className="relative space-y-2 mb-4">
@@ -116,6 +139,7 @@ const TextAreaField = ({
       name={name}
       value={value}
       onChange={onChange}
+      rows={rows}
       className={`
         w-full
         p-2
@@ -155,9 +179,11 @@ const ManageQuizzesModal = ({
   const [formData, setFormData] = useState({
     quizId: "",
     title: "",
-    instruction: "",
-    question: "",
+    instructions: "",
+    questions: "",
     answer: "",
+    type: "",
+    difficulty: "",
     category: "",
   });
   const [errors, setErrors] = useState({});
@@ -167,9 +193,11 @@ const ManageQuizzesModal = ({
     setFormData({
       quizId: "",
       title: "",
-      instruction: "",
-      question: "",
+      instructions: "",
+      questions: "",
       answer: "",
+      type: "",
+      difficulty: "",
       category: "",
     });
     setErrors({});
@@ -330,21 +358,22 @@ const ManageQuizzesModal = ({
             />
             <TextAreaField
               label="Instructions"
-              name="instruction"
-              value={formData.instruction}
+              name="instructions"
+              value={formData.instructions}
               onChange={handleInputChange}
               onBlur={handleBlur}
               placeholder="Enter quiz instructions"
-              error={errors.instruction}
+              error={errors.instructions}
             />
             <TextAreaField
               label="Question"
-              name="question"
-              value={formData.question}
+              name="questions"
+              value={formData.questions}
               onChange={handleInputChange}
+              rows={4}
               onBlur={handleBlur}
               placeholder="Enter quiz question"
-              error={errors.question}
+              error={errors.questions}
             />
             <TextAreaField
               label="Answer"
@@ -355,12 +384,88 @@ const ManageQuizzesModal = ({
               placeholder="Enter quiz answer"
               error={errors.answer}
             />
-            <div className="relative space-y-2 mb-8">
+            <div className="relative space-y-2 mb-4">
               <div className="flex justify-between items-center">
-                <label
-                  htmlFor="category"
-                  className="block text-sm font-medium text-slate-300"
-                >
+                <label className="block text-sm font-medium text-slate-300">
+                  Type
+                </label>
+                {errors.type && (
+                  <span className="text-xs text-red-400 ml-2 animate-fadeIn">
+                    {errors.type}
+                  </span>
+                )}
+              </div>
+              <select
+                name="type"
+                value={formData.type}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                className={`
+                w-full p-2 rounded-lg
+                border-2 ${errors.type ? "border-red-500" : "border-slate-700"}
+                text-slate-950
+                focus:outline-none focus:ring-2
+                ${
+                  errors.type
+                    ? "focus:ring-red-500/50"
+                    : "focus:ring-indigo-500"
+                }
+              `}
+              >
+                <option value="">Select quiz type</option>
+                {/* Sorting Algorithms */}
+                <option value="Bubble Sort">Bubble Sort</option>
+                <option value="Insertion Sort">Insertion Sort</option>
+                <option value="Merge Sort">Merge Sort</option>
+                <option value="Selection Sort">Selection Sort</option>
+                {/* Binary Operations */}
+                <option value="Addition">Addition</option>
+                <option value="Subtraction">Subtraction</option>
+                <option value="Multiplication">Multiplication</option>
+                <option value="Alphabet">Alphabet</option>
+              </select>
+            </div>
+
+            <div className="relative space-y-2 mb-4">
+              <div className="flex justify-between items-center">
+                <label className="block text-sm font-medium text-slate-300">
+                  Difficulty
+                </label>
+                {errors.difficulty && (
+                  <span className="text-xs text-red-400 ml-2 animate-fadeIn">
+                    {errors.difficulty}
+                  </span>
+                )}
+              </div>
+              <select
+                name="difficulty"
+                value={formData.difficulty}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                className={`
+                w-full p-2 rounded-lg
+                border-2 ${
+                  errors.difficulty ? "border-red-500" : "border-slate-700"
+                }
+                text-slate-950
+                focus:outline-none focus:ring-2
+                ${
+                  errors.difficulty
+                    ? "focus:ring-red-500/50"
+                    : "focus:ring-indigo-500"
+                }
+              `}
+              >
+                <option value="">Select difficulty</option>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+            </div>
+
+            <div className="relative space-y-2 mb-4">
+              <div className="flex justify-between items-center">
+                <label className="block text-sm font-medium text-slate-300">
                   Category
                 </label>
                 {errors.category && (
@@ -370,28 +475,27 @@ const ManageQuizzesModal = ({
                 )}
               </div>
               <select
-                id="category"
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
                 className={`
-                  text-gray-900 
-                  p-2.5 
-                  w-full 
-                  rounded-lg 
-                  focus:outline-none 
-                  focus:ring-2 
-                  ${
-                    errors.category
-                      ? "border-red-500 focus:ring-red-500/50"
-                      : "focus:ring-indigo-500"
-                  }
-                `}
+                w-full p-2 rounded-lg
+                border-2 ${
+                  errors.category ? "border-red-500" : "border-slate-700"
+                }
+                text-slate-950
+                focus:outline-none focus:ring-2
+                ${
+                  errors.category
+                    ? "focus:ring-red-500/50"
+                    : "focus:ring-indigo-500"
+                }
+              `}
               >
-                <option value="">Select a category</option>
-                <option value="Sorting Algorithm">Sorting Algorithm</option>
-                <option value="Binary Algorithm">Binary Algorithm</option>
+                <option value="">Select category</option>
+                <option value="Sorting Algorithms">Sorting Algorithms</option>
+                <option value="Binary Operations">Binary Operations</option>
               </select>
             </div>
           </>
@@ -416,10 +520,10 @@ const ManageQuizzesModal = ({
   return (
     <div
       style={{ fontFamily: "lexend" }}
-      className="fixed inset-0 flex justify-center items-center z-30 bg-black bg-opacity-50"
+      className="fixed inset-0 flex justify-center items-center px-5 z-30 bg-black bg-opacity-50"
     >
       <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-[1px]">
-        <div className="rounded-xl relative bg-slate-900 text-slate-200 p-8 w-80 lg:w-96">
+        <div className="rounded-xl relative bg-slate-900 text-slate-200 p-8 w-full lg:w-96">
           <h2 className="text-xl md:text-2xl text-center font-medium mb-4">
             {type.charAt(0).toUpperCase() + type.slice(1)} Quiz
           </h2>

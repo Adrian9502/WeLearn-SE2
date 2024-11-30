@@ -88,7 +88,6 @@ const DailyRewards = ({
       });
       // Log raw response for debugging
       const responseText = await response.text();
-      console.log("Raw response:", responseText);
       let data;
       try {
         data = JSON.parse(responseText);

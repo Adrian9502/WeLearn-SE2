@@ -28,12 +28,15 @@ const ManageQuizzes = () => {
     setLoading(true);
     try {
       const response = await axios.get("/api/quizzes");
+
       const transformedData = response.data.map((quiz) => ({
         ID: quiz._id,
         Title: quiz.title,
-        Instructions: quiz.instruction,
-        Questions: quiz.question,
+        Instructions: quiz.instructions,
+        Questions: quiz.questions,
         Answer: quiz.answer,
+        Type: quiz.type,
+        Difficulty: quiz.difficulty,
         Category: quiz.category,
       }));
 
@@ -134,6 +137,8 @@ const ManageQuizzes = () => {
           "Instructions",
           "Questions",
           "Answer",
+          "Type",
+          "Difficulty",
           "Category",
         ]}
         tableRows={sortedData}

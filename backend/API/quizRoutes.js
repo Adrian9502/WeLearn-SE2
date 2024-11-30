@@ -5,25 +5,89 @@ const mongoose = require("mongoose");
 const router = express.Router();
 
 // Helper function to validate required fields
-const validateQuizFields = (title, instruction, question, answer, category) => {
-  return title && instruction && question && answer && category;
+const validateQuizFields = (
+  title,
+  instructions,
+  questions,
+  answer,
+  type,
+  difficulty,
+  category
+) => {
+  return (
+    title &&
+    instructions &&
+    questions &&
+    answer &&
+    type &&
+    difficulty &&
+    category
+  );
 };
+// Define valid options for validation
+const validTypes = [
+  "Bubble Sort",
+  "Insertion Sort",
+  "Merge Sort",
+  "Selection Sort",
+  "Addition",
+  "Subtraction",
+  "Multiplication",
+  "Alphabet",
+];
 
+const validCategories = ["Sorting Algorithms", "Binary Operations"];
+const validDifficulties = ["Easy", "Medium", "Hard"];
 // POST route to create a new quiz
 router.post("/", async (req, res) => {
   try {
-    const { title, instruction, question, answer, category } = req.body;
-
+    const {
+      title,
+      instructions,
+      questions,
+      answer,
+      type,
+      difficulty,
+      category,
+    } = req.body;
+    console.log("Received Quiz Type:", req.body.type);
     // Validation check
-    if (!validateQuizFields(title, instruction, question, answer, category)) {
+    if (
+      !validateQuizFields(
+        title,
+        instructions,
+        questions,
+        answer,
+        type,
+        difficulty,
+        category
+      )
+    ) {
       return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Validate enum values
+    if (!validTypes.includes(type)) {
+      return res.status(400).json({ message: "Invalid quiz type" });
+    }
+
+    // Also update category validation
+    if (!["Sorting Algorithms", "Binary Operations"].includes(category)) {
+      return res.status(400).json({ message: "Invalid category" });
+    }
+
+    // And difficulty validation
+    if (!["Easy", "Medium", "Hard"].includes(difficulty)) {
+      return res.status(400).json({ message: "Invalid difficulty level" });
     }
 
     const newQuiz = new Quiz({
       title,
-      instruction,
-      question,
+      instructions,
+      questions,
       answer,
+      type,
+      difficulty,
       category,
     });
 
@@ -69,9 +133,26 @@ router.get("/:id", async (req, res) => {
 // PUT route to update a quiz by ID
 router.put("/:id", async (req, res) => {
   try {
-    const { title, instruction, question, answer, category } = req.body;
+    const {
+      title,
+      instructions,
+      questions,
+      answer,
+      type,
+      difficulty,
+      category,
+    } = req.body;
 
-    if (!title && !instruction && !question && !answer && !category) {
+    // Check if any fields are provided for update
+    if (
+      !title &&
+      !instructions &&
+      !questions &&
+      !answer &&
+      !type &&
+      !difficulty &&
+      !category
+    ) {
       return res.status(400).json({ message: "No fields to update" });
     }
 
@@ -79,9 +160,30 @@ router.put("/:id", async (req, res) => {
       return res.status(400).json({ message: "Invalid quiz ID format" });
     }
 
+    // Validate enum values if they're being updated
+    if (type && !validTypes.includes(type)) {
+      return res.status(400).json({ message: "Invalid quiz type" });
+    }
+
+    if (difficulty && !validDifficulties.includes(difficulty)) {
+      return res.status(400).json({ message: "Invalid difficulty level" });
+    }
+
+    if (category && !validCategories.includes(category)) {
+      return res.status(400).json({ message: "Invalid category" });
+    }
+
     const updatedQuiz = await Quiz.findByIdAndUpdate(
       req.params.id,
-      { title, instruction, question, answer, category },
+      {
+        title,
+        instructions,
+        questions,
+        answer,
+        type,
+        difficulty,
+        category,
+      },
       { new: true }
     );
 
@@ -95,7 +197,7 @@ router.put("/:id", async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating quiz:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 });
 

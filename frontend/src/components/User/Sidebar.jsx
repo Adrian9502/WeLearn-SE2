@@ -4,26 +4,7 @@ import PropTypes from "prop-types";
 import { useUser } from "./UserContext";
 import Swal from "sweetalert2";
 import UserInfo from "./components/Sidebar/UserInfo";
-// Constants
-const QUIZ_TYPES = {
-  BUBBLE: "bubble",
-  MERGE: "merge",
-  INSERTION: "insertion",
-  SELECTION: "selection",
-  ADDITION: "addition",
-  SUBTRACTION: "subtraction",
-  ALPHABET: "alphabet",
-};
 
-const INITIAL_EXPANDED_STATE = {
-  [QUIZ_TYPES.BUBBLE]: false,
-  [QUIZ_TYPES.MERGE]: false,
-  [QUIZ_TYPES.INSERTION]: false,
-  [QUIZ_TYPES.SELECTION]: false,
-  [QUIZ_TYPES.ADDITION]: false,
-  [QUIZ_TYPES.SUBTRACTION]: false,
-  [QUIZ_TYPES.ALPHABET]: false,
-};
 // Custom hook
 const useQuizzes = () => {
   const [quizzes, setQuizzes] = useState([]);
@@ -61,19 +42,17 @@ const QuizItem = ({ quiz, onClick, userProgress, completedQuizzes }) => {
       data-quiz-id={quiz._id}
       onClick={isCompleted ? undefined : onClick}
       className={`
-        relative btn bg-gradient-to-r overflow-hidden rounded-lg
+        relative btn bg-gradient-to-r overflow-hidden w-[90%] mx-auto rounded-lg
         ${
           isCompleted
-            ? "from-green-600 to-emerald-600 cursor-not-allowed"
-            : "from-yellow-600 to-amber-600/80 hover:bg-amber-700 cursor-pointer"
+            ? "from-emerald-500 to-emerald-600 cursor-not-allowed"
+            : "from-yellow-600 to-amber-600/80 hover:to-yellow-700 cursor-pointer"
         }
-        transform ${
-          !isCompleted && "hover:scale-105"
-        } transition-all duration-200
+        transform transition-all duration-200
         sm:p-3 p-2 shadow-lg`}
     >
       <div className="flex justify-between items-center">
-        <span className="text-white sm:text-lg">{quiz.title}</span>
+        <span className="text-white">{quiz.title}</span>
         {isCompleted && (
           <div className="flex items-center">
             <div className="sm:w-6 sm:h-6 h-5 w-5 bg-green-500 rounded-full flex items-center justify-center">
@@ -158,9 +137,13 @@ export default function Sidebar({
   onShowRankings,
   onShowDailyRewards,
   onClose,
+  completedQuizzes,
 }) {
   const navigate = useNavigate();
-  const [isExpanded, setIsExpanded] = useState(INITIAL_EXPANDED_STATE);
+  const [isExpanded, setIsExpanded] = useState({
+    types: {},
+    difficulties: {},
+  });
   const quizzes = useQuizzes();
   const { user } = useUser();
   const username = user?.username;
@@ -168,6 +151,14 @@ export default function Sidebar({
   const [userQuizCompleted, setUserQuizCompleted] = useState(null);
   const [userData, setUserData] = useState(null);
   const [userQuizUnanswered, setUserQuizUnanswered] = useState(null);
+
+  // Compute completed quizzes count
+  const completedQuizzesCount = useMemo(() => {
+    if (completedQuizzes) {
+      return completedQuizzes.size;
+    }
+    return userProgress?.filter((progress) => progress.completed)?.length || 0;
+  }, [completedQuizzes, userProgress]);
 
   const fetchUserData = async () => {
     try {
@@ -216,88 +207,157 @@ export default function Sidebar({
     }
   }, [userId]);
 
-  const quizzesTitles = useMemo(
-    () => [
-      // sorting algorithm
-      {
-        sectionTitle: "Sorting Algorithms",
-        quizzes: [
-          {
-            title: "Bubble Sort",
-            quizzes: quizzes.filter((quiz) =>
-              quiz.title.includes("Bubble Sort")
-            ),
-          },
-          {
-            title: "Merge Sort",
-            quizzes: quizzes.filter((quiz) =>
-              quiz.title.includes("Merge Sort")
-            ),
-          },
-          {
-            title: "Insertion Sort",
-            quizzes: quizzes.filter((quiz) =>
-              quiz.title.includes("Insertion Sort")
-            ),
-          },
-          {
-            title: "Selection Sort",
-            quizzes: quizzes.filter((quiz) =>
-              quiz.title.includes("Selection Sort")
-            ),
-          },
-        ],
-      },
-      // binary operation
-      {
-        sectionTitle: "Binary Operation",
-        quizzes: [
-          {
-            title: "Addition",
-            quizzes: quizzes.filter((quiz) => quiz.title.includes("Addition")),
-          },
-          {
-            title: "Subtraction",
-            quizzes: quizzes.filter((quiz) =>
-              quiz.title.includes("Subtraction")
-            ),
-          },
-          {
-            title: "Alphabet",
-            quizzes: quizzes.filter((quiz) => quiz.title.includes("Alphabet")),
-          },
-        ],
-      },
-    ],
-    [quizzes]
-  );
+  const organizedQuizzes = useMemo(() => {
+    const categorizedQuizzes = {};
+
+    quizzes.forEach((quiz) => {
+      // Organize by category
+      if (!categorizedQuizzes[quiz.category]) {
+        categorizedQuizzes[quiz.category] = {};
+      }
+
+      // Organize by type within category
+      if (!categorizedQuizzes[quiz.category][quiz.type]) {
+        categorizedQuizzes[quiz.category][quiz.type] = {};
+      }
+
+      // Organize by difficulty within type
+      if (!categorizedQuizzes[quiz.category][quiz.type][quiz.difficulty]) {
+        categorizedQuizzes[quiz.category][quiz.type][quiz.difficulty] = [];
+      }
+
+      categorizedQuizzes[quiz.category][quiz.type][quiz.difficulty].push(quiz);
+    });
+
+    return categorizedQuizzes;
+  }, [quizzes]);
   // compute total quizzes
-  const totalQuizzes = useMemo(
-    () =>
-      quizzesTitles.reduce(
-        (total, section) =>
-          total +
-          section.quizzes.reduce(
-            (subTotal, quizGroup) => subTotal + quizGroup.quizzes.length,
-            0
-          ),
-        0
-      ),
-    [quizzesTitles]
-  );
-  const toggleQuizzes = useCallback((type) => {
+  const totalQuizzes = useMemo(() => {
+    return Object.values(organizedQuizzes).reduce(
+      (total, types) =>
+        total +
+        Object.values(types).reduce(
+          (subtotal, difficulties) =>
+            subtotal +
+            Object.values(difficulties).reduce(
+              (quizCount, quizList) => quizCount + quizList.length,
+              0
+            ),
+          0
+        ),
+      0
+    );
+  }, [organizedQuizzes]);
+  // Toggle expand state for nested navigation
+  const toggleExpand = useCallback((level, key) => {
     setIsExpanded((prev) => ({
       ...prev,
-      [type]: !prev[type],
+      [level]: {
+        ...prev[level],
+        [key]: !prev[level]?.[key],
+      },
     }));
   }, []);
+  // set color based on difficulty
+  const getDifficultyColor = (difficulty) => {
+    switch (difficulty.toLowerCase()) {
+      case "easy":
+        return {
+          parent: "bg-green-700/30",
+          button: "from-green-600 to-green-700 hover:to-green-600",
+        };
+      case "medium":
+        return {
+          parent: "bg-yellow-700/30",
+          button: "from-yellow-600 to-yellow-700 hover:to-yellow-600",
+        };
+      case "hard":
+        return {
+          parent: "bg-red-700/30",
+          button: "from-red-600 to-red-700 hover:to-red-600",
+        };
+      default:
+        return {
+          parent: "bg-blue-700/30",
+          button: "from-blue-600 to-blue-700 hover:to-blue-600",
+        };
+    }
+  };
+  // Render nested quiz navigation
+  const renderQuizNavigation = () => {
+    return Object.entries(organizedQuizzes).map(([category, types]) => (
+      <div
+        key={category}
+        className="relative bg-gradient-to-b from-gray-950 to-neutral-950 border-4 border-purple-900 rounded-lg p-3 mb-4 
+        overflow-hidden 
+        "
+      >
+        <h2
+          className="text-2xl text-center text-yellow-400 mb-4 
+          tracking-wider drop-shadow-[2px_2px_0_rgba(0,0,0,0.8)]"
+        >
+          {category}
+        </h2>
 
-  const handleQuizSelect = useCallback(
-    (quiz) => {
-      onQuizSelect(quiz);
-    },
-    [onQuizSelect]
-  );
+        {Object.entries(types).map(([type, difficulties]) => (
+          <div
+            key={type}
+            className="mt-3 mb-2 diagonal rounded-xl bg-indigo-900"
+          >
+            <div
+              onClick={() => toggleExpand("types", type)}
+              className="relative text-lg sm:text-xl text-slate-100 text-center 
+              bg-gradient-to-r from-violet-700 to-purple-800 btn rounded-lg 
+              sm:p-3 p-2 cursor-pointer uppercase tracking-wider
+              transform hover:to-purple-600 transition-colors duration-200
+              shadow-lg "
+            >
+              {type}
+            </div>
+
+            {isExpanded.types?.[type] &&
+              Object.entries(difficulties).map(([difficulty, quizList]) => (
+                <div
+                  key={difficulty}
+                  className={`mt-2 pb-2 rounded-xl ${
+                    getDifficultyColor(difficulty).parent || "bg-blue-100/20"
+                  }`}
+                >
+                  <div
+                    onClick={() => toggleExpand("difficulties", difficulty)}
+                    className={`px-2.5 bg-gradient-to-r text-center text-white 
+                      ${
+                        getDifficultyColor(difficulty).button ||
+                        "bg-blue-600 hover:bg-blue-700"
+                      } 
+                      btn rounded-lg 
+                      py-3 cursor-pointer uppercase text-center tracking-wider
+                      transition-colors duration-200
+                      shadow-md`}
+                  >
+                    {difficulty}
+                  </div>
+
+                  {isExpanded.difficulties?.[difficulty] && (
+                    <div className="mt-2 space-y-3">
+                      {quizList.map((quiz) => (
+                        <QuizItem
+                          key={quiz._id}
+                          quiz={quiz}
+                          onClick={() => onQuizSelect(quiz)}
+                          userProgress={userProgress}
+                          completedQuizzes={completedQuizzes}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+          </div>
+        ))}
+      </div>
+    ));
+  };
 
   const handleLogout = useCallback(() => {
     ["authToken", "userRole", "username", "coins", "userId"].forEach((key) =>
@@ -370,7 +430,9 @@ export default function Sidebar({
               <div className="text-center space-y-2">
                 <span className="text-white sm:text-lg">Completed</span>
                 <div className="text-2xl sm:text-3xl font-game">
-                  <span className="text-yellow-400">{userQuizCompleted}</span>
+                  <span className="text-yellow-400">
+                    {completedQuizzesCount}
+                  </span>
                   <span className="text-white mx-2">of</span>
                   <span className="text-yellow-400">{totalQuizzes}</span>
                 </div>
@@ -394,27 +456,7 @@ export default function Sidebar({
 
             {/* Quiz Titles */}
             <div className="space-y-3 sm:space-y-6">
-              {quizzesTitles.map((section) => (
-                <div
-                  key={section.sectionTitle}
-                  className="bg-gradient-to-b from-slate-950/80 to-indigo-950/80 rounded p-2"
-                >
-                  <h2 className="text-xl sm:text-2xl text-center text-yellow-400 mb-4">
-                    {section.sectionTitle}
-                  </h2>
-                  {section.quizzes.map((quiz) => (
-                    <QuizSection
-                      key={quiz.title}
-                      title={quiz.title}
-                      quizzes={quiz.quizzes}
-                      isExpanded={isExpanded}
-                      onToggle={toggleQuizzes}
-                      onQuizSelect={handleQuizSelect}
-                      userProgress={userProgress}
-                    />
-                  ))}
-                </div>
-              ))}
+              {renderQuizNavigation()}
             </div>
           </div>
         </div>
@@ -423,10 +465,9 @@ export default function Sidebar({
   );
 }
 
-// Prop types
+// PropTypes
 Sidebar.propTypes = {
   onQuizSelect: PropTypes.func.isRequired,
-  completedQuizzes: PropTypes.instanceOf(Set),
   userProgress: PropTypes.arrayOf(
     PropTypes.shape({
       quizId: PropTypes.shape({
@@ -436,10 +477,14 @@ Sidebar.propTypes = {
       completed: PropTypes.bool.isRequired,
     })
   ),
+  onShowProgress: PropTypes.func.isRequired,
+  onShowRankings: PropTypes.func.isRequired,
+  onShowDailyRewards: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
+  completedQuizzes: PropTypes.instanceOf(Set), // Add this prop type
 };
 
 QuizItem.propTypes = {
-  completedQuizzes: PropTypes.instanceOf(Set),
   quiz: PropTypes.shape({
     _id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
@@ -454,6 +499,7 @@ QuizItem.propTypes = {
       completed: PropTypes.bool.isRequired,
     })
   ),
+  completedQuizzes: PropTypes.instanceOf(Set),
 };
 
 QuizSection.propTypes = {

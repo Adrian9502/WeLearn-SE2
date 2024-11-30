@@ -78,21 +78,20 @@ const CopyableID = ({ value }) => {
     </div>
   );
 };
-
 const Table = ({ columns, rows, onSort, sortConfig }) => {
   return (
     <div
-      style={{ fontFamily: "lexend" }}
-      className="w-full h-full relative overflow-auto"
+      style={{ fontFamily: "lexend", maxHeight: "calc(100vh - 200px)" }}
+      className="w-full relative overflow-auto border border-slate-700 rounded-xl"
     >
       <table className="w-full border-collapse">
         <thead>
-          <tr className="sticky top-0 left-0 right-0 z-30">
+          <tr>
             {columns.map((column, index) => (
               <th
                 key={column}
                 onClick={() => onSort(column)}
-                className={`px-6 py-4 bg-slate-800 border-r border-slate-700 text-left text-sm font-medium cursor-pointer  ${
+                className={`sticky top-0 px-6 py-4 bg-slate-800 border-r border-slate-700 text-left text-sm font-medium cursor-pointer border-b-2 z-10 whitespace-nowrap ${
                   index === 0 ? "rounded-tl-lg" : ""
                 } ${index === columns.length - 1 ? "rounded-tr-lg" : ""}`}
               >
@@ -122,12 +121,12 @@ const Table = ({ columns, rows, onSort, sortConfig }) => {
                 {columns.map((column) => (
                   <td
                     key={column}
-                    className="px-6 py-4 text-sm text-slate-300 border-r border-slate-700"
+                    className="px-6 py-4 text-sm text-slate-300 border-r border-slate-700 bg-slate-900"
                   >
                     {column === "ID" ? (
                       <CopyableID value={row[column]} />
                     ) : column === "Questions" ? (
-                      <code className="jetbrains text-sm whitespace-pre-wrap text-slate-300">
+                      <code className="jetbrains text-nowrap text-slate-100 text-sm whitespace-pre-wrap ">
                         {row[column]}
                       </code>
                     ) : column === "Profile" ? (

@@ -236,7 +236,7 @@ export default function UserDashboard() {
           userAnswer.trim().toLowerCase() ===
           selectedQuiz.answer.trim().toLowerCase();
         const updatedUserCoins = await updateProgress(isCorrect, time);
-
+        // TODO: FIX SIDEBAR EXPANDING QUIZZES
         try {
           if (isCorrect) {
             setCompletedQuizzes((prev) => new Set([...prev, selectedQuiz._id]));
@@ -392,6 +392,8 @@ export default function UserDashboard() {
     }
   };
   const handleQuizSelect = (quiz) => {
+    console.log("Selected quiz:", quiz); // Debug log
+
     // Check if quiz is completed
     const isCompleted =
       completedQuizzes.has(quiz._id) ||
@@ -399,13 +401,27 @@ export default function UserDashboard() {
         (progress) => progress.quizId._id === quiz._id && progress.completed
       );
 
+    console.log("Is completed:", isCompleted); // Debug log
+
     // Only allow selection if quiz is not completed
     if (!isCompleted) {
       setSelectedQuiz(quiz);
+      console.log("Setting selected quiz:", quiz); // Debug log
       resetQuizState();
       setIsQuizCompleted(false);
+
+      // Close sidebar on mobile/tablet
+      if (window.innerWidth < 1024) {
+        setIsSidebarOpen(false);
+      }
     }
   };
+
+  // Also add a useEffect to monitor selectedQuiz changes
+  useEffect(() => {
+    console.log("selectedQuiz changed:", selectedQuiz);
+  }, [selectedQuiz]);
+
   const formatTime = () => {
     const minutes = Math.floor(time / 60)
       .toString()
@@ -462,12 +478,7 @@ export default function UserDashboard() {
         } transform transition-transform duration-300 ease-in-out fixed lg:relative lg:translate-x-0 z-40 h-full`}
       >
         <Sidebar
-          onQuizSelect={(quiz) => {
-            handleQuizSelect(quiz);
-            if (window.innerWidth < 1024) {
-              setIsSidebarOpen(false);
-            }
-          }}
+          onQuizSelect={handleQuizSelect}
           userProgress={userProgress}
           completedQuizzes={completedQuizzes}
           onShowProgress={handleShowProgress}

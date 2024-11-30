@@ -19,28 +19,24 @@ const QuizInterface = ({
 }) => (
   <div className="flex flex-col 2xl:flex-row pb-5 justify-between gap-6 px-2">
     <div
-      className="py-4 sm:px-5 px-2 my-auto max-w-5xl rounded-lg bg-gradient-to-br border-2 from-slate-900 to-stone-950 border-purple-600 relative flex justify-center items-center"
+      className="py-4 sm:px-5 px-2 my-auto max-h-[75vh] w-full max-w-5xl rounded-lg bg-gradient-to-br border-2 from-slate-900 to-stone-950 border-purple-600 relative"
       style={{ boxShadow: "1px 1px 10px 10px rgba(0,0,0,0.75)" }}
     >
-      <div className="max-w-full">
+      <div className="h-full flex flex-col">
         <div className="text-slate-200 mb-5">
           <div className="sm:text-lg mb-2">Instructions:</div>
-          <div className="max-w-lg sm:max-w-3xl">
-            {selectedQuiz.instruction}
+          <div className="max-w-lg sm:max-w-3xl text-lg">
+            {selectedQuiz.instructions}
           </div>
         </div>
-        <div className="p-3 relative mx-auto border-4 rounded-lg border-slate-500 bg-neutral-900 overflow-hidden">
-          {/* Added overflow-hidden */}
-          <div className="isolate relative h-full">
-            {/* Added h-full */}
-            <div className="overflow-auto relative max-h-[300px] sm:max-h-none">
-              {isBlurred && (
-                <div className="absolute rounded-lg w-[90vh] sm:w-auto inset-0 z-10 bg-white/10 backdrop-blur-[5px]" />
-              )}
-              <pre className="jetbrains text-nowrap text-xl sm:text-2xl relative">
-                {selectedQuiz.question}
-              </pre>
-            </div>
+        <div className="flex-grow max-h-[60vh] overflow-auto p-3 relative border-4 rounded-lg border-slate-500 bg-neutral-900">
+          <div className="relative h-full">
+            {isBlurred && (
+              <div className="absolute rounded-lg inset-0 z-10 bg-white/10 backdrop-blur-[5px]" />
+            )}
+            <pre className="jetbrains text-nowrap text-xl sm:text-2xl overflow-auto">
+              {selectedQuiz.questions}
+            </pre>
           </div>
         </div>
       </div>
@@ -64,8 +60,8 @@ const QuizInterface = ({
 
 QuizInterface.propTypes = {
   selectedQuiz: PropTypes.shape({
-    instruction: PropTypes.string.isRequired,
-    question: PropTypes.string.isRequired,
+    instructions: PropTypes.string.isRequired,
+    questions: PropTypes.string.isRequired,
   }).isRequired,
   isBlurred: PropTypes.bool.isRequired,
   userAnswer: PropTypes.string.isRequired,

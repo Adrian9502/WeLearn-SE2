@@ -386,7 +386,10 @@ const ManageQuizzesModal = ({
             />
             <div className="relative space-y-2 mb-4">
               <div className="flex justify-between items-center">
-                <label className="block text-sm font-medium text-slate-300">
+                <label
+                  htmlFor="type"
+                  className="block text-sm font-medium text-slate-300"
+                >
                   Type
                 </label>
                 {errors.type && (
@@ -396,6 +399,7 @@ const ManageQuizzesModal = ({
                 )}
               </div>
               <select
+                id="type"
                 name="type"
                 value={formData.type}
                 onChange={handleInputChange}
@@ -428,7 +432,10 @@ const ManageQuizzesModal = ({
 
             <div className="relative space-y-2 mb-4">
               <div className="flex justify-between items-center">
-                <label className="block text-sm font-medium text-slate-300">
+                <label
+                  htmlFor="difficulty"
+                  className="block text-sm font-medium text-slate-300"
+                >
                   Difficulty
                 </label>
                 {errors.difficulty && (
@@ -438,6 +445,7 @@ const ManageQuizzesModal = ({
                 )}
               </div>
               <select
+                id="difficulty"
                 name="difficulty"
                 value={formData.difficulty}
                 onChange={handleInputChange}
@@ -465,7 +473,10 @@ const ManageQuizzesModal = ({
 
             <div className="relative space-y-2 mb-4">
               <div className="flex justify-between items-center">
-                <label className="block text-sm font-medium text-slate-300">
+                <label
+                  htmlFor="category"
+                  className="block text-sm font-medium text-slate-300"
+                >
                   Category
                 </label>
                 {errors.category && (
@@ -475,6 +486,7 @@ const ManageQuizzesModal = ({
                 )}
               </div>
               <select
+                id="category"
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
@@ -528,6 +540,7 @@ const ManageQuizzesModal = ({
             {type.charAt(0).toUpperCase() + type.slice(1)} Quiz
           </h2>
           <button
+            data-testid="close-modal-button"
             onClick={onClose}
             className="text-white absolute right-4 top-4"
           >

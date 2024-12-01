@@ -3,6 +3,7 @@ import { FaTrophy, FaSignOutAlt, FaChartLine } from "react-icons/fa";
 import { FaGift } from "react-icons/fa6";
 import PropTypes from "prop-types";
 import ProfilePictureModal from "./ProfilePictureModal";
+import axios from "axios";
 export default function UserInfo({
   onLogout,
   username,
@@ -14,34 +15,34 @@ export default function UserInfo({
   onUserDataUpdate,
 }) {
   const userId = userData?._id;
-
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentPicture, setCurrentPicture] = useState(
-    userData?.profilePicture
-  );
+  const [currentPicture, setCurrentPicture] = useState(null);
+  const defaultProfilePic =
+    "https://cdn-icons-png.freepik.com/512/6858/6858441.png";
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (!userId) return;
 
       try {
-        const response = await fetch(`/api/users/${userId}/profile-picture`, {
-          credentials: "include",
-        });
+        // Correct axios get request
+        const response = await axios.get(
+          `/api/users/${userId}/profile-picture`,
+          {
+            responseType: "blob", // Important for image/file downloads
+            withCredentials: true, // Instead of credentials: 'include'
+          }
+        );
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch profile picture");
-        }
-
-        const blob = await response.blob();
-        const imageUrl = URL.createObjectURL(blob);
+        // Create object URL from the blob
+        const imageUrl = URL.createObjectURL(response.data);
         setCurrentPicture(imageUrl);
 
-        // Clean up the blob URL when component unmounts
+        // Cleanup function to revoke object URL
         return () => URL.revokeObjectURL(imageUrl);
       } catch (error) {
         console.error("Error fetching user data:", error);
-        // Set default profile picture
-        setCurrentPicture("/default-profile.png"); // Update this path to your default image
+        setCurrentPicture(defaultProfilePic);
       }
     };
 
@@ -81,10 +82,7 @@ export default function UserInfo({
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-purple-500 to-yellow-400 rounded-full p-1">
                 <div className="w-full h-full rounded-full overflow-hidden relative">
                   <img
-                    src={
-                      currentPicture ||
-                      "https://cdn-icons-png.freepik.com/512/6858/6858441.png"
-                    }
+                    src={currentPicture || defaultProfilePic}
                     alt={`${username}'s profile`}
                     className="w-full h-full object-cover"
                     onError={(e) => {

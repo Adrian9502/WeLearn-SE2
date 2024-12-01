@@ -11,18 +11,15 @@ const userSchema = new mongoose.Schema(
     dob: { type: Date, required: true },
     coins: { type: Number, default: 600 },
     profilePicture: {
-      type: mongoose.Schema.Types.Mixed, // Allow both ObjectId and string
-      default: "/uploads/default-profile.png",
-      // Optional: add a custom validator
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
       validate: {
         validator: function (v) {
-          // If it's an ObjectId or a string path, it's valid
-          return (
-            mongoose.Types.ObjectId.isValid(v) ||
-            (typeof v === "string" && v.startsWith("/uploads/"))
-          );
+          if (v === null) return true;
+          return mongoose.Types.ObjectId.isValid(v) || typeof v === "string";
         },
-        message: (props) => `${props.value} is not a valid profile picture!`,
+        message: (props) =>
+          `${props.value} is not a valid profile picture reference!`,
       },
     },
     createdAt: { type: Date, default: Date.now },

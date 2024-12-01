@@ -357,53 +357,62 @@ router.post("/:id/profile-picture", (req, res) => {
   });
 });
 
-// GET route - update the content type header
+// GET route for profile picture
 router.get("/:id/profile-picture", async (req, res) => {
   try {
     const user = await userModel.findById(req.params.id);
-    if (!user) {
-      return res.redirect("/uploads/default-profile.png");
-    }
-
-    // If no profile picture, use default
-    if (!user.profilePicture) {
-      return res.redirect("/uploads/default-profile.png");
-    }
-
-    // Try to find the file
-    let file;
-    try {
-      file = await gfs.files.findOne({
-        _id: new mongoose.Types.ObjectId(user.profilePicture),
+    if (!user || !user.profilePicture) {
+      return res.status(404).json({
+        message: "Profile picture not found",
+        defaultPicture: true,
       });
-    } catch (error) {
-      // If file lookup fails, use default
-      return res.redirect("/uploads/default-profile.png");
     }
 
-    // If no file found, use default
+    // If profilePicture is a URL or default path
+    if (
+      typeof user.profilePicture === "string" &&
+      (user.profilePicture.startsWith("http") ||
+        user.profilePicture.startsWith("/uploads/"))
+    ) {
+      return res.redirect(user.profilePicture);
+    }
+
+    // Try to find the file in GridFS
+    const file = await gfs.files.findOne({
+      _id: new mongoose.Types.ObjectId(user.profilePicture),
+    });
+
     if (!file) {
-      return res.redirect("/uploads/default-profile.png");
+      return res.status(404).json({
+        message: "Profile picture file not found",
+        defaultPicture: true,
+      });
     }
 
     // Set proper content type
     res.set("Content-Type", file.metadata.contentType);
 
-    // Create read stream using the filename
+    // Create read stream
     const bucket = new mongoose.mongo.GridFSBucket(conn.db, {
       bucketName: "uploads",
     });
 
-    const downloadStream = bucket.openDownloadStreamByName(file.filename);
+    const downloadStream = bucket.openDownloadStream(file._id);
     downloadStream.pipe(res);
 
     downloadStream.on("error", (error) => {
       console.error("Error streaming file:", error);
-      res.redirect("/uploads/default-profile.png");
+      res.status(500).json({
+        message: "Error streaming profile picture",
+        defaultPicture: true,
+      });
     });
   } catch (error) {
-    console.error("Error serving file:", error);
-    res.redirect("/uploads/default-profile.png");
+    console.error("Error serving profile picture:", error);
+    res.status(500).json({
+      message: "Server error",
+      defaultPicture: true,
+    });
   }
 });
 module.exports = router;

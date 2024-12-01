@@ -11,7 +11,7 @@ const API_BASE_URL = "/api/admins";
 const validateField = (name, value, actionType) => {
   switch (name) {
     case "adminId":
-      if (actionType === "create") return ""; // Skip validation for `create` action
+      if (actionType === "create") return "";
       if (!value) return "Admin ID is required";
       if (!/^[A-Za-z0-9-_]+$/.test(value))
         return "Admin ID can only contain letters, numbers, hyphens and underscores";
@@ -131,6 +131,7 @@ const InputField = ({
       {name === "password" && (
         <button
           type="button"
+          aria-label="Toggle password visibility"
           onClick={toggleShowPassword}
           className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
         >
@@ -451,7 +452,7 @@ const ManageAdminsModal = ({
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit}>
+            <form role="form" onSubmit={handleSubmit}>
               <div>{renderForm()}</div>
               <div className="flex justify-around">
                 <button

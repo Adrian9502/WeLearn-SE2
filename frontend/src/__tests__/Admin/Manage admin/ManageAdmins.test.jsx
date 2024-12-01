@@ -110,23 +110,6 @@ describe("ManageAdmins Component", () => {
     expect(screen.getByText("Failed to fetch: API Error")).toBeInTheDocument();
   });
 
-  test("renders loading state initially", async () => {
-    let resolvePromise;
-    axios.get.mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          resolvePromise = resolve;
-        })
-    );
-
-    render(<ManageAdmins />);
-
-    expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
-
-    await act(async () => {
-      resolvePromise({ data: [] });
-    });
-  });
   test("opens modal on button click", async () => {
     axios.get.mockResolvedValue({ data: [] });
 
@@ -142,5 +125,37 @@ describe("ManageAdmins Component", () => {
     fireEvent.click(screen.getByTestId("create-button"));
 
     expect(screen.getByTestId("manage-admins-modal")).toBeInTheDocument();
+  });
+
+  test("renders loading state initially", async () => {
+    // Mock axios to delay response
+    const promise = new Promise((resolve) =>
+      setTimeout(() => resolve({ data: mockAdminData }), 100)
+    );
+    axios.get.mockImplementationOnce(() => promise);
+
+    // Render component
+    render(<ManageAdmins />);
+
+    // Verify loading state is shown
+    expect(screen.getByRole("status")).toBeInTheDocument();
+    expect(screen.getByLabelText("Loading")).toBeInTheDocument();
+
+    // Wait for loading to finish
+    await waitFor(() => {
+      expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    });
+  });
+
+  test("shows loading spinner", () => {
+    // Mock axios to never resolve
+    axios.get.mockImplementationOnce(() => new Promise(() => {}));
+
+    render(<ManageAdmins />);
+
+    // Check for loading spinner using multiple queries
+    const spinner = screen.getByRole("status");
+    expect(spinner).toBeInTheDocument();
+    expect(spinner).toHaveAttribute("data-testid", "loading-spinner");
   });
 });

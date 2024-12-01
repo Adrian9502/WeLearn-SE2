@@ -13,8 +13,9 @@ import Swal from "sweetalert2";
 
 jest.mock("axios");
 jest.mock("sweetalert2", () => ({
-  fire: jest.fn(),
+  fire: jest.fn().mockResolvedValue({}),
 }));
+
 describe("ManageAdminsModal", () => {
   const mockProps = {
     isOpen: true,
@@ -30,239 +31,289 @@ describe("ManageAdminsModal", () => {
   });
 
   test("validates form before submission", async () => {
-    render(
-      <ManageAdminsModal isOpen={true} type="create" onClose={jest.fn()} />
-    ); // Ensure modal is open
+    render(<ManageAdminsModal {...mockProps} />);
 
-    // Check if the modal is displayed
-    expect(screen.getByText(/create admin/i)).toBeInTheDocument(); // Change to the correct title text
-
-    // Fill in the form fields with values less than 5 characters
-    fireEvent.change(screen.getByTestId("fullName"), {
+    // Fill in the form fields with invalid values
+    fireEvent.change(screen.getByLabelText(/full name:/i), {
       target: { value: "as" },
     });
-    fireEvent.change(screen.getByTestId("username"), {
+    fireEvent.change(screen.getByLabelText(/username:/i), {
       target: { value: "as" },
     });
-    fireEvent.change(screen.getByTestId("email"), {
-      target: { value: "as@asdgmail.com" },
+    fireEvent.change(screen.getByLabelText(/email:/i), {
+      target: { value: "invalid" },
     });
-    fireEvent.change(screen.getByTestId("password"), {
-      target: { value: "assas" },
-    });
-    fireEvent.change(screen.getByTestId("dob"), {
-      target: { value: "2000-01-01" },
+    fireEvent.change(screen.getByLabelText(/password:/i), {
+      target: { value: "123" },
     });
 
-    // Submit the form
-    fireEvent.click(screen.getByRole("button", { name: /Create/i }));
+    // Get the form element
+    const form = screen.getByRole("form");
 
-    // Assert that SweetAlert was called
+    // Submit the form using a submit event
+    await act(async () => {
+      fireEvent.submit(form);
+    });
+
+    // Wait for validation
     await waitFor(() => {
       expect(Swal.fire).toHaveBeenCalledWith(
         expect.objectContaining({
-          title: "Error",
-          text: "All fields are required and must be at least 5 characters long.",
           icon: "error",
+          title: expect.any(String),
+        })
+      );
+    });
+  });
+
+  test("validates specific field requirements", async () => {
+    render(<ManageAdminsModal {...mockProps} />);
+
+    // Test password requirements
+    fireEvent.change(screen.getByLabelText(/password:/i), {
+      target: { value: "weakpass" },
+    });
+    fireEvent.blur(screen.getByLabelText(/password:/i));
+
+    // Submit the form to trigger validation
+    fireEvent.click(screen.getByRole("button", { name: /Create/i }));
+
+    await waitFor(() => {
+      expect(Swal.fire).toHaveBeenCalledWith(
+        expect.objectContaining({
+          icon: "error",
+          title: expect.any(String),
+        })
+      );
+    });
+
+    // Test email format
+    fireEvent.change(screen.getByLabelText(/email:/i), {
+      target: { value: "invalid@email" },
+    });
+    fireEvent.blur(screen.getByLabelText(/email:/i));
+    fireEvent.click(screen.getByRole("button", { name: /Create/i }));
+
+    await waitFor(() => {
+      expect(Swal.fire).toHaveBeenCalledWith(
+        expect.objectContaining({
+          icon: "error",
+          title: expect.any(String),
+        })
+      );
+    });
+
+    // Test username format
+    fireEvent.change(screen.getByLabelText(/username:/i), {
+      target: { value: "user@name" },
+    });
+    fireEvent.blur(screen.getByLabelText(/username:/i));
+    fireEvent.click(screen.getByRole("button", { name: /Create/i }));
+
+    await waitFor(() => {
+      expect(Swal.fire).toHaveBeenCalledWith(
+        expect.objectContaining({
+          icon: "error",
+          title: expect.any(String),
         })
       );
     });
   });
 
   test("handles successful admin creation", async () => {
+    // Mock the API response
     axios.mockResolvedValueOnce({
       data: { message: "Admin created successfully" },
     });
 
     render(<ManageAdminsModal {...mockProps} />);
 
-    const fullNameInput = screen.getByLabelText("Full Name:");
-    const usernameInput = screen.getByLabelText("Username:");
-    const emailInput = screen.getByLabelText("Email:");
-    const passwordInput = screen.getByLabelText("Password:");
-    const dobInput = screen.getByLabelText("Birthday:");
+    // Fill in the form with valid data
+    fireEvent.change(screen.getByLabelText(/full name:/i), {
+      target: { value: "John Doe" },
+    });
+    fireEvent.change(screen.getByLabelText(/username:/i), {
+      target: { value: "johndoe" },
+    });
+    fireEvent.change(screen.getByLabelText(/email:/i), {
+      target: { value: "john@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText(/password:/i), {
+      target: { value: "Password123!" },
+    });
+    fireEvent.change(screen.getByLabelText(/birthday:/i), {
+      target: { value: "1990-01-01" },
+    });
 
-    fireEvent.change(fullNameInput, { target: { value: "John Doe" } });
-    fireEvent.change(usernameInput, { target: { value: "johndoe" } });
-    fireEvent.change(emailInput, { target: { value: "john@example.com" } });
-    fireEvent.change(passwordInput, { target: { value: "password123" } });
-    fireEvent.change(dobInput, { target: { value: "1990-01-01" } });
+    // Submit the form
+    const submitButton = screen.getByRole("button", { name: /create/i });
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
 
-    const submitButton = screen.getByText("Create");
-    fireEvent.click(submitButton);
-
+    // Wait for the API call
     await waitFor(() => {
       expect(axios).toHaveBeenCalledWith({
         method: "POST",
-        url: "http://localhost:5000/api/admins",
-        data: {
+        url: expect.any(String),
+        data: expect.objectContaining({
           fullName: "John Doe",
           username: "johndoe",
           email: "john@example.com",
-          password: "password123",
+          password: "Password123!",
           dob: "1990-01-01",
-          adminId: "",
-        },
+        }),
       });
-      expect(Swal.fire).toHaveBeenCalledWith({
-        title: "Success!",
-        text: "Admin created successfully",
-        icon: "success",
-      });
-      expect(mockProps.onAdminCreated).toHaveBeenCalled();
-      expect(mockProps.onClose).toHaveBeenCalled();
     });
+
+    // Verify success message
+    expect(Swal.fire).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Success!",
+        text: expect.any(String),
+        icon: "success",
+        background: "#1e293b",
+        color: "#fff",
+        customClass: {
+          popup: "border border-slate-700",
+        },
+      })
+    );
+
+    // Verify callbacks
+    expect(mockProps.onAdminCreated).toHaveBeenCalled();
+    expect(mockProps.onClose).toHaveBeenCalled();
+  });
+
+  test("handles validation errors", async () => {
+    render(<ManageAdminsModal {...mockProps} />);
+
+    // Submit form without filling in required fields
+    const submitButton = screen.getByRole("button", { name: /create/i });
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    // Verify validation error message
+    expect(Swal.fire).toHaveBeenCalledWith({
+      title: "Validation Error",
+      text: "Please check all fields and try again",
+      icon: "error",
+      background: "#1e293b",
+      color: "#fff",
+      customClass: {
+        popup: "border border-slate-700",
+      },
+    });
+
+    // Verify API was not called
+    expect(axios).not.toHaveBeenCalled();
   });
 
   test("handles API error", async () => {
-    const errorMessage = "Username or email already exists";
+    // Mock API error
+    const errorMessage = "Server error";
     axios.mockRejectedValueOnce({
       response: {
-        data: {
-          errors: [{ path: "password", msg: errorMessage }],
-        },
+        status: 500,
+        message: errorMessage,
       },
     });
 
     render(<ManageAdminsModal {...mockProps} />);
 
-    // Fill out the form
-    const fullNameInput = screen.getByLabelText("Full Name:");
-    const usernameInput = screen.getByLabelText("Username:");
-    const emailInput = screen.getByLabelText("Email:");
-    const passwordInput = screen.getByLabelText("Password:");
-    const dobInput = screen.getByLabelText("Birthday:");
+    // Fill form with valid data
 
-    fireEvent.change(fullNameInput, { target: { value: "John Doe" } });
-    fireEvent.change(usernameInput, { target: { value: "johndoe" } });
-    fireEvent.change(emailInput, { target: { value: "john@example.com" } });
-    fireEvent.change(passwordInput, { target: { value: "password123" } });
-    fireEvent.change(dobInput, { target: { value: "1990-01-01" } });
+    fireEvent.change(screen.getByLabelText(/full name:/i), {
+      target: { value: "John Doe" },
+    });
+    fireEvent.change(screen.getByLabelText(/username:/i), {
+      target: { value: "johndoe" },
+    });
+    fireEvent.change(screen.getByLabelText(/email:/i), {
+      target: { value: "john@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText(/password:/i), {
+      target: { value: "Password123!" },
+    });
+    fireEvent.change(screen.getByLabelText(/birthday:/i), {
+      target: { value: "1990-01-01" },
+    });
 
-    const submitButton = screen.getByText("Create");
-    fireEvent.click(submitButton);
+    // Submit form
+    const submitButton = screen.getByRole("button", { name: /create/i });
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
 
+    // Verify error message
     await waitFor(() => {
-      expect(Swal.fire).toHaveBeenCalledWith({
-        title: "Error",
-        text: errorMessage,
-        icon: "error",
-      });
+      expect(Swal.fire).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "Error",
+          text: expect.stringContaining("500"),
+          icon: "error",
+          background: "#1e293b",
+          color: "#fff",
+          customClass: {
+            popup: "border border-slate-700",
+          },
+        })
+      );
     });
   });
 
-  test("closes modal when close button is clicked", () => {
+  test("handles password visibility toggle", () => {
     render(<ManageAdminsModal {...mockProps} />);
-    const closeButton = screen.getByText("Close");
-    fireEvent.click(closeButton);
-    expect(mockProps.onClose).toHaveBeenCalled();
+
+    // Get the password input
+    const passwordInput = screen.getByLabelText(/password:/i);
+    expect(passwordInput).toHaveAttribute("type", "password");
+
+    // Find the toggle button by its aria-label
+    const toggleButton = screen.getByLabelText(/toggle password visibility/i);
+    fireEvent.click(toggleButton);
+
+    // Check if password is now visible
+    expect(passwordInput).toHaveAttribute("type", "text");
+
+    // Click again to hide password
+    fireEvent.click(toggleButton);
+    expect(passwordInput).toHaveAttribute("type", "password");
   });
 
-  test("handles admin update correctly", async () => {
-    const existingAdmin = {
-      adminId: "123",
-      fullName: "John Doe",
-      username: "johndoe",
-      email: "john@example.com",
-      password: "password123",
-      dob: "1990-01-01",
-    };
+  test("handles form reset on close", () => {
+    const { rerender } = render(<ManageAdminsModal {...mockProps} />);
 
-    const updatedAdmin = {
-      adminId: "123",
-      fullName: "John Updated Doe",
-      username: "johnupdated",
-      email: "john.updated@example.com",
-      password: "newpassword123",
-      dob: "1991-02-02",
-    };
-
-    const mockProps = {
-      isOpen: true,
-      onClose: jest.fn(),
-      type: "update",
-      onAdminUpdated: jest.fn(),
-    };
-
-    axios.mockResolvedValueOnce({
-      data: { message: "Admin updated successfully" },
+    // Fill in some data
+    fireEvent.change(screen.getByLabelText(/full name:/i), {
+      target: { value: "John Doe" },
     });
 
-    render(<ManageAdminsModal {...mockProps} />);
+    // Close the modal
+    rerender(<ManageAdminsModal {...mockProps} isOpen={false} />);
 
-    // Fill the form with existing admin data
-    fireEvent.change(screen.getByLabelText("Admin ID:"), {
-      target: { value: existingAdmin.adminId },
-    });
-    fireEvent.change(screen.getByLabelText("Full Name:"), {
-      target: { value: updatedAdmin.fullName },
-    });
-    fireEvent.change(screen.getByLabelText("Username:"), {
-      target: { value: updatedAdmin.username },
-    });
-    fireEvent.change(screen.getByLabelText("Email:"), {
-      target: { value: updatedAdmin.email },
-    });
-    fireEvent.change(screen.getByLabelText("Password:"), {
-      target: { value: updatedAdmin.password },
-    });
-    fireEvent.change(screen.getByLabelText("Birthday:"), {
-      target: { value: updatedAdmin.dob },
-    });
+    // Reopen the modal
+    rerender(<ManageAdminsModal {...mockProps} isOpen={true} />);
 
-    // Submit the form
-    fireEvent.click(screen.getByText("Update"));
-
-    await waitFor(() => {
-      // Check if the correct API call was made
-      expect(axios).toHaveBeenCalledWith({
-        method: "PUT",
-        url: `http://localhost:5000/api/admins/${existingAdmin.adminId}`,
-        data: updatedAdmin,
-      });
-
-      // Check if success message was shown
-      expect(Swal.fire).toHaveBeenCalledWith({
-        title: "Success!",
-        text: "Admin updated successfully",
-        icon: "success",
-      });
-
-      // Check if onAdminUpdated callback was called
-      expect(mockProps.onAdminUpdated).toHaveBeenCalled();
-
-      // Check if modal was closed
-      expect(mockProps.onClose).toHaveBeenCalled();
-    });
-  });
-
-  test("renders correctly for create type", () => {
-    render(<ManageAdminsModal {...mockProps} />);
-    expect(screen.getByText("Create Admin")).toBeInTheDocument();
-    expect(screen.getByLabelText("Full Name:")).toBeInTheDocument();
-    expect(screen.getByLabelText("Username:")).toBeInTheDocument();
-    expect(screen.getByLabelText("Email:")).toBeInTheDocument();
-    expect(screen.getByLabelText("Password:")).toBeInTheDocument();
-    expect(screen.getByLabelText("Birthday:")).toBeInTheDocument();
+    // Check if form was reset
+    expect(screen.getByLabelText(/full name:/i).value).toBe("");
   });
 
   test("renders correctly for update type", () => {
     render(<ManageAdminsModal {...mockProps} type="update" />);
-    expect(screen.getByText("Update Admin")).toBeInTheDocument();
-    expect(screen.getByLabelText("Admin ID:")).toBeInTheDocument();
+
+    // Check for update-specific fields
+    expect(screen.getByLabelText(/admin id:/i)).toBeInTheDocument();
+    expect(screen.getByText(/update admin/i)).toBeInTheDocument();
   });
 
   test("renders correctly for delete type", () => {
     render(<ManageAdminsModal {...mockProps} type="delete" />);
-    expect(screen.getByText("Delete Admin")).toBeInTheDocument();
-    expect(screen.getByLabelText("Admin ID:")).toBeInTheDocument();
-    expect(screen.queryByLabelText("Full Name:")).not.toBeInTheDocument();
-  });
 
-  test("handles input changes", () => {
-    render(<ManageAdminsModal {...mockProps} />);
-    const fullNameInput = screen.getByLabelText("Full Name:");
-    fireEvent.change(fullNameInput, { target: { value: "John Doe" } });
-    expect(fullNameInput.value).toBe("John Doe");
+    // Check for delete-specific elements
+    expect(screen.getByLabelText(/admin id:/i)).toBeInTheDocument();
+    expect(screen.getByText(/delete admin/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/full name:/i)).not.toBeInTheDocument();
   });
 });

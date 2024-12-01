@@ -122,7 +122,14 @@ const ManageAdmins = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        <div
+          role="status"
+          aria-label="Loading"
+          data-testid="loading-spinner"
+          className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"
+        >
+          <span className="sr-only">Loading...</span>
+        </div>
       </div>
     );
   }

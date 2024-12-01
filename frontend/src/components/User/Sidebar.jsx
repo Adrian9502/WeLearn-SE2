@@ -138,6 +138,7 @@ export default function Sidebar({
   onShowDailyRewards,
   onClose,
   completedQuizzes,
+  refreshQuizProgress,
 }) {
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState({
@@ -151,14 +152,6 @@ export default function Sidebar({
   const [userQuizCompleted, setUserQuizCompleted] = useState(null);
   const [userData, setUserData] = useState(null);
   const [userQuizUnanswered, setUserQuizUnanswered] = useState(null);
-
-  // Compute completed quizzes count
-  const completedQuizzesCount = useMemo(() => {
-    if (completedQuizzes) {
-      return completedQuizzes.size;
-    }
-    return userProgress?.filter((progress) => progress.completed)?.length || 0;
-  }, [completedQuizzes, userProgress]);
 
   const fetchUserData = async () => {
     try {
@@ -205,7 +198,7 @@ export default function Sidebar({
     if (userId) {
       fetchUserQuizProgress();
     }
-  }, [userId]);
+  }, [userId, userQuizCompleted, refreshQuizProgress]);
 
   const organizedQuizzes = useMemo(() => {
     const categorizedQuizzes = {};
@@ -430,9 +423,7 @@ export default function Sidebar({
               <div className="text-center space-y-2">
                 <span className="text-white sm:text-lg">Completed</span>
                 <div className="text-2xl sm:text-3xl font-game">
-                  <span className="text-yellow-400">
-                    {completedQuizzesCount}
-                  </span>
+                  <span className="text-yellow-400">{userQuizCompleted}</span>
                   <span className="text-white mx-2">of</span>
                   <span className="text-yellow-400">{totalQuizzes}</span>
                 </div>

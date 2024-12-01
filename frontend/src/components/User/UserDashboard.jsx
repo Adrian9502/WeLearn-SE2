@@ -35,6 +35,8 @@ export default function UserDashboard() {
   const [userProgress, setUserProgress] = useState(null);
   const [completedQuizzes, setCompletedQuizzes] = useState(new Set());
   const [hasShownAnswer, setHasShownAnswer] = useState(false);
+  const [refreshQuizProgressTrigger, setRefreshQuizProgressTrigger] =
+    useState(0);
   // Check for unclaimed rewards when component mounts
   useEffect(() => {
     const checkDailyRewards = async () => {
@@ -92,28 +94,22 @@ export default function UserDashboard() {
       }
     };
   }, []);
-  // Fetch completed quizzes
+  // keep progress in sync
   useEffect(() => {
     const fetchProgress = async () => {
-      if (!user?.userId) return;
-
       try {
         const response = await axios.get(
           `/api/progress/user/${user.userId}/summary`
         );
-        const completed = new Set(
-          response.data.quizzes
-            .filter((quiz) => quiz.completed)
-            .map((quiz) => quiz.quizId._id)
-        );
-        setCompletedQuizzes(completed);
         setUserProgress(response.data.quizzes);
       } catch (error) {
         console.error("Error fetching progress:", error);
       }
     };
 
-    fetchProgress();
+    if (user?.userId) {
+      fetchProgress();
+    }
   }, [user?.userId]);
   // Timer effect
   useEffect(() => {
@@ -146,7 +142,7 @@ export default function UserDashboard() {
 
         // Update completedQuizzes state
         setCompletedQuizzes((prev) => new Set([...prev, selectedQuiz._id]));
-
+        setRefreshQuizProgressTrigger((prev) => prev + 1);
         // Update userProgress state
         setUserProgress((prevProgress) => {
           if (!prevProgress) return prevProgress;
@@ -236,7 +232,6 @@ export default function UserDashboard() {
           userAnswer.trim().toLowerCase() ===
           selectedQuiz.answer.trim().toLowerCase();
         const updatedUserCoins = await updateProgress(isCorrect, time);
-        // TODO: FIX SIDEBAR EXPANDING QUIZZES
         try {
           if (isCorrect) {
             setCompletedQuizzes((prev) => new Set([...prev, selectedQuiz._id]));
@@ -267,6 +262,74 @@ export default function UserDashboard() {
             });
             setIsQuizCompleted(true);
             resetQuizState();
+            // update the progress
+            const response = await axios.post(
+              `/api/progress/${user.userId}/${selectedQuiz._id}/answer`,
+              {
+                questionId: selectedQuiz._id,
+                userAnswer,
+                isCorrect: userAnswer === selectedQuiz.answer,
+                timeSpent: time,
+              }
+            );
+
+            if (response.data.success) {
+              // Update the progress state immediately
+              setUserProgress((prevProgress) => {
+                if (!prevProgress) return prevProgress;
+
+                const updatedProgress = prevProgress.map((progress) => {
+                  if (progress.quizId._id === selectedQuiz._id) {
+                    // Create new progress object with updated values
+                    return {
+                      ...progress,
+                      exercisesCompleted:
+                        (progress.exercisesCompleted || 0) + 1, // Ensure it's a number
+                      totalTimeSpent: time,
+                      completed:
+                        userAnswer === selectedQuiz.answer
+                          ? true
+                          : progress.completed,
+                      lastAttemptDate: new Date().toISOString(),
+                      attemptTimes: [
+                        ...(progress.attemptTimes || []),
+                        {
+                          questionId: selectedQuiz._id,
+                          timeSpent: time,
+                          attemptDate: new Date().toISOString(),
+                        },
+                      ],
+                    };
+                  }
+                  return progress;
+                });
+
+                // If this quiz isn't in progress yet, add it
+                if (
+                  !prevProgress.some((p) => p.quizId._id === selectedQuiz._id)
+                ) {
+                  updatedProgress.push({
+                    quizId: {
+                      _id: selectedQuiz._id,
+                      title: selectedQuiz.title,
+                    },
+                    exercisesCompleted: 1,
+                    totalTimeSpent: time,
+                    completed: userAnswer === selectedQuiz.answer,
+                    lastAttemptDate: new Date().toISOString(),
+                    attemptTimes: [
+                      {
+                        questionId: selectedQuiz._id,
+                        timeSpent: time,
+                        attemptDate: new Date().toISOString(),
+                      },
+                    ],
+                  });
+                }
+
+                return updatedProgress;
+              });
+            }
           } else {
             audioRef.current.pause(); // Pause main audio
             wrongAudioRef.current.play(); // Play wrong sound
@@ -302,7 +365,8 @@ export default function UserDashboard() {
           console.error("Error handling answer submission:", error);
           Swal.fire({
             title: "Error",
-            text: "There was an error submitting your answer. Please try again.",
+            text: "There was an error submitting your answer : ",
+            error,
             icon: "error",
           });
         }
@@ -392,8 +456,6 @@ export default function UserDashboard() {
     }
   };
   const handleQuizSelect = (quiz) => {
-    console.log("Selected quiz:", quiz); // Debug log
-
     // Check if quiz is completed
     const isCompleted =
       completedQuizzes.has(quiz._id) ||
@@ -401,12 +463,9 @@ export default function UserDashboard() {
         (progress) => progress.quizId._id === quiz._id && progress.completed
       );
 
-    console.log("Is completed:", isCompleted); // Debug log
-
     // Only allow selection if quiz is not completed
     if (!isCompleted) {
       setSelectedQuiz(quiz);
-      console.log("Setting selected quiz:", quiz); // Debug log
       resetQuizState();
       setIsQuizCompleted(false);
 
@@ -416,11 +475,6 @@ export default function UserDashboard() {
       }
     }
   };
-
-  // Also add a useEffect to monitor selectedQuiz changes
-  useEffect(() => {
-    console.log("selectedQuiz changed:", selectedQuiz);
-  }, [selectedQuiz]);
 
   const formatTime = () => {
     const minutes = Math.floor(time / 60)
@@ -485,6 +539,7 @@ export default function UserDashboard() {
           onShowRankings={handleShowRanking}
           onShowDailyRewards={handleShowDailyRewards}
           onClose={handleClose}
+          refreshQuizProgress={refreshQuizProgressTrigger}
         />
       </div>
       {/* main quiz ui */}

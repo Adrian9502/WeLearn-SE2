@@ -49,25 +49,24 @@ router.post("/:userId/:quizId/answer", async (req, res) => {
       });
     }
 
-    // Update attempt times and total time
+    // Update attempt times
     progress.attemptTimes.push({
       questionId,
       timeSpent,
       attemptDate: new Date(),
     });
 
-    progress.totalTimeSpent += timeSpent;
+    // Update totalTimeSpent with only the current attempt time
+    progress.totalTimeSpent = timeSpent; // Changed from += to =
     progress.exercisesCompleted += 1;
     progress.lastAttemptDate = new Date();
 
-    // Important: Set completed to true if answer is correct
     if (isCorrect) {
       progress.completed = true;
     }
 
     await progress.save();
 
-    // Return the full progress object
     const updatedProgress = await UserProgress.findById(progress._id)
       .populate("quizId", "title totalExercises")
       .exec();

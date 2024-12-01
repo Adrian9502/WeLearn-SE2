@@ -80,10 +80,12 @@ export default function ProgressDisplay({ userProgress, onClose }) {
     setSortConfig({ key: null, direction: "desc" });
     setFilteredProgress(userProgress || []);
   };
-
+  useEffect(() => {
+    console.log("Progress updated:", userProgress);
+  }, [userProgress]);
   // Update filtered progress whenever search term, userProgress, or sort config changes
   useEffect(() => {
-    if (!Array.isArray(userProgress)) return; // Ensure userProgress is an array
+    if (!Array.isArray(userProgress)) return;
     let filtered = searchProgress(searchTerm);
     if (sortConfig.key) {
       filtered = sortProgress(filtered, sortConfig.key, sortConfig.direction);
@@ -219,7 +221,7 @@ export default function ProgressDisplay({ userProgress, onClose }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProgress.map((quiz) => (
                 <div
-                  key={quiz._id}
+                  key={quiz.quizId._id}
                   className={`relative p-3 sm:p-4 ${
                     quiz.completed ? "bg-fuchsia-600" : "bg-gray-800"
                   } rounded-lg shadow-lg overflow-hidden border-4 border-yellow-500`}
@@ -236,7 +238,7 @@ export default function ProgressDisplay({ userProgress, onClose }) {
                         Total Attempts
                       </div>
                       <div className="text-xl sm:text-3xl text-yellow-400 text-center font-mono">
-                        {quiz.exercisesCompleted}
+                        {quiz.exercisesCompleted || 0}{" "}
                       </div>
                     </div>
 
@@ -245,7 +247,7 @@ export default function ProgressDisplay({ userProgress, onClose }) {
                         Time Spent
                       </div>
                       <div className="text-xl sm:text-3xl text-yellow-400 text-center font-mono">
-                        {formatTimeSpent(quiz.totalTimeSpent)}
+                        {formatTimeSpent(quiz.totalTimeSpent || 0)}{" "}
                       </div>
                     </div>
                     <div
@@ -260,21 +262,27 @@ export default function ProgressDisplay({ userProgress, onClose }) {
                       </div>
                     </div>
                     <div className="text-slate-200 text-xs">
-                      {new Date(quiz.lastAttemptDate).toLocaleDateString(
-                        "en-US",
-                        {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        }
-                      )}{" "}
-                      at{" "}
-                      {new Date(quiz.lastAttemptDate).toLocaleTimeString(
-                        "en-US",
-                        {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }
+                      {quiz.lastAttemptDate
+                        ? new Date(quiz.lastAttemptDate).toLocaleDateString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            }
+                          )
+                        : "No attempts yet"}{" "}
+                      {quiz.lastAttemptDate && (
+                        <>
+                          at{" "}
+                          {new Date(quiz.lastAttemptDate).toLocaleTimeString(
+                            "en-US",
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -291,8 +299,18 @@ export default function ProgressDisplay({ userProgress, onClose }) {
     </div>
   );
 }
-
 ProgressDisplay.propTypes = {
-  userProgress: PropTypes.array,
+  userProgress: PropTypes.arrayOf(
+    PropTypes.shape({
+      quizId: PropTypes.shape({
+        _id: PropTypes.string.isRequired,
+        title: PropTypes.string.isRequired,
+      }),
+      exercisesCompleted: PropTypes.number,
+      totalTimeSpent: PropTypes.number,
+      completed: PropTypes.bool,
+      lastAttemptDate: PropTypes.string,
+    })
+  ),
   onClose: PropTypes.func.isRequired,
 };

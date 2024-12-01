@@ -12,12 +12,12 @@ export default function Title({ selectedQuiz }) {
       >
         <img
           src="/torch-gif.gif"
-          className="absolute left-2 bottom-2 w-7"
+          className="absolute left-2 bottom-2 w-7 pointer-events-none"
           alt="torch gif"
         />
         <img
           src="/torch-gif.gif"
-          className="absolute right-2 bottom-2 w-7"
+          className="absolute right-2 bottom-2 w-7 pointer-events-none"
           alt="torch gif"
         />
         <h1

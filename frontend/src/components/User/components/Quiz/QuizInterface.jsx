@@ -19,7 +19,7 @@ const QuizInterface = ({
 }) => (
   <div className="flex flex-col 2xl:flex-row pb-5 justify-between gap-6 px-2">
     <div
-      className="py-4 sm:px-5 px-2 my-auto max-h-[75vh] w-full max-w-5xl rounded-lg bg-gradient-to-br border-2 from-slate-900 to-stone-950 border-purple-600 relative"
+      className="py-4 sm:px-5 px-2 my-auto w-full max-w-5xl h-auto rounded-lg bg-gradient-to-br border-2 from-slate-900 to-stone-950 border-purple-600 relative"
       style={{ boxShadow: "1px 1px 10px 10px rgba(0,0,0,0.75)" }}
     >
       <div className="h-full flex flex-col">

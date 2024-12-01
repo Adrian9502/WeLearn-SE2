@@ -42,7 +42,7 @@ const QuizItem = ({ quiz, onClick, userProgress, completedQuizzes }) => {
       data-quiz-id={quiz._id}
       onClick={isCompleted ? undefined : onClick}
       className={`
-        relative btn bg-gradient-to-r overflow-hidden w-[90%] mx-auto rounded-lg
+        relative btn bg-gradient-to-r overflow-hidden rounded-lg
         ${
           isCompleted
             ? "from-emerald-500 to-emerald-600 cursor-not-allowed"
@@ -288,7 +288,7 @@ export default function Sidebar({
     return Object.entries(organizedQuizzes).map(([category, types]) => (
       <div
         key={category}
-        className="relative bg-gradient-to-b from-gray-950 to-neutral-950 border-4 border-purple-900 rounded-lg p-3 mb-4 
+        className="relative bg-gradient-to-b from-gray-950 to-neutral-950 border-4 border-purple-600 rounded-lg p-3 mb-4 
         overflow-hidden 
         "
       >
@@ -310,7 +310,7 @@ export default function Sidebar({
               bg-gradient-to-r from-violet-700 to-purple-800 btn rounded-lg 
               sm:p-3 p-2 cursor-pointer uppercase tracking-wider
               transform hover:to-purple-600 transition-colors duration-200
-              shadow-lg "
+              shadow-lg"
             >
               {type}
             </div>
@@ -319,7 +319,7 @@ export default function Sidebar({
               Object.entries(difficulties).map(([difficulty, quizList]) => (
                 <div
                   key={difficulty}
-                  className={`mt-2 pb-2 rounded-xl ${
+                  className={`mt-2 pb-2 w-[96%] mx-auto rounded-xl ${
                     getDifficultyColor(difficulty).parent || "bg-blue-100/20"
                   }`}
                 >

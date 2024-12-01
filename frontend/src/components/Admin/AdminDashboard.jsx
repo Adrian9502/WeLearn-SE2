@@ -292,6 +292,8 @@ export default function AdminDashboard() {
                   cx="50%"
                   cy="50%"
                   outerRadius={80}
+                  startAngle={90}
+                  endAngle={450}
                   label
                 >
                   {analytics.categoryDistribution.map((entry, index) => (
@@ -313,10 +315,17 @@ export default function AdminDashboard() {
                     backgroundColor: "#1e293b",
                     border: "none",
                     borderRadius: "8px",
-                    color: "#f8fafc",
+                    color: "#f8fafc", // Default text color
                   }}
+                  itemStyle={{ color: "#f8fafc" }} // Text color for items
+                  labelStyle={{ color: "#94a3b8" }} // Text color for label
+                  cursor={{ fill: "rgba(255, 255, 255, 0.1)" }} // Hover effect
                 />
-                <Legend />
+                <Legend
+                  formatter={(value) => (
+                    <span style={{ color: "#f8fafc" }}>{value}</span>
+                  )} // Legend text color
+                />
               </PieChart>
             </ResponsiveContainer>
           </StatisticsCard>

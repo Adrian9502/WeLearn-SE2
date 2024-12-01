@@ -100,9 +100,15 @@ const Table = ({ columns, rows, onSort, sortConfig }) => {
                   {sortConfig.key === column && (
                     <span>
                       {sortConfig.direction === "asc" ? (
-                        <ChevronUp className="w-4 h-4" />
+                        <ChevronUp
+                          data-testid="chevron-up"
+                          className="w-4 h-4"
+                        />
                       ) : (
-                        <ChevronDown className="w-4 h-4" />
+                        <ChevronDown
+                          data-testid="chevron-down"
+                          className="w-4 h-4"
+                        />
                       )}
                     </span>
                   )}

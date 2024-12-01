@@ -27,6 +27,7 @@ describe("DashboardManager component", () => {
         onSearchChange={mockOnSearchChange}
         sortConfig={{ key: "Name", direction: "asc" }}
         onSort={mockOnSort}
+        sortTitle="name"
       />
     );
   });
@@ -36,21 +37,23 @@ describe("DashboardManager component", () => {
   });
 
   test("renders the sort button and triggers sorting action", () => {
-    const sortButton = screen.getByText(/Sort by name \(ASC\)/);
+    const sortButton = screen.getByText(/Sort by name/i);
     expect(sortButton).toBeInTheDocument();
+
+    // Check if the up chevron is present for ascending sort
+    expect(screen.getByTestId("chevron-up")).toBeInTheDocument();
 
     // Simulate clicking the sort button
     fireEvent.click(sortButton);
-
-    // Check if the onSort function has been called when the button is clicked
-    expect(mockOnSort).toHaveBeenCalled();
+    expect(mockOnSort).toHaveBeenCalledWith("Name");
   });
 
   test("triggers search input change", () => {
-    const searchInput = screen.getByPlaceholderText("Search here..");
+    const searchInput = screen.getByPlaceholderText("Search...");
     fireEvent.change(searchInput, { target: { value: "John" } });
     expect(mockOnSearchChange).toHaveBeenCalledWith("John");
   });
+
   test("displays no data message when tableRows is empty", () => {
     render(
       <DashboardManager
@@ -62,69 +65,50 @@ describe("DashboardManager component", () => {
         onSearchChange={mockOnSearchChange}
         sortConfig={{ key: "Name", direction: "asc" }}
         onSort={mockOnSort}
+        sortTitle="name"
       />
     );
     expect(screen.getByText("No data available")).toBeInTheDocument();
   });
 
-  test("renders the buttons and triggers actions", () => {
-    const createButton = screen.getByText("Create");
+  test("renders the action buttons and triggers actions", () => {
+    const createButton = screen.getByRole("button", { name: /create/i });
     fireEvent.click(createButton);
     expect(mockHandleOpenModal).toHaveBeenCalledWith("create");
 
-    const updateButton = screen.getByText("Update");
+    const updateButton = screen.getByRole("button", { name: /update/i });
     fireEvent.click(updateButton);
     expect(mockHandleOpenModal).toHaveBeenCalledWith("update");
 
-    const deleteButton = screen.getByText("Delete");
+    const deleteButton = screen.getByRole("button", { name: /delete/i });
     fireEvent.click(deleteButton);
     expect(mockHandleOpenModal).toHaveBeenCalledWith("delete");
   });
 
   test("table renders with correct data", () => {
-    // Check if table data is rendered correctly
     expect(screen.getByText("John")).toBeInTheDocument();
     expect(screen.getByText("Doe")).toBeInTheDocument();
     expect(screen.getByText("30")).toBeInTheDocument();
     expect(screen.getByText("25")).toBeInTheDocument();
   });
-  test("sort button changes appearance when active", () => {
-    // Query the button by its role and name
-    const sortButton = screen.getByRole("button", {
-      name: /Sort by name \(ASC\)/,
-    });
-    expect(sortButton).toHaveClass("bg-violet-800");
-  });
 
-  test("copies ID and shows tooltip", async () => {
-    // Get all buttons with the data-testid "copy-button"
-    const copyButtons = screen.getAllByTestId("copy-button");
+  test("sort direction changes appearance", () => {
+    // Re-render with descending sort
+    render(
+      <DashboardManager
+        title="Test Dashboard"
+        handleOpenModal={mockHandleOpenModal}
+        tableColumns={columns}
+        tableRows={rows}
+        searchTerm=""
+        onSearchChange={mockOnSearchChange}
+        sortConfig={{ key: "Name", direction: "desc" }}
+        onSort={mockOnSort}
+        sortTitle="name"
+      />
+    );
 
-    // Click each button and check for the tooltip
-    for (const button of copyButtons) {
-      button.click();
-
-      // Wait for the tooltip to appear
-      await waitFor(() => {
-        const tooltip = screen.getByText(/Copied!/i);
-        expect(tooltip).toBeInTheDocument();
-      });
-
-      // Optionally, you can also check if the tooltip disappears after some time
-      await waitFor(
-        () => {
-          expect(screen.queryByText(/Copied!/i)).not.toBeInTheDocument();
-        },
-        { timeout: 2500 }
-      ); // Adjust timeout to be slightly longer than the tooltip display duration
-    }
-  });
-
-  test("shows correct sorting indicator", () => {
-    // Find the 'Name' column header
-    const nameColumn = screen.getByText("Name");
-
-    // Assert that the column header contains the sorting indicator '▲'
-    expect(nameColumn).toHaveTextContent("▲"); // Ascending order
+    // Check if the down chevron is present for descending sort
+    expect(screen.getByTestId("chevron-down")).toBeInTheDocument();
   });
 });

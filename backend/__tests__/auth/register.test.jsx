@@ -27,7 +27,7 @@ afterAll(async () => {
 
 describe("Authentication API For registration", () => {
   // USER
-  describe("POST /register/user", () => {
+  describe("POST /api/register/user", () => {
     // TEST REGISTER
     it("should register a user successfully", async () => {
       const user = {
@@ -38,7 +38,7 @@ describe("Authentication API For registration", () => {
         dob: "2010-01-01",
       };
 
-      const response = await request(app).post("/register/user").send(user);
+      const response = await request(app).post("/api/register/user").send(user);
       expect(response.statusCode).toBe(201);
       expect(response.body).toHaveProperty(
         "message",
@@ -64,10 +64,12 @@ describe("Authentication API For registration", () => {
       };
 
       // First registration (should succeed)
-      await request(app).post("/register/user").send(user1);
+      await request(app).post("/api/register/user").send(user1);
 
       // Second registration (should fail)
-      const response = await request(app).post("/register/user").send(user2);
+      const response = await request(app)
+        .post("/api/register/user")
+        .send(user2);
       expect(response.statusCode).toBe(400);
       expect(response.body).toHaveProperty(
         "message",
@@ -93,16 +95,18 @@ describe("Authentication API For registration", () => {
       };
 
       // First registration (should succeed)
-      await request(app).post("/register/user").send(user1);
+      await request(app).post("/api/register/user").send(user1);
 
       // Second registration (should fail)
-      const response = await request(app).post("/register/user").send(user2);
+      const response = await request(app)
+        .post("/api/register/user")
+        .send(user2);
       expect(response.statusCode).toBe(400);
       expect(response.body).toHaveProperty("message", "Email already exists");
     });
   });
   // ------------------ ADMIN ------------------
-  describe("POST /register/admin", () => {
+  describe("POST /api/register/admin", () => {
     // TEST ADMIN REGISTER
     it("should register an admin successfully", async () => {
       const admin = {
@@ -112,7 +116,9 @@ describe("Authentication API For registration", () => {
         password: "adminpass123",
         dob: "2010-01-01",
       };
-      const response = await request(app).post("/register/admin").send(admin);
+      const response = await request(app)
+        .post("/api/register/admin")
+        .send(admin);
       expect(response.statusCode).toBe(201);
       expect(response.body).toHaveProperty(
         "message",
@@ -138,10 +144,12 @@ describe("Authentication API For registration", () => {
       };
 
       // First registration (should succeed)
-      await request(app).post("/register/admin").send(admin1);
+      await request(app).post("/api/register/admin").send(admin1);
 
       // Second registration (should fail)
-      const response = await request(app).post("/register/admin").send(admin2);
+      const response = await request(app)
+        .post("/api/register/admin")
+        .send(admin2);
       expect(response.statusCode).toBe(400);
       expect(response.body).toHaveProperty(
         "message",
@@ -161,7 +169,9 @@ describe("Authentication API For registration", () => {
       };
 
       // Second registration (should fail)
-      const response = await request(app).post("/register/admin").send(admin2);
+      const response = await request(app)
+        .post("/api/register/admin")
+        .send(admin2);
       expect(response.statusCode).toBe(400);
       expect(response.body).toHaveProperty("message", "Email already exists");
     });

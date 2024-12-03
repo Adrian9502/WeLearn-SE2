@@ -39,7 +39,9 @@ describe("POST /login/user", () => {
       password: "123123",
     };
 
-    const response = await request(app).post("/login/user").send(credentials);
+    const response = await request(app)
+      .post("/api/login/user")
+      .send(credentials);
     expect(response.statusCode).toBe(200);
     expect(response.body).toHaveProperty("token"); // Check for token instead of user directly
     expect(response.body).toHaveProperty("user"); // Also check for user
@@ -51,7 +53,9 @@ describe("POST /login/user", () => {
       password: "wrongpassword",
     };
 
-    const response = await request(app).post("/login/user").send(credentials);
+    const response = await request(app)
+      .post("/api/login/user")
+      .send(credentials);
     expect(response.statusCode).toBe(400);
     expect(response.body).toHaveProperty("message", "Invalid password"); // Update the expected message
   });
@@ -62,7 +66,9 @@ describe("POST /login/user", () => {
       password: "password123",
     };
 
-    const response = await request(app).post("/login/user").send(credentials);
+    const response = await request(app)
+      .post("/api/login/user")
+      .send(credentials);
     expect(response.statusCode).toBe(404);
     expect(response.body).toHaveProperty("message", "User not found");
   });
@@ -75,7 +81,9 @@ describe("POST /login/admin", () => {
       password: "123123",
     };
 
-    const response = await request(app).post("/login/admin").send(credentials);
+    const response = await request(app)
+      .post("/api/login/admin")
+      .send(credentials);
     expect(response.statusCode).toBe(200);
     expect(response.body).toHaveProperty("token"); // Check for token instead of user directly
     expect(response.body).toHaveProperty("admin"); // Also check for user
@@ -87,7 +95,9 @@ describe("POST /login/admin", () => {
       password: "wrongpassword",
     };
 
-    const response = await request(app).post("/login/admin").send(credentials);
+    const response = await request(app)
+      .post("/api/login/admin")
+      .send(credentials);
     expect(response.statusCode).toBe(400);
     expect(response.body).toHaveProperty("message", "Invalid password"); // Update the expected message
   });
@@ -98,7 +108,9 @@ describe("POST /login/admin", () => {
       password: "password123",
     };
 
-    const response = await request(app).post("/login/admin").send(credentials);
+    const response = await request(app)
+      .post("/api/login/admin")
+      .send(credentials);
     expect(response.statusCode).toBe(404);
     expect(response.body).toHaveProperty("message", "Admin not found");
   });

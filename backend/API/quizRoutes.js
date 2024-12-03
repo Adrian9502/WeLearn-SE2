@@ -91,11 +91,11 @@ router.post("/", async (req, res) => {
       category,
     });
 
-    await newQuiz.save();
+    const savedQuiz = await newQuiz.save();
 
     res.status(201).json({
       message: "Quiz created successfully",
-      quiz: newQuiz,
+      quiz: savedQuiz.toObject(), // Convert to plain object
     });
   } catch (error) {
     console.error("Error creating quiz:", error);

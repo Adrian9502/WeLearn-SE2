@@ -172,7 +172,7 @@ const upload = multer({
     }
     cb(null, true);
   },
-});
+}).single("profilePicture");
 
 // Routes
 router.get("/:id/profile-picture", async (req, res) => {
@@ -235,19 +235,30 @@ router.get("/:id/profile-picture", async (req, res) => {
   }
 });
 
-router.put(
-  "/:id/profile-picture",
-  upload.single("profilePicture"),
-  async (req, res) => {
+router.put("/:id/profile-picture", async (req, res) => {
+  upload(req, res, async function (err) {
+    if (err) {
+      return res.status(400).json({
+        success: false,
+        message: err.message,
+      });
+    }
+
     try {
       if (!req.file) {
-        return res.status(400).json({ message: "No file uploaded" });
+        return res.status(400).json({
+          success: false,
+          message: "No file uploaded",
+        });
       }
 
       const admin = await adminModel.findById(req.params.id);
       if (!admin) {
         await fs.unlink(req.file.path);
-        return res.status(404).json({ message: "Admin not found" });
+        return res.status(404).json({
+          success: false,
+          message: "Admin not found",
+        });
       }
 
       const oldProfilePicture = admin.profilePicture;
@@ -259,12 +270,16 @@ router.put(
 
       if (!updatedAdmin) {
         await fs.unlink(req.file.path);
-        return res.status(404).json({ message: "Admin update failed" });
+        return res.status(404).json({
+          success: false,
+          message: "Admin update failed",
+        });
       }
 
       await deleteOldProfilePicture(oldProfilePicture);
 
       res.status(200).json({
+        success: true,
         profilePicture: updatedAdmin.profilePicture,
         message: "Profile picture updated successfully",
       });
@@ -278,11 +293,12 @@ router.put(
       }
 
       res.status(500).json({
+        success: false,
         message: "Error updating profile picture",
         error: error.message,
       });
     }
-  }
-);
+  });
+});
 
 module.exports = router;

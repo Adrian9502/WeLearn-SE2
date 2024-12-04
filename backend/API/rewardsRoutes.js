@@ -43,7 +43,11 @@ const handleError = (res, error, defaultMessage = "An error occurred") => {
     details: error.message,
   });
 };
-
+// Helper function to get the reward amount based on the day of the week
+const getRewardAmount = (date) => {
+  const day = date.getDay();
+  return day === 0 || day === 6 ? 50 : 25;
+};
 // Returns the last claim details for the user
 router.get("/:userId/last-claim", validateObjectId, async (req, res) => {
   try {
@@ -79,84 +83,83 @@ router.get("/:userId/last-claim", validateObjectId, async (req, res) => {
 
 // Claims the daily reward and updates user coins
 router.post("/:userId/claim", validateObjectId, async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
     const { rewardAmount, claimDate } = req.body;
 
-    // Validate input
+    // Validate required fields
     if (!rewardAmount || !claimDate) {
-      throw new Error("Missing required fields: rewardAmount and claimDate");
+      return res.status(400).json({
+        success: false,
+        error: "Missing required fields: rewardAmount and claimDate",
+      });
     }
 
-    // Find the user with lean to minimize overhead
-    const user = await userModel.findById(req.params.userId).lean();
+    // Add this validation block right after the required fields check
+    const claimDateTime = new Date(claimDate);
+    const expectedReward = getRewardAmount(claimDateTime);
+
+    // Validate reward amount matches day type
+    if (rewardAmount !== expectedReward) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid reward amount for this day",
+      });
+    }
+
+    // Find user first
+    const user = await userModel.findById(req.params.userId);
     if (!user) {
-      throw new Error("User not found");
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
     }
 
-    // Find or create daily reward record
-    let dailyReward = await DailyReward.findOne({ userId: user._id }).session(
-      session
-    );
+    // Set hours to midnight for comparison
+    claimDateTime.setHours(0, 0, 0, 0);
+
+    // Find or create daily reward document
+    let dailyReward = await DailyReward.findOne({ userId: user._id });
     if (!dailyReward) {
       dailyReward = new DailyReward({ userId: user._id, claimedDates: [] });
     }
 
-    const claimDateTime = new Date(claimDate);
-    claimDateTime.setHours(0, 0, 0, 0);
-
     // Check if already claimed on this date
     const existingClaim = dailyReward.claimedDates.find((claim) => {
-      const claimDate = new Date(claim.date);
-      claimDate.setHours(0, 0, 0, 0);
-      return claimDate.getTime() === claimDateTime.getTime();
+      const existingClaimDate = new Date(claim.date);
+      existingClaimDate.setHours(0, 0, 0, 0);
+      return existingClaimDate.getTime() === claimDateTime.getTime();
     });
 
     if (existingClaim) {
-      throw new Error("Reward already claimed for this date");
+      return res.status(400).json({
+        success: false,
+        error: "Reward already claimed for this date",
+      });
     }
 
-    // Update user coins using findOneAndUpdate to avoid model validation
-    const updatedUser = await userModel.findOneAndUpdate(
-      { _id: user._id },
-      {
-        $inc: { coins: rewardAmount },
-        $set: { lastRewardClaim: claimDateTime },
-      },
-      {
-        new: true,
-        session,
-        runValidators: false, // Bypass validation to handle default profile picture
-      }
-    );
+    // Update user coins
+    user.coins += rewardAmount;
+    user.lastRewardClaim = claimDateTime;
+    await user.save();
 
     // Record the daily reward
     dailyReward.claimedDates.push({
       date: claimDateTime,
       amount: rewardAmount,
     });
-    await dailyReward.save({ session });
+    await dailyReward.save();
 
-    // Commit the transaction
-    await session.commitTransaction();
-    session.endSession();
-
-    res.json({
+    return res.status(200).json({
       success: true,
-      newCoins: updatedUser.coins,
+      newCoins: user.coins,
       claimedDate: claimDateTime,
     });
   } catch (error) {
-    console.error("Full error details:", error); // Add detailed logging
-    await session.abortTransaction();
-    session.endSession();
-
+    console.error("Error in claim reward:", error);
     return res.status(500).json({
       success: false,
-      error: error.message || "Unexpected error occurred",
-      details: error.toString(),
+      error: error.message || "An unexpected error occurred",
     });
   }
 });

@@ -70,10 +70,32 @@ export default function RankingsDisplay({ onClose }) {
   };
 
   const renderRankingList = (rankingData, categoryConfig) => {
+    const placeholderRankings =
+      rankingData.length === 0
+        ? [
+            {
+              userId: "placeholder1",
+              username: "- - - - - -",
+              [categoryConfig.scoreField]: 0,
+            },
+            {
+              userId: "placeholder2",
+              username: "- - - - - -",
+              [categoryConfig.scoreField]: 0,
+            },
+            {
+              userId: "placeholder3",
+              username: "- - - - - -",
+              [categoryConfig.scoreField]: 0,
+            },
+          ]
+        : rankingData;
     return (
       <div className="space-y-4">
-        {rankingData.map((rankUser, index) => {
-          const isCurrentUser = rankUser.userId === user?.userId;
+        {placeholderRankings.map((rankUser, index) => {
+          const isPlaceholder = rankUser.userId.startsWith("placeholder");
+          const isCurrentUser =
+            !isPlaceholder && rankUser.userId === user?.userId;
 
           return (
             <div

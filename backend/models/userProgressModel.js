@@ -50,6 +50,9 @@ const userProgressSchema = new mongoose.Schema({
   ],
 });
 
+// Add indexes for better query performance
+userProgressSchema.index({ userId: 1, quizId: 1 }, { unique: true });
+
 const UserProgress = mongoose.model("UserProgress", userProgressSchema);
 
 module.exports = UserProgress;

@@ -1,17 +1,58 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const UserProgress = require("../models/userProgressModel");
 
 // Get user's progress summary
 router.get("/user/:userId/summary", async (req, res) => {
   try {
     const { userId } = req.params;
-    const quizzes = await UserProgress.find({ userId })
-      .populate("quizId", "title totalExercises completed")
-      .select("-__v");
-    res.json({ quizzes });
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID format",
+      });
+    }
+
+    let quizzes;
+    try {
+      quizzes = await UserProgress.find({ userId })
+        .populate({
+          path: "quizId",
+          select: "title totalExercises completed",
+        })
+        .select("-__v")
+        .lean()
+        .exec();
+    } catch (dbError) {
+      console.error("Database query error:", dbError);
+      throw new Error("Failed to fetch user progress");
+    }
+
+    // Ensure quizzes is always an array
+    const safeQuizzes = Array.isArray(quizzes) ? quizzes : [];
+
+    // Transform the data if needed
+    const transformedQuizzes = safeQuizzes.map((quiz) => ({
+      ...quiz,
+      quizId: quiz.quizId || null,
+      exercisesCompleted: Number(quiz.exercisesCompleted) || 0,
+      totalTimeSpent: Number(quiz.totalTimeSpent) || 0,
+      completed: Boolean(quiz.completed),
+    }));
+
+    return res.status(200).json({
+      success: true,
+      quizzes: transformedQuizzes,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error in progress summary:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error fetching progress summary",
+      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+    });
   }
 });
 
@@ -35,6 +76,14 @@ router.post("/:userId/:quizId/answer", async (req, res) => {
     const { userId, quizId } = req.params;
     const { questionId, userAnswer, isCorrect, timeSpent } = req.body;
 
+    // Validate input
+    if (!userId || !quizId || !questionId || typeof timeSpent !== "number") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid input parameters",
+      });
+    }
+
     let progress = await UserProgress.findOne({ userId, quizId });
 
     if (!progress) {
@@ -56,8 +105,8 @@ router.post("/:userId/:quizId/answer", async (req, res) => {
       attemptDate: new Date(),
     });
 
-    // Update totalTimeSpent with only the current attempt time
-    progress.totalTimeSpent = timeSpent; // Changed from += to =
+    // Update progress
+    progress.totalTimeSpent += timeSpent;
     progress.exercisesCompleted += 1;
     progress.lastAttemptDate = new Date();
 
@@ -67,20 +116,22 @@ router.post("/:userId/:quizId/answer", async (req, res) => {
 
     await progress.save();
 
+    // Fetch updated progress with populated fields
     const updatedProgress = await UserProgress.findById(progress._id)
       .populate("quizId", "title totalExercises")
       .exec();
 
-    res.json({
+    return res.status(200).json({
       success: true,
       progress: updatedProgress,
       message: isCorrect ? "Quiz completed successfully!" : "Answer recorded",
     });
   } catch (error) {
     console.error("Error updating progress:", error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Error updating progress",
+      error: error.message,
     });
   }
 });
@@ -142,61 +193,74 @@ router.get("/:userId/:quizId/completion", async (req, res) => {
 // Ranking route
 router.get("/rankings", async (req, res) => {
   try {
-    // Get all users' progress
     const allProgress = await UserProgress.find()
       .populate("userId", "username coins")
       .populate("quizId", "title");
 
+    // Ensure allProgress is an array
+    const progressArray = Array.isArray(allProgress) ? allProgress : [];
+
     // Group progress by user
     const userProgressMap = new Map();
 
-    allProgress.forEach((progress) => {
-      const userId = progress.userId._id.toString();
-      if (!userProgressMap.has(userId)) {
-        userProgressMap.set(userId, {
-          userId,
-          username: progress.userId.username,
-          coins: progress.userId.coins,
-          completedQuizzes: 0,
-          totalTime: 0,
-          totalAttempts: 0,
-          successRate: 0,
-          consecutiveDays: 0,
-          averageTime: 0,
-        });
+    progressArray.forEach((progress) => {
+      try {
+        // Skip if userId is not properly populated
+        if (!progress?.userId?._id) return;
+
+        const userId = progress.userId._id.toString();
+        if (!userProgressMap.has(userId)) {
+          userProgressMap.set(userId, {
+            userId,
+            username: progress.userId.username || "Unknown",
+            coins: progress.userId.coins || 0,
+            completedQuizzes: 0,
+            totalTime: 0,
+            totalAttempts: 0,
+            successRate: 0,
+            consecutiveDays: 0,
+            averageTime: 0,
+          });
+        }
+
+        const userStats = userProgressMap.get(userId);
+
+        if (progress.completed) {
+          userStats.completedQuizzes++;
+        }
+
+        userStats.totalTime += Number(progress.totalTimeSpent) || 0;
+        userStats.totalAttempts += Number(progress.exercisesCompleted) || 0;
+
+        // Safe calculations with Number conversion
+        userStats.successRate =
+          userStats.totalAttempts > 0
+            ? Number(userStats.completedQuizzes) /
+              Number(userStats.totalAttempts)
+            : 0;
+
+        userStats.averageTime =
+          userStats.completedQuizzes > 0
+            ? Number(userStats.totalTime) / Number(userStats.completedQuizzes)
+            : 0;
+
+        const attempts = Array.isArray(progress.attemptTimes)
+          ? progress.attemptTimes.map((at) =>
+              new Date(at.attemptDate).toDateString()
+            )
+          : [];
+        userStats.consecutiveDays = Math.max(
+          userStats.consecutiveDays,
+          new Set(attempts).size
+        );
+      } catch (err) {
+        console.error("Error processing progress:", err);
       }
-
-      const userStats = userProgressMap.get(userId);
-
-      if (progress.completed) {
-        userStats.completedQuizzes++;
-      }
-
-      userStats.totalTime += progress.totalTimeSpent;
-      userStats.totalAttempts += progress.exercisesCompleted;
-
-      // Calculate success rate
-      userStats.successRate =
-        userStats.completedQuizzes / userStats.totalAttempts;
-
-      // Calculate average time per completed quiz
-      userStats.averageTime = userStats.totalTime / userStats.completedQuizzes;
-
-      // Calculate consecutive days (simplified version)
-      const attempts = progress.attemptTimes.map((at) =>
-        new Date(at.attemptDate).toDateString()
-      );
-      const uniqueDays = new Set(attempts).size;
-      userStats.consecutiveDays = Math.max(
-        userStats.consecutiveDays,
-        uniqueDays
-      );
     });
 
-    // Convert map to array and sort for different rankings
     const users = Array.from(userProgressMap.values());
 
-    const rankings = {
+    return res.status(200).json({
       completionRankings: [...users].sort(
         (a, b) => b.completedQuizzes - a.completedQuizzes
       ),
@@ -208,76 +272,109 @@ router.get("/rankings", async (req, res) => {
       efficiencyRankings: [...users].sort(
         (a, b) => b.successRate - a.successRate
       ),
-    };
-
-    res.json(rankings);
+    });
   } catch (error) {
-    console.error("Error fetching rankings:", error);
-    res.status(500).json({ message: error.message });
+    console.error("Error in rankings:", error);
+    return res.status(500).json({
+      message: "Error fetching rankings",
+      error: error.message,
+    });
   }
 });
-// Route for getting the completion rate of users
+//  Completion stats
 router.get("/completion-stats", async (req, res) => {
   try {
-    // Get all progress records
-    const allProgress = await UserProgress.find().populate(
-      "quizId",
-      "totalExercises"
-    );
+    // Get all progress records with proper chaining
+    const allProgress = await UserProgress.find()
+      .populate("quizId", "totalExercises")
+      .lean()
+      .exec();
 
-    if (allProgress.length === 0) {
-      return res.json({
+    // Ensure allProgress is an array and handle null/undefined
+    const progressArray = Array.isArray(allProgress) ? allProgress : [];
+
+    if (progressArray.length === 0) {
+      return res.status(200).json({
         completionRate: 0,
         totalQuizzes: 0,
         completedQuizzes: 0,
+        trend: 0,
       });
     }
 
-    // Count completed quizzes
-    const completedQuizzes = allProgress.filter(
-      (progress) => progress.completed
+    // Count completed quizzes with safe checks
+    const completedQuizzes = progressArray.filter(
+      (progress) => progress && progress.completed === true
     ).length;
-    const totalQuizzes = allProgress.length;
+    const totalQuizzes = progressArray.length;
 
-    // Calculate completion rate as a percentage
-    const completionRate = (completedQuizzes / totalQuizzes) * 100;
+    // Calculate completion rate as a percentage with safe division
+    const completionRate =
+      totalQuizzes > 0
+        ? Math.round((completedQuizzes / totalQuizzes) * 100)
+        : 0;
 
-    res.json({
+    // Calculate trend with safe function call
+    const trend = calculateTrend(progressArray);
+
+    return res.status(200).json({
       completionRate,
       totalQuizzes,
       completedQuizzes,
-      trend: calculateTrend(allProgress), // Optional: calculate trend
+      trend,
     });
   } catch (error) {
     console.error("Error calculating completion rate:", error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Error calculating completion rate",
+      error: error.message,
+      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
     });
   }
 });
 
-// Helper function to calculate trend
+// Helper function to calculate trend with safe operations
 function calculateTrend(allProgress) {
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  if (!Array.isArray(allProgress) || allProgress.length === 0) {
+    return 0;
+  }
 
-  const recentProgress = allProgress.filter(
-    (p) => new Date(p.lastAttemptDate) > thirtyDaysAgo
-  );
+  try {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const previousProgress = allProgress.filter(
-    (p) => new Date(p.lastAttemptDate) <= thirtyDaysAgo
-  );
+    const recentProgress = allProgress.filter(
+      (p) => p?.lastAttemptDate && new Date(p.lastAttemptDate) > thirtyDaysAgo
+    );
 
-  const recentRate =
-    (recentProgress.filter((p) => p.completed).length / recentProgress.length) *
-    100;
-  const previousRate =
-    (previousProgress.filter((p) => p.completed).length /
-      previousProgress.length) *
-    100;
+    const previousProgress = allProgress.filter(
+      (p) => p?.lastAttemptDate && new Date(p.lastAttemptDate) <= thirtyDaysAgo
+    );
 
-  return recentRate - previousRate;
+    const recentRate =
+      recentProgress.length > 0
+        ? Math.round(
+            (recentProgress.filter((p) => p.completed === true).length /
+              recentProgress.length) *
+              100
+          )
+        : 0;
+
+    const previousRate =
+      previousProgress.length > 0
+        ? Math.round(
+            (previousProgress.filter((p) => p.completed === true).length /
+              previousProgress.length) *
+              100
+          )
+        : 0;
+
+    return recentRate - previousRate;
+  } catch (error) {
+    console.error("Error calculating trend:", error);
+    return 0;
+  }
 }
+
 module.exports = router;

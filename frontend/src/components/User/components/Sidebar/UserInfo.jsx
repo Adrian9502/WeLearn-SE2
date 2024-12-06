@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaTrophy, FaSignOutAlt, FaChartLine } from "react-icons/fa";
 import { FaGift } from "react-icons/fa6";
 import PropTypes from "prop-types";
-import ProfilePictureModal from "./ProfilePictureModal";
+import ProfilePictureModal from "./ProfilePicture/ProfilePictureModal";
 import axios from "axios";
 export default function UserInfo({
   onLogout,
@@ -14,13 +14,16 @@ export default function UserInfo({
   userData,
   onUserDataUpdate,
 }) {
+  // ------------ VARIABLES -------------
   const userId = userData?._id;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPicture, setCurrentPicture] = useState(null);
   const defaultProfilePic =
     "https://cdn-icons-png.freepik.com/512/6858/6858441.png";
-
+  //  ---------- BASE URL FOR API -------------
   const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
+  //  ---------- FETCH USER PROFILE -------------
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -46,7 +49,7 @@ export default function UserInfo({
       fetchUserProfile();
     }
   }, [userId]);
-
+  //  ---------- FUNCTION TO UPDATE PROFILE PICTURE -------------
   const handlePictureUpdate = async (newPicture) => {
     try {
       const formData = new FormData();
@@ -85,7 +88,7 @@ export default function UserInfo({
       throw error;
     }
   };
-
+  //  ---------- RETURN JSX -------------
   return (
     <>
       <div className="relative p-6 my-8 bg-gradient-to-b from-purple-800/80 to-indigo-700/80 rounded-xl shadow-2xl">
@@ -98,9 +101,9 @@ export default function UserInfo({
             PLAYER STATUS
           </h1>
 
-          {/* Player Card */}
+          {/* PLAYER CARD */}
           <div className="bg-gradient-to-b from-[#622aff] to-[#622aff]/90 rounded-xl p-3 mb-3 sm:p-4 border-2 border-white/20">
-            {/* Avatar */}
+            {/* PROFILE PICTURE */}
             <div
               className="relative w-20 h-20 mx-auto mb-4 cursor-pointer group"
               onClick={() => setIsModalOpen(true)}
@@ -129,7 +132,7 @@ export default function UserInfo({
               </div>{" "}
             </div>
 
-            {/* Player Info */}
+            {/* PLAYER INFO */}
             <div>
               <div className="text-center">
                 <span className="text-yellow-300 text-sm font-game">
@@ -182,6 +185,7 @@ export default function UserInfo({
           </div>
         </div>
       </div>
+      {/* PROFILE PICTURE MODAL POP UP*/}
       <ProfilePictureModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -196,5 +200,12 @@ UserInfo.propTypes = {
   onLogout: PropTypes.func.isRequired,
   username: PropTypes.string,
   coins: PropTypes.number.isRequired,
-  userProgress: PropTypes.array,
+  onShowProgress: PropTypes.func.isRequired,
+  onShowRankings: PropTypes.func.isRequired,
+  onShowDailyRewards: PropTypes.func.isRequired,
+  userData: PropTypes.shape({
+    _id: PropTypes.string,
+    profilePicture: PropTypes.string,
+  }),
+  onUserDataUpdate: PropTypes.func,
 };

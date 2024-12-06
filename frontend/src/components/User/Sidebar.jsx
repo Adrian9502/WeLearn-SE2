@@ -140,7 +140,9 @@ export default function Sidebar({
   completedQuizzes,
   refreshQuizProgress,
 }) {
+  // ----- NAVIGATION -----
   const navigate = useNavigate();
+  // ----- STATE -----
   const [isExpanded, setIsExpanded] = useState({
     types: {},
     difficulties: {},
@@ -151,8 +153,8 @@ export default function Sidebar({
   const userId = user?.userId;
   const [userQuizCompleted, setUserQuizCompleted] = useState(null);
   const [userData, setUserData] = useState(null);
-  const [userQuizUnanswered, setUserQuizUnanswered] = useState(null);
 
+  // ----- FETCH USER DATA -----
   const fetchUserData = async () => {
     try {
       const response = await fetch(`/api/users/${userId}`);
@@ -168,7 +170,7 @@ export default function Sidebar({
   useEffect(() => {
     fetchUserData();
   }, [userId]);
-  // Function to fetch user count of completed quiz in quizzes
+  // ----- FETCH USER QUIZ PROGRESS -----
   const fetchUserQuizProgress = async () => {
     try {
       const response = await fetch(`/api/progress/user/${userId}/summary`);
@@ -184,16 +186,13 @@ export default function Sidebar({
         return quiz.completed ? count + 1 : count;
       }, 0);
 
-      const unansweredQuizzesCount = data.quizzes.length - answeredQuizzesCount;
-
       // Update the states for completed and not completed quizzes
       setUserQuizCompleted(answeredQuizzesCount);
-      setUserQuizUnanswered(unansweredQuizzesCount);
     } catch (error) {
       console.error("Error fetching user progress:", error);
     }
   };
-
+  // ----- USE EFFECTS -----
   useEffect(() => {
     if (userId) {
       fetchUserQuizProgress();
@@ -224,7 +223,7 @@ export default function Sidebar({
 
     return categorizedQuizzes;
   }, [quizzes]);
-  // compute total quizzes
+  // ----- COMPUTE TOTAL QUIZZES -----
   const totalQuizzes = useMemo(() => {
     return Object.values(organizedQuizzes).reduce(
       (total, types) =>
@@ -241,7 +240,7 @@ export default function Sidebar({
       0
     );
   }, [organizedQuizzes]);
-  // Toggle expand state for nested navigation
+  // ----- TOGGLE EXPAND STATE FOR NESTED NAVIGATION -----
   const toggleExpand = useCallback((level, key) => {
     setIsExpanded((prev) => ({
       ...prev,
@@ -351,7 +350,7 @@ export default function Sidebar({
       </div>
     ));
   };
-
+  // ----- LOGOUT HANDLER -----
   const handleLogout = useCallback(() => {
     ["authToken", "userRole", "username", "coins", "userId"].forEach((key) =>
       localStorage.removeItem(key)
@@ -367,13 +366,13 @@ export default function Sidebar({
       padding: "1em",
       color: "#c3e602",
       background:
-        "#fff url(https://cdn.vectorstock.com/i/1000v/38/53/pixel-art-style-purple-gradient-background-vector-8473853.jpg",
+        "#fff url(https://cdn.vectorstock.com/i/1000v/38/53/pixel-art-style-purple-gradient-background-vector-8473853.jpg)",
       customClass: {
         popup: "swal-font",
         confirmButton: "btn-swal primary",
         cancelButton: "btn-swal show-btn",
       },
-    }).then(async (result) => {
+    }).then((result) => {
       if (result.isConfirmed) {
         navigate("/");
       }

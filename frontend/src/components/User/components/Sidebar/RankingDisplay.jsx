@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from "react";
-import {
-  FaTrophy as Trophy,
-  FaClock as Clock,
-  FaCoins as Coins,
-  FaUserCircle as DefaultProfile,
-} from "react-icons/fa";
-import { GiTargeting as Target } from "react-icons/gi";
-import { MdEmojiEvents as Award } from "react-icons/md";
-import { IoFlash as Zap } from "react-icons/io5";
+import { FaTrophy as Trophy } from "react-icons/fa";
 import { useUser } from "../../UserContext";
-
+import { Categories } from "./Ranking/Categories";
+import ProfilePicture from "./ProfilePicture/ProfilePicture";
+import PropTypes from "prop-types";
 export default function RankingsDisplay({ onClose }) {
+  // ----- STATES------
   const [rankings, setRankings] = useState({
     quizCompletion: [],
     speedsters: [],
@@ -20,6 +15,8 @@ export default function RankingsDisplay({ onClose }) {
   });
   const [activeTab, setActiveTab] = useState("quizCompletion");
   const { user } = useUser();
+
+  // ----- USE EFFECTS -----
   useEffect(() => {
     const fetchRankings = async () => {
       try {
@@ -42,33 +39,8 @@ export default function RankingsDisplay({ onClose }) {
 
     fetchRankings();
   }, []);
-  // GET PROFILE PICTURE OF EACH USER
-  const ProfilePicture = ({ userId, username }) => {
-    const [imgError, setImgError] = useState(false);
 
-    if (imgError) {
-      return (
-        <div className="rounded-full w-10 h-10 overflow-hidden">
-          <img
-            src={`/default-profile.png`}
-            className="w-10 h-10 object-cover"
-          />
-        </div>
-      );
-    }
-
-    return (
-      <div className="rounded-full w-10 h-10 overflow-hidden">
-        <img
-          src={`/api/users/${userId}/profile-picture`}
-          alt={`${username}'s profile`}
-          className="w-full h-full object-cover"
-          onError={() => setImgError(true)}
-        />
-      </div>
-    );
-  };
-
+  //  ---------- RENDER RANKING COMPONENT -------------
   const renderRankingList = (rankingData, categoryConfig) => {
     const placeholderRankings =
       rankingData.length === 0
@@ -152,45 +124,7 @@ export default function RankingsDisplay({ onClose }) {
       </div>
     );
   };
-
-  const rankingCategories = {
-    quizCompletion: {
-      title: "Quiz Masters",
-      description: "Players who completed the most quizzes",
-      icon: <Target className="text-green-400" size={20} />,
-      scoreField: "completedQuizzes",
-      formatScore: (score) => `${score} quizzes`,
-    },
-    speedsters: {
-      title: "Speed Demons",
-      description: "Fastest quiz completers",
-      icon: <Zap className="text-blue-400" size={20} />,
-      scoreField: "averageTime",
-      formatScore: (time) => `${time.toFixed(1)}s avg`,
-    },
-    wealthiest: {
-      title: "Coin Champions",
-      description: "Players with the most coins",
-      icon: <Coins className="text-yellow-400" size={20} />,
-      scoreField: "coins",
-      formatScore: (coins) => `${coins} coins`,
-    },
-    consistent: {
-      title: "Consistency Kings",
-      description: "Most regular players",
-      icon: <Award className="text-purple-400" size={20} />,
-      scoreField: "consecutiveDays",
-      formatScore: (days) => `${days} days`,
-    },
-    efficiency: {
-      title: "Efficiency Elite",
-      description: "Highest success rate",
-      icon: <Clock className="text-red-400" size={20} />,
-      scoreField: "successRate",
-      formatScore: (rate) => `${(rate * 100).toFixed(1)}%`,
-    },
-  };
-
+  //  ---------- RETURN JSX -------------
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center px-3 justify-center z-50">
       <div className="bg-gradient-to-b from-indigo-700 rounded-lg to-purple-800/90 shadow-xl w-full max-w-4xl max-h-[80vh] overflow-y-auto">
@@ -215,7 +149,7 @@ export default function RankingsDisplay({ onClose }) {
         <div className="sm:p-6 p-3">
           {/* Tabs */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4 p-1 rounded-lg mb-6">
-            {Object.entries(rankingCategories).map(([key, category]) => (
+            {Object.entries(Categories).map(([key, category]) => (
               <button
                 key={key}
                 onClick={() => setActiveTab(key)}
@@ -235,7 +169,7 @@ export default function RankingsDisplay({ onClose }) {
 
           {/* Tab Content */}
           <div className="mt-4 p-2 sm:p-3 rounded-lg bg-indigo-600 overflow-y-auto max-h-[60vh]">
-            {Object.entries(rankingCategories).map(([key, category]) => (
+            {Object.entries(Categories).map(([key, category]) => (
               <div
                 key={key}
                 className={`${
@@ -259,3 +193,7 @@ export default function RankingsDisplay({ onClose }) {
     </div>
   );
 }
+
+RankingsDisplay.propTypes = {
+  onClose: PropTypes.func.isRequired,
+};

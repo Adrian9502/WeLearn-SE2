@@ -74,14 +74,16 @@ export default function UserDashboard() {
     correctAudioRef.current = new Audio(correctSound);
     wrongAudioRef.current = new Audio(wrongSound);
   }, []);
+  // ----- TOGGLE SIDEBAR -----
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+  // ----- TITLE -----
   useEffect(() => {
     // change the title
     document.title = "WeLearn - Play";
   }, []);
-  // Audio setup
+  // ----- AUDIO SETUP -----
   useEffect(() => {
     audioRef.current = new Audio("/music/Enchanted Festival.mp3");
     audioRef.current.loop = true;
@@ -94,7 +96,7 @@ export default function UserDashboard() {
       }
     };
   }, []);
-  // keep progress in sync
+  // ----- KEEP PROGRESS IN SYNC -----
   useEffect(() => {
     const fetchProgress = async () => {
       try {
@@ -111,7 +113,7 @@ export default function UserDashboard() {
       fetchProgress();
     }
   }, [user?.userId]);
-  // Timer effect
+  // ----- TIMER EFFECT -----
   useEffect(() => {
     let interval;
     if (isActive) {
@@ -119,6 +121,7 @@ export default function UserDashboard() {
     }
     return () => clearInterval(interval);
   }, [isActive]);
+  // ----- UPDATE PROGRESS -----
   const updateProgress = async (isCorrect, timeSpent) => {
     try {
       // Make the progress update API call
@@ -183,6 +186,7 @@ export default function UserDashboard() {
       return null;
     }
   };
+  // ----- HANDLE ANSWER CHANGE -----
   const handleAnswerChange = (e) => {
     const newValue = e.target.value;
     setUserAnswer(newValue);
@@ -192,6 +196,7 @@ export default function UserDashboard() {
       setHasShownAnswer(false);
     }
   };
+  // ----- HANDLE SUBMIT ANSWER -----
   const handleSubmitAnswer = () => {
     Swal.fire({
       title: "Submit Answer?",
@@ -373,6 +378,7 @@ export default function UserDashboard() {
       }
     });
   };
+  // ----- HANDLE SHOW ANSWER -----
   const handleShowAnswer = () => {
     if (!user?.coins || hasShownAnswer) return;
 
@@ -439,6 +445,7 @@ export default function UserDashboard() {
       }
     });
   };
+  // ----- RESET QUIZ STATE -----
   const resetQuizState = () => {
     setUserAnswer("");
     setIsBlurred(true);
@@ -447,6 +454,7 @@ export default function UserDashboard() {
     setHasStarted(false);
     setHasShownAnswer(false);
   };
+  // ----- HANDLE START -----
   const handleStart = () => {
     if (!hasStarted) {
       setIsActive(true);
@@ -455,6 +463,7 @@ export default function UserDashboard() {
       setTime(0);
     }
   };
+  // ----- HANDLE QUIZ SELECT -----
   const handleQuizSelect = (quiz) => {
     // Check if quiz is completed
     const isCompleted =
@@ -476,6 +485,7 @@ export default function UserDashboard() {
     }
   };
 
+  // ----- FORMAT TIME -----
   const formatTime = () => {
     const minutes = Math.floor(time / 60)
       .toString()
@@ -483,20 +493,24 @@ export default function UserDashboard() {
     const seconds = (time % 60).toString().padStart(2, "0");
     return `${minutes}:${seconds}`;
   };
-
+  // ----- HANDLE SHOW PROGRESS -----
   const handleShowProgress = () => {
     setIsProgressVisible(true);
   };
+  // ----- HANDLE SHOW RANKING -----
   const handleShowRanking = () => {
     setIsRankingVisible(true);
   };
+  // ----- HANDLE CLOSE -----
   const handleClose = () => {
     setIsProgressVisible(false);
     setIsRankingVisible(false);
   };
+  // ----- HANDLE SHOW DAILY REWARDS -----
   const handleShowDailyRewards = () => {
     setIsDailyRewardsVisible(true);
   };
+  // ----- HANDLE REWARD CLAIMED -----
   const handleRewardClaimed = (newCoins) => {
     updateUser({ ...user, coins: newCoins });
     localStorage.setItem("coins", newCoins.toString());

@@ -294,8 +294,6 @@ router.post(
   "/:id/profile-picture",
   upload.single("profilePicture"),
   async (req, res) => {
-    console.log("\n=== PROFILE PICTURE UPLOAD ===");
-
     try {
       // Validate user ID
       if (!req.params.id || !mongoose.Types.ObjectId.isValid(req.params.id)) {
@@ -358,7 +356,6 @@ router.post(
       // Update user with new file id
       user.profilePicture = req.file.id;
       await user.save();
-      console.log("User profile updated with new picture ID:", req.file.id);
 
       res.status(200).json({
         success: true,
@@ -378,7 +375,6 @@ router.post(
 
 // GET route
 router.get("/:id/profile-picture", async (req, res) => {
-  console.log("\n=== PROFILE PICTURE REQUEST ===");
   try {
     // Validate user ID
     if (!req.params.id || !mongoose.Types.ObjectId.isValid(req.params.id)) {
@@ -389,8 +385,6 @@ router.get("/:id/profile-picture", async (req, res) => {
     }
 
     const user = await userModel.findById(req.params.id);
-    console.log("User found:", user?._id);
-    console.log("Profile picture ID:", user?.profilePicture);
 
     if (!user || !user.profilePicture) {
       console.log("No user or profile picture found, sending default");

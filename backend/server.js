@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const connectDB = require("./db");
+const { connectDB } = require("./db");
 const session = require("express-session");
 const mongoose = require("mongoose");
 const { GridFsStorage } = require("multer-gridfs-storage");
@@ -23,9 +23,19 @@ const adminModel = require("./models/adminModel");
 // --------------------------------------------
 
 // ----------------MIDDLEWARE-----------------
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  next();
+});
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: true,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -36,8 +46,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ---------MONGODB CONNECTION----------------
-connectDB();
-
+connectDB()
+  .then(() => {
+    console.log("MongoDB connection initialized");
+  })
+  .catch((err) => {
+    console.error("Error initializing MongoDB:", err);
+  });
 // ----------------SESSION CONFIGURATION----------------
 app.use(
   session({
@@ -84,7 +99,17 @@ app.use("/api/progress", userProgressRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/rewards", rewardsRoutes);
 // for default profile picture
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "uploads"), {
+    setHeaders: (res) => {
+      res.set({
+        "Access-Control-Allow-Origin": "*",
+        "Cross-Origin-Resource-Policy": "cross-origin",
+      });
+    },
+  })
+);
 // ---------- LOGOUT ROUTE --------------------
 app.post("/api/logout", (req, res) => {
   req.session.destroy((err) => {

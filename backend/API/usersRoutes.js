@@ -5,13 +5,12 @@ const userModel = require("../models/userModel");
 const router = express.Router();
 const multer = require("multer");
 const path = require("path");
-const fs = require("fs").promises;
 const mongoose = require("mongoose");
 const { GridFsStorage } = require("multer-gridfs-storage");
-const Grid = require("gridfs-stream");
 const crypto = require("crypto");
+const { getGfs } = require("../db");
 // Constants
-const SALT_ROUNDS = 10; // Number of rounds to use when generating a salt
+const SALT_ROUNDS = 10;
 
 if (!process.env.MONGODB_URI) {
   throw new Error("MONGODB_URI must be defined in environment variables");
@@ -251,20 +250,9 @@ router.put("/:id/coins", async (req, res) => {
 });
 
 // ------------------ PROFILE PICTURE ------------
-// GridFS setup
-// Create MongoDB connection
-let gfs;
-const conn = mongoose.connection;
-
-conn.once("open", () => {
-  // Initialize GridFS stream with the proper configuration
-  gfs = new Grid(conn.db, mongoose.mongo);
-  gfs.collection("uploads");
-});
-
 // Storage configuration
 const storage = new GridFsStorage({
-  url: process.env.MONGODB_URI || "mongodb://localhost:27017/your_database",
+  url: process.env.MONGODB_URI,
   file: (req, file) => {
     return new Promise((resolve, reject) => {
       crypto.randomBytes(16, (err, buf) => {
@@ -285,7 +273,6 @@ const storage = new GridFsStorage({
   },
 });
 
-// Initialize upload middleware
 const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
@@ -303,116 +290,180 @@ const upload = multer({
 });
 
 // Upload route
-router.post("/:id/profile-picture", (req, res) => {
-  upload.single("profilePicture")(req, res, async (err) => {
-    if (err) {
-      return res.status(400).json({
-        success: false,
-        message: err.message,
-      });
-    }
-
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "Please upload a file",
-      });
-    }
+router.post(
+  "/:id/profile-picture",
+  upload.single("profilePicture"),
+  async (req, res) => {
+    console.log("\n=== PROFILE PICTURE UPLOAD ===");
 
     try {
+      // Validate user ID
+      if (!req.params.id || !mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid user ID",
+        });
+      }
+
+      if (!req.file) {
+        console.log("No file received");
+        return res.status(400).json({
+          success: false,
+          message: "Please upload a file",
+        });
+      }
+
+      console.log("File received:", {
+        id: req.file.id,
+        filename: req.file.filename,
+        size: req.file.size,
+        mimetype: req.file.mimetype,
+      });
+
       const user = await userModel.findById(req.params.id);
       if (!user) {
+        console.log("User not found:", req.params.id);
         return res.status(404).json({
           success: false,
           message: "User not found",
         });
       }
 
-      // Delete old profile picture if exists
-      if (user.profilePicture) {
+      // Delete old profile picture if it exists
+      if (
+        user.profilePicture &&
+        mongoose.Types.ObjectId.isValid(user.profilePicture)
+      ) {
         try {
           const oldFileId = new mongoose.Types.ObjectId(user.profilePicture);
-          await gfs.files.deleteOne({ _id: oldFileId });
+          const gfs = getGfs();
+
+          if (gfs) {
+            const existingFile = await mongoose.connection.db
+              .collection("uploads.files")
+              .findOne({ _id: oldFileId });
+
+            if (existingFile) {
+              await gfs.delete(oldFileId);
+              console.log("Old profile picture deleted:", oldFileId);
+            } else {
+              console.log("Old profile picture not found in GridFS");
+            }
+          }
         } catch (error) {
-          console.error("Error deleting old file:", error);
+          console.error("Error processing old file:", error);
         }
       }
 
       // Update user with new file id
       user.profilePicture = req.file.id;
       await user.save();
+      console.log("User profile updated with new picture ID:", req.file.id);
 
       res.status(200).json({
         success: true,
-        message: "File uploaded successfully",
+        message: "Profile picture updated successfully",
         profilePicture: `/api/users/${user._id}/profile-picture`,
+        profilePictureId: req.file.id,
       });
     } catch (error) {
-      console.error("Error in upload route:", error);
+      console.error("Upload processing error:", error);
       res.status(500).json({
         success: false,
-        message: "Error uploading file",
+        message: "Error processing upload",
       });
     }
-  });
-});
+  }
+);
 
-// GET route for profile picture
+// GET route
 router.get("/:id/profile-picture", async (req, res) => {
+  console.log("\n=== PROFILE PICTURE REQUEST ===");
   try {
+    // Validate user ID
+    if (!req.params.id || !mongoose.Types.ObjectId.isValid(req.params.id)) {
+      console.log("Invalid user ID:", req.params.id);
+      return res.sendFile(
+        path.join(__dirname, "../uploads/default-profile.png")
+      );
+    }
+
     const user = await userModel.findById(req.params.id);
+    console.log("User found:", user?._id);
+    console.log("Profile picture ID:", user?.profilePicture);
+
     if (!user || !user.profilePicture) {
-      return res.status(404).json({
-        message: "Profile picture not found",
-        defaultPicture: true,
-      });
+      console.log("No user or profile picture found, sending default");
+      return res.sendFile(
+        path.join(__dirname, "../uploads/default-profile.png")
+      );
     }
 
-    // If profilePicture is a URL or default path
-    if (
-      typeof user.profilePicture === "string" &&
-      (user.profilePicture.startsWith("http") ||
-        user.profilePicture.startsWith("/uploads/"))
-    ) {
-      return res.redirect(user.profilePicture);
+    // Validate profile picture ID
+    if (!mongoose.Types.ObjectId.isValid(user.profilePicture)) {
+      console.log("Invalid profile picture ID:", user.profilePicture);
+      return res.sendFile(
+        path.join(__dirname, "../uploads/default-profile.png")
+      );
     }
 
-    // Try to find the file in GridFS
-    const file = await gfs.files.findOne({
-      _id: new mongoose.Types.ObjectId(user.profilePicture),
-    });
+    const fileId = new mongoose.Types.ObjectId(user.profilePicture);
+
+    const gfs = getGfs();
+    if (!gfs) {
+      console.log("GridFS not initialized, sending default");
+      return res.sendFile(
+        path.join(__dirname, "../uploads/default-profile.png")
+      );
+    }
+
+    // Check if file exists in GridFS
+    const file = await mongoose.connection.db
+      .collection("uploads.files")
+      .findOne({ _id: fileId });
 
     if (!file) {
-      return res.status(404).json({
-        message: "Profile picture file not found",
-        defaultPicture: true,
+      console.log("No GridFS file found, sending default");
+      // Update user to remove invalid profile picture reference
+      await userModel.findByIdAndUpdate(user._id, {
+        $unset: { profilePicture: 1 },
       });
+      return res.sendFile(
+        path.join(__dirname, "../uploads/default-profile.png")
+      );
     }
 
     // Set proper content type
-    res.set("Content-Type", file.metadata.contentType);
-
-    // Create read stream
-    const bucket = new mongoose.mongo.GridFSBucket(conn.db, {
-      bucketName: "uploads",
+    res.set({
+      "Access-Control-Allow-Origin": req.headers.origin || "*",
+      "Access-Control-Allow-Credentials": "true",
+      "Cross-Origin-Resource-Policy": "cross-origin",
+      "Content-Type": file.contentType || "image/jpeg",
     });
-
-    const downloadStream = bucket.openDownloadStream(file._id);
+    // Stream the file
+    const downloadStream = gfs.openDownloadStream(fileId);
     downloadStream.pipe(res);
 
     downloadStream.on("error", (error) => {
-      console.error("Error streaming file:", error);
-      res.status(500).json({
-        message: "Error streaming profile picture",
-        defaultPicture: true,
+      console.error("Stream error:", error);
+      res.set({
+        "Access-Control-Allow-Origin": req.headers.origin || "*",
+        "Access-Control-Allow-Credentials": "true",
+        "Cross-Origin-Resource-Policy": "cross-origin",
+        "Content-Type": "image/png",
       });
+      res.sendFile(path.join(__dirname, "../uploads/default-profile.png"));
     });
   } catch (error) {
-    console.error("Error serving profile picture:", error);
-    res.status(500).json({
-      message: "Server error",
-      defaultPicture: true,
+    console.error("Profile picture error:", error);
+    res.set({
+      "Access-Control-Allow-Origin": req.headers.origin || "*",
+      "Access-Control-Allow-Credentials": "true",
+      "Cross-Origin-Resource-Policy": "cross-origin",
+      "Content-Type": "image/png",
     });
+    res.sendFile(path.join(__dirname, "../uploads/default-profile.png"));
   }
 });
+
 module.exports = router;

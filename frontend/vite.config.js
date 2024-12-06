@@ -5,8 +5,15 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
+      host: true, // This allows external access
+      port: 5173, // Default Vite port
       // Proxy for API routes
       "/api": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+        secure: false,
+      },
+      "/api/users": {
         target: "http://localhost:5000",
         changeOrigin: true,
         secure: false,

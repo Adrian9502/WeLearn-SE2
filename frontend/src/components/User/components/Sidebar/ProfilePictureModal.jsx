@@ -59,37 +59,13 @@ const ProfilePictureModal = ({
     setError(null);
     setUploadProgress(0);
 
-    const formData = new FormData();
-    formData.append("profilePicture", selectedFile);
-
     try {
-      const response = await axios({
-        method: "POST",
-        url: `/api/users/${userId}/profile-picture`,
-        data: formData,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        withCredentials: true,
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setUploadProgress(percentCompleted);
-        },
-      });
-
-      if (response.data.success) {
-        // Force a cache-busting timestamp
-        const timestamp = new Date().getTime();
-        const newPictureUrl = `/api/users/${userId}/profile-picture?t=${timestamp}`;
-        onUpdate(newPictureUrl);
-        onClose();
-      } else {
-        throw new Error(response.data.message || "Upload failed");
-      }
+      await onUpdate(selectedFile);
+      onClose(); // Close modal after successful upload
+      setSelectedFile(null); // Reset selected file
+      setPreviewUrl(null); // Reset preview
     } catch (error) {
-      console.error("Error updating profile picture:", error);
+      console.error("Error uploading file:", error);
       setError(
         error.response?.data?.message ||
           error.message ||

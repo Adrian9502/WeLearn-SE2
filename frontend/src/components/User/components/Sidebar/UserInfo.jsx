@@ -20,43 +20,69 @@ export default function UserInfo({
   const defaultProfilePic =
     "https://cdn-icons-png.freepik.com/512/6858/6858441.png";
 
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
   useEffect(() => {
     const fetchUserProfile = async () => {
-      if (!userId) return;
-
       try {
-        // Correct axios get request
+        const timestamp = new Date().getTime();
         const response = await axios.get(
-          `/api/users/${userId}/profile-picture`,
+          `/api/users/${userId}/profile-picture?t=${timestamp}`,
           {
-            responseType: "blob", // Important for image/file downloads
-            withCredentials: true, // Instead of credentials: 'include'
+            baseURL: BASE_URL,
+            responseType: "blob",
+            withCredentials: true,
           }
         );
 
-        // Create object URL from the blob
         const imageUrl = URL.createObjectURL(response.data);
         setCurrentPicture(imageUrl);
-
-        // Cleanup function to revoke object URL
-        return () => URL.revokeObjectURL(imageUrl);
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error("Error fetching profile picture:", error);
         setCurrentPicture(defaultProfilePic);
       }
     };
 
-    fetchUserProfile();
+    if (userId) {
+      fetchUserProfile();
+    }
   }, [userId]);
 
-  const handlePictureUpdate = (newPicture) => {
-    setCurrentPicture(newPicture);
+  const handlePictureUpdate = async (newPicture) => {
+    try {
+      const formData = new FormData();
+      formData.append("profilePicture", newPicture);
 
-    if (onUserDataUpdate) {
-      onUserDataUpdate({
-        ...userData,
-        profilePicture: newPicture,
-      });
+      const response = await axios.post(
+        `/api/users/${userId}/profile-picture`,
+        formData,
+        {
+          baseURL: BASE_URL,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.success) {
+        // Generate a new URL with a unique timestamp to prevent caching
+        const timestamp = new Date().getTime();
+        const imageUrl = `${BASE_URL}/api/users/${userId}/profile-picture?t=${timestamp}`;
+
+        // Use the new URL immediately
+        setCurrentPicture(imageUrl);
+
+        // Optional: Force a re-render by triggering a state update
+        if (onUserDataUpdate) {
+          onUserDataUpdate({
+            ...userData,
+            profilePicture: imageUrl,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error updating profile picture:", error);
+      throw error;
     }
   };
 
@@ -84,6 +110,7 @@ export default function UserInfo({
                   <img
                     src={currentPicture || defaultProfilePic}
                     alt={`${username}'s profile`}
+                    crossOrigin="anonymous"
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       console.error("Error loading image:", e);

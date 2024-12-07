@@ -51,7 +51,6 @@ const ManageUsers = () => {
           hour12: true,
         }),
       }));
-      console.log(transformedData);
 
       setUserData(transformedData);
     } catch (err) {

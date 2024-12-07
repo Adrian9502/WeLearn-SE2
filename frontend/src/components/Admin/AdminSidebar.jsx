@@ -1,15 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  FaUser,
-  FaQuestionCircle,
-  FaChartLine,
-  FaCamera,
-} from "react-icons/fa";
+import { FaCamera } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { RiLogoutBoxLine, RiMenuLine, RiCloseLine } from "react-icons/ri";
 import { MdAdminPanelSettings } from "react-icons/md";
-
-import { RiAdminFill } from "react-icons/ri";
+import Links from "./components/AdminSidebar/Links";
 import axios from "axios";
 import Swal from "sweetalert2";
 const AdminSidebar = () => {
@@ -105,28 +99,6 @@ const AdminSidebar = () => {
     setIsOpen(!isOpen);
   };
 
-  const links = [
-    {
-      path: "/admin-dashboard/",
-      icon: <FaChartLine size={20} />,
-      label: "Dashboard",
-    },
-    {
-      path: "/admin-dashboard/manage-quizzes",
-      icon: <FaQuestionCircle size={20} />,
-      label: "Manage Quizzes",
-    },
-    {
-      path: "/admin-dashboard/manage-users",
-      icon: <FaUser size={20} />,
-      label: "Manage Users",
-    },
-    {
-      path: "/admin-dashboard/manage-admins",
-      icon: <RiAdminFill size={20} />,
-      label: "Manage Admins",
-    },
-  ];
   const handleProfilePictureUpdate = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -308,7 +280,7 @@ const AdminSidebar = () => {
               </span>
             </div>
           </div>
-          {links.map((link, index) => {
+          {Links.map((link, index) => {
             const isActive = location.pathname === link.path;
             return (
               <Link

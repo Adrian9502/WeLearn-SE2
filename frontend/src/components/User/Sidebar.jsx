@@ -4,130 +4,8 @@ import PropTypes from "prop-types";
 import { useUser } from "./UserContext";
 import Swal from "sweetalert2";
 import UserInfo from "./components/Sidebar/UserInfo";
-
-// Custom hook
-const useQuizzes = () => {
-  const [quizzes, setQuizzes] = useState([]);
-
-  useEffect(() => {
-    const fetchQuizzes = async () => {
-      try {
-        const response = await fetch("/api/quizzes");
-        const data = await response.json();
-        setQuizzes(data);
-      } catch (error) {
-        console.error("Error fetching quizzes:", error);
-      }
-    };
-
-    fetchQuizzes();
-  }, []);
-
-  return quizzes;
-};
-// function to get user progress
-const findQuizProgress = (quizId, userProgress) => {
-  return userProgress?.find(
-    (progress) => progress.quizId._id === quizId && progress.completed
-  );
-};
-const QuizItem = ({ quiz, onClick, userProgress, completedQuizzes }) => {
-  const isCompleted =
-    userProgress?.some(
-      (progress) => progress.quizId._id === quiz._id && progress.completed
-    ) || completedQuizzes?.has(quiz._id);
-
-  return (
-    <div
-      data-quiz-id={quiz._id}
-      onClick={isCompleted ? undefined : onClick}
-      className={`
-        relative btn bg-gradient-to-r overflow-hidden rounded-lg
-        ${
-          isCompleted
-            ? "from-emerald-500 to-emerald-600 cursor-not-allowed"
-            : "from-yellow-600 to-amber-600/80 hover:to-yellow-700 cursor-pointer"
-        }
-        transform transition-all duration-200
-        sm:p-3 p-2 shadow-lg`}
-    >
-      <div className="flex justify-between items-center">
-        <span className="text-white">{quiz.title}</span>
-        {isCompleted && (
-          <div className="flex items-center">
-            <div className="sm:w-6 sm:h-6 h-5 w-5 bg-green-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold">✓</span>
-            </div>
-          </div>
-        )}
-      </div>
-      <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent pointer-events-none" />
-    </div>
-  );
-};
-
-const QuizSection = ({
-  title,
-  quizzes,
-  isExpanded,
-  onToggle,
-  onQuizSelect,
-  userProgress,
-  completedQuizzes,
-}) => {
-  const isSectionCompleted = () => {
-    if (!quizzes || (!userProgress && !completedQuizzes)) return false;
-    return quizzes.every(
-      (quiz) =>
-        findQuizProgress(quiz._id, userProgress) ||
-        completedQuizzes?.has(quiz._id)
-    );
-  };
-
-  return (
-    <div className="mt-4">
-      <div
-        onClick={() => onToggle(title.toLowerCase())}
-        className={`
-          relative overflow-hidden btn rounded-lg cursor-pointer
-          ${
-            isSectionCompleted()
-              ? "bg-gradient-to-r from-fuchsia-700 to-purple-600 hover:to-fuchsia-700"
-              : "bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:to-indigo-700"
-          }
-          sm:p-3 p-2 transform transition-all duration-200
-          shadow-lg
-        `}
-      >
-        <div className="flex justify-between items-center">
-          <div className="text-white sm:text-lg">{title}</div>
-          {isSectionCompleted() && (
-            <div className="flex items-center">
-              <div className="sm:w-7 sm:h-7 h-5 w-5 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-slate-200 font-bold">✓</span>
-              </div>
-            </div>
-          )}
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent pointer-events-none" />
-      </div>
-
-      {isExpanded[title.toLowerCase()] && (
-        <div className="mt-3 space-y-3 p-1.5 bg-gradient-to-b from-purple-900/90 to-fuchsia-900/80 rounded-lg">
-          {quizzes?.map((quiz) => (
-            <QuizItem
-              key={quiz._id}
-              quiz={quiz}
-              onClick={() => onQuizSelect(quiz)}
-              userProgress={userProgress}
-              completedQuizzes={completedQuizzes}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
+import QuizItem from "./components/Quiz/QuizItem";
+import useQuizzes from "./components/Quiz/utils/useQuizzes";
 
 // Main Component
 export default function Sidebar({
@@ -164,9 +42,11 @@ export default function Sidebar({
       console.error("Error fetching user data:", error);
     }
   };
+  // ----- HANDLE USER DATA UPDATE -----
   const handleUserDataUpdate = (newUserData) => {
     setUserData(newUserData);
   };
+  // ----- USE EFFECT TO FETCH USER DATA -----
   useEffect(() => {
     fetchUserData();
   }, [userId]);
@@ -461,56 +341,15 @@ Sidebar.propTypes = {
   userProgress: PropTypes.arrayOf(
     PropTypes.shape({
       quizId: PropTypes.shape({
-        _id: PropTypes.string.isRequired,
-        title: PropTypes.string.isRequired,
+        _id: PropTypes.string,
       }),
-      completed: PropTypes.bool.isRequired,
+      completed: PropTypes.bool,
     })
   ),
   onShowProgress: PropTypes.func.isRequired,
   onShowRankings: PropTypes.func.isRequired,
   onShowDailyRewards: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
-  completedQuizzes: PropTypes.instanceOf(Set), // Add this prop type
-};
-
-QuizItem.propTypes = {
-  quiz: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-  }).isRequired,
-  onClick: PropTypes.func.isRequired,
-  userProgress: PropTypes.arrayOf(
-    PropTypes.shape({
-      quizId: PropTypes.shape({
-        _id: PropTypes.string.isRequired,
-        title: PropTypes.string.isRequired,
-      }),
-      completed: PropTypes.bool.isRequired,
-    })
-  ),
-  completedQuizzes: PropTypes.instanceOf(Set),
-};
-
-QuizSection.propTypes = {
-  title: PropTypes.string.isRequired,
-  quizzes: PropTypes.arrayOf(
-    PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-      title: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-  isExpanded: PropTypes.object.isRequired,
-  onToggle: PropTypes.func.isRequired,
-  onQuizSelect: PropTypes.func.isRequired,
-  userProgress: PropTypes.arrayOf(
-    PropTypes.shape({
-      quizId: PropTypes.shape({
-        _id: PropTypes.string.isRequired,
-        title: PropTypes.string.isRequired,
-      }),
-      completed: PropTypes.bool.isRequired,
-    })
-  ),
-  completedQuizzes: PropTypes.instanceOf(Set),
+  completedQuizzes: PropTypes.instanceOf(Set).isRequired,
+  refreshQuizProgress: PropTypes.number.isRequired,
 };

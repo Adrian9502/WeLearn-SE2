@@ -13,17 +13,18 @@ import wrongSound from "/music/losetrumpet.mp3";
 import DailyRewards from "./components/Sidebar/DailyRewards";
 
 export default function UserDashboard() {
-  // sound
+  // ----- SOUND -----
   const correctAudioRef = useRef(null);
   const wrongAudioRef = useRef(null);
-  // pop up component onclick
+  // ----- POP UP COMPONENT ON CLICK -----
   const [isProgressVisible, setIsProgressVisible] = useState(false);
   const [isRankingVisible, setIsRankingVisible] = useState(false);
   const [isDailyRewardsVisible, setIsDailyRewardsVisible] = useState(false);
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // ----- AUDIO   -----
   const audioRef = useRef(null);
   const [isMuted, setIsMuted] = useState(false);
+  // ----- QUIZ -----
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [userAnswer, setUserAnswer] = useState("");
   const { user, updateUser } = useUser();
@@ -37,7 +38,7 @@ export default function UserDashboard() {
   const [hasShownAnswer, setHasShownAnswer] = useState(false);
   const [refreshQuizProgressTrigger, setRefreshQuizProgressTrigger] =
     useState(0);
-  // Check for unclaimed rewards when component mounts
+  // ----- CHECK FOR UNCLAIMED REWARDS -----
   useEffect(() => {
     const checkDailyRewards = async () => {
       if (!user?.userId) return;
@@ -69,7 +70,7 @@ export default function UserDashboard() {
 
     checkDailyRewards();
   }, [user?.userId]);
-  // Correct and wrong answer sound
+  // ----- CORRECT AND WRONG ANSWER SOUND -----
   useEffect(() => {
     correctAudioRef.current = new Audio(correctSound);
     wrongAudioRef.current = new Audio(wrongSound);

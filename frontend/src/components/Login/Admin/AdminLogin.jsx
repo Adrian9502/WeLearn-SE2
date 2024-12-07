@@ -12,77 +12,19 @@ import {
   Star,
   Calendar,
   ArrowRight,
-  Eye,
-  EyeOff,
 } from "lucide-react";
+import FormInput from "./FormInput";
 
-const FormInput = ({
-  type = "text",
-  name,
-  placeholder,
-  icon: Icon,
-  value,
-  onChange,
-  onBlur,
-  error,
-  touched,
-  showPassword,
-  togglePassword,
-}) => {
-  const isPasswordField = type === "password";
-
-  return (
-    <div className="space-y-1">
-      {/* Container for input and error */}
-      <div className="relative">
-        {/* Separate container for input and icons */}
-        {Icon && (
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Icon className="h-5 w-5 text-slate-400" />
-          </div>
-        )}
-        <input
-          type={isPasswordField && showPassword ? "text" : type}
-          name={name}
-          placeholder={placeholder}
-          value={value}
-          onChange={onChange}
-          onBlur={onBlur}
-          className={`block w-full ${Icon ? "pl-10" : "pl-3"} pr-${
-            isPasswordField ? "10" : "3"
-          } py-2 rounded-md bg-slate-700 text-white border ${
-            error && touched ? "border-red-500" : "border-slate-600"
-          } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-        />
-        {isPasswordField && (
-          <button
-            type="button"
-            onClick={togglePassword}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center"
-          >
-            {showPassword ? (
-              <EyeOff className="h-5 w-5 text-slate-400 hover:text-slate-300" />
-            ) : (
-              <Eye className="h-5 w-5 text-slate-400 hover:text-slate-300" />
-            )}
-          </button>
-        )}
-      </div>
-      {/* Error message in separate div */}
-      {error && touched && <p className="text-sm text-red-400">{error}</p>}
-    </div>
-  );
-};
-
-const AdminLogin = () => {
+export default function AdminLogin() {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
-  // context
+  // ----- CONTEXT -----
   const { saveUser } = useUser();
-  //
+  // ----- NAVIGATION -----
   const navigate = useNavigate();
+  // ----- FORM DATA -----
   const [formData, setFormData] = useState({
     fullName: "",
     username: "",
@@ -91,11 +33,17 @@ const AdminLogin = () => {
     confirmPassword: "",
     dob: "",
   });
+  // ----- ERRORS -----
   const [errors, setErrors] = useState({});
+  // ----- TOUCHED -----
   const [touched, setTouched] = useState({});
+  // ----- LOADING -----
   const [loading, setLoading] = useState(false);
+  // ----- REGISTRATION MESSAGE -----
   const [registrationMessage, setRegistrationMessage] = useState("");
+  // ----- LOGIN MESSAGE -----
   const [loginMessage, setLoginMessage] = useState("");
+  // ----- CONTAINER HEIGHT -----
   const [containerHeight, setContainerHeight] = useState("auto");
   useEffect(() => {
     const container = document.querySelector(".form-container-admin");
@@ -111,7 +59,7 @@ const AdminLogin = () => {
       document.title = originalTitle;
     };
   }, []);
-
+  // ----- MODE SWITCH (LOGIN/REGISTER) -----
   const handleModeSwitch = () => {
     setIsAnimating(true);
     setFormData({
@@ -145,6 +93,7 @@ const AdminLogin = () => {
       setIsAnimating(false);
     }, 600);
   };
+  // ----- SUBMIT HANDLER -----
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -266,7 +215,7 @@ const AdminLogin = () => {
       [e.target.name]: e.target.value,
     });
   };
-
+  // ----- BLUR HANDLER -----
   const handleBlur = (fieldName) => {
     setTouched((prev) => ({ ...prev, [fieldName]: true }));
   };
@@ -505,6 +454,4 @@ const AdminLogin = () => {
       </div>
     </div>
   );
-};
-
-export default AdminLogin;
+}

@@ -1,150 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import Forms from "./Forms";
-import { Splide, SplideSlide } from "@splidejs/react-splide";
 import "@splidejs/react-splide/css";
 import ProfileCard from "./components/ProfileCard";
-import { motion, useInView } from "framer-motion";
-
-// Animation variants
-const animations = {
-  fadeInUp: {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 1, ease: "easeOut" },
-    },
-  },
-  fadeIn: {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { duration: 2 },
-    },
-  },
-};
-
-// Preview section content
-const previewSections = [
-  {
-    id: "overview",
-    images: [
-      "/user-login/overview.png",
-      "/user-login/overview-1.png",
-      "/user-login/overview-2.png",
-    ],
-    title: "Enhance your coding skills",
-    description:
-      "Sharpen your knowledge with fun, interactive challenges on sorting algorithms and binary operations. Test your logic and problem-solving abilities while mastering essential coding concepts.",
-  },
-  {
-    id: "gameplay",
-    image: "/user-login/playing-gif.gif",
-    title: "Level Up Your Coding Game",
-    description:
-      "Take your coding skills to the next level with engaging challenges in sorting algorithms and binary operations. Strengthen your problem-solving abilities while having fun and mastering key programming concepts. Earn coins for each correct answer, and use them to reveal answers when you're stuck!",
-  },
-  {
-    id: "progress",
-    image: "/user-login/progress-gif.gif",
-    title: "Track Your Progress",
-    description:
-      "Monitor your improvement over time! Search and sort your progress by title, total attempts, and completion time to see how far you've come.",
-  },
-  {
-    id: "ranking",
-    image: "/user-login/ranking-gif.gif",
-    title: "Become a Coding Legend!",
-    description:
-      "Challenge yourself with interactive coding quizzes and rise through the ranks! Earn titles like Quiz Master, Speed Demon, Coin Champion, Consistency King, and Efficiency Elite as you showcase your skills in sorting algorithms and binary operations. Compete for the top spot and prove your coding prowess!",
-  },
-];
-
-// Team members data
-const teamMembers = [
-  {
-    image: "/team/adrian.png",
-    name: "John Adrian D. Bonto",
-    role: "Full Stack Developer",
-  },
-  {
-    image: "/team/derwin.jpg",
-    name: "Derwin P. Elsenique",
-    role: "Research Paper Scientist",
-  },
-  {
-    image: "/team/ruis.jpg",
-    name: "Ruis A. Lirag",
-    role: "Research Paper Scientist",
-  },
-  {
-    image: "/team/jhade.png",
-    name: "Jhade B. Piamonte",
-    role: "Research Analyst",
-  },
-];
-
-const PreviewSection = ({
-  title,
-  description,
-  image,
-  images,
-  isReversed,
-  variants,
-}) => (
-  <div className="w-full px-4 lg:px-52 mx-auto mt-20 lg:mt-48 flex flex-col lg:flex-row gap-10">
-    {images ? (
-      <Splide
-        aria-label="Preview Images"
-        options={{
-          width: "100%",
-          type: "loop",
-          perPage: 1,
-          autoplay: true,
-          interval: 3000,
-          arrows: true,
-          pagination: true,
-        }}
-        className={`${isReversed ? "lg:order-2" : ""} w-full lg:w-1/2`}
-      >
-        {images.map((img, index) => (
-          <SplideSlide key={index}>
-            <img
-              src={img}
-              className="rounded-lg shadow-2xl border-2 border-yellow-400 w-full"
-              alt={`preview ${index}`}
-            />
-          </SplideSlide>
-        ))}
-      </Splide>
-    ) : (
-      <div className={`${isReversed ? "lg:order-2" : ""} w-full lg:w-1/2`}>
-        <img
-          src={image}
-          className="w-full rounded-lg shadow-2xl border-2 border-yellow-400"
-          alt="preview"
-        />
-      </div>
-    )}
-
-    <motion.div
-      variants={variants}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, threshold: 0.1 }}
-      className="text-white w-full lg:w-1/2"
-    >
-      <h3 className="text-2xl mb-10 kemco-font text-center font-outline text-white md:text-4xl lg:text-3xl leading-loose">
-        {title}
-      </h3>
-      <p className="leading-snug DePixelKlein text-white lg:text-xl text-base">
-        {description}
-      </p>
-    </motion.div>
-  </div>
-);
+import { motion } from "framer-motion";
+import PropTypes from "prop-types";
+import teamMembers from "./utils/teamMembers";
+import previewSections from "./utils/previewSections";
+import PreviewSection from "./components/PreviewSection";
+import animations from "./utils/animation";
 
 const UserLogin = () => {
+  // ------ STATES ------
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
   const [errors, setErrors] = useState({});
@@ -152,8 +18,7 @@ const UserLogin = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef(null);
-  const { inView } = useInView({ triggerOnce: true, threshold: 0.1 });
-
+  // ------ EFFECTS ------
   useEffect(() => {
     audioRef.current = new Audio(
       "/music/Curious Critters (Extended Version) 1.mp3"
@@ -175,6 +40,15 @@ const UserLogin = () => {
     }
   }, [isMuted]);
 
+  useEffect(() => {
+    const originalTitle = document.title;
+    document.title = "WeLearn - Sharpen your skills and test your knowledge";
+
+    return () => {
+      document.title = originalTitle;
+    };
+  }, []);
+  // ------ FUNCTIONS ------
   const togglePopup = (register = false) => {
     setIsRegister(register);
     setIsPopupOpen((prev) => {
@@ -194,14 +68,7 @@ const UserLogin = () => {
         .catch((error) => console.warn("Audio playback failed: ", error));
     }
   };
-  useEffect(() => {
-    const originalTitle = document.title;
-    document.title = "WeLearn - Sharpen your skills and test your knowledge";
 
-    return () => {
-      document.title = originalTitle;
-    };
-  }, []);
   return (
     <main className="bg-gradient-to-b from-[#622aff] to-[#622aff]/90 custom-cursor min-h-screen pt-4">
       {/* Audio Controls */}
@@ -342,4 +209,12 @@ const UserLogin = () => {
   );
 };
 
+PreviewSection.propTypes = {
+  title: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  image: PropTypes.string,
+  images: PropTypes.arrayOf(PropTypes.string),
+  isReversed: PropTypes.bool,
+  variants: PropTypes.object,
+};
 export default UserLogin;

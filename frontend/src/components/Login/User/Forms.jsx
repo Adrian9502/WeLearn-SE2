@@ -15,6 +15,7 @@ const Forms = ({
   setFormError,
   setIsPopupOpen,
 }) => {
+  // ------ STATES ------
   const { saveUser } = useUser();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -33,12 +34,14 @@ const Forms = ({
     dob: "",
   });
 
+  // ------ CALLBACKS ------
   const handleBlur = useCallback(
     (fieldName) => {
       setTouched((prev) => ({ ...prev, [fieldName]: true }));
     },
     [setTouched]
   );
+
   const handleLoginSubmit = useCallback(async () => {
     setLoading(true);
     try {
@@ -104,6 +107,7 @@ const Forms = ({
       setLoading(false);
     }
   }, [formData, setIsPopupOpen]);
+
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault();
@@ -182,9 +186,11 @@ const Forms = ({
     setSuccessfulRegistration(false);
     setSuccessfulLogin(false);
   }, [setErrors, setFormError]);
+  // ------ EFFECTS ------
   useEffect(() => {
     resetForm();
   }, [isRegister, resetForm]);
+  // ------ FUNCTIONS ------
   const renderField = useCallback(
     (label, name, type, errorMessage) => {
       const shouldShowPasswordToggle =

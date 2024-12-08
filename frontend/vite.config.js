@@ -9,28 +9,28 @@ export default defineConfig({
     proxy: {
       // Proxy for API routes
       "/api": {
-        target: "http://localhost:5000",
+        target: "https://welearn-api.vercel.app",
         changeOrigin: true,
         secure: false,
       },
       "/api/users": {
-        target: "http://localhost:5000",
+        target: "https://welearn-api.vercel.app",
         changeOrigin: true,
         secure: false,
       },
       // Proxy for authentication routes without /api prefix
       "/register": {
-        target: "http://localhost:5000",
+        target: "https://welearn-api.vercel.app",
         changeOrigin: true,
         secure: false,
       },
       "/login": {
-        target: "http://localhost:5000",
+        target: "https://welearn-api.vercel.app",
         changeOrigin: true,
         secure: false,
       },
       "/uploads": {
-        target: "http://localhost:5000",
+        target: "https://welearn-api.vercel.app",
         changeOrigin: true,
         secure: false,
       },

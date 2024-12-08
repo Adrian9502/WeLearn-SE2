@@ -356,7 +356,7 @@ export default function AdminLogin() {
           <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-[1px]">
             <button
               onClick={handleBack}
-              className="bg-slate-800 hover:bg-slate-900 transition text-xs p-2 text-white rounded-lg"
+              className="bg-slate-800 hover:bg-slate-900 transition text-xs p-2.5 text-white rounded-lg"
             >
               Back to home
             </button>
@@ -367,7 +367,7 @@ export default function AdminLogin() {
         <div className="w-full lg:w-1/2 p-4 md:p-6 lg:p-8 relative">
           <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl blur-xl"></div>
           <div
-            className={`relative max-w-md mx-auto overflow-hidden rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-[1px] transition-all ${
+            className={`relative max-w-md mx-auto overflow-hidden rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-[2px] transition-all ${
               isAnimating ? "opacity-0 scale-95" : "opacity-100 scale-100"
             }`}
           >

@@ -19,12 +19,12 @@ export default defineConfig({
         secure: false,
       },
       // Proxy for authentication routes without /api prefix
-      "/register": {
+      "/api//register": {
         target: "https://welearn-api.vercel.app",
         changeOrigin: true,
         secure: false,
       },
-      "/login": {
+      "/api//login": {
         target: "https://welearn-api.vercel.app",
         changeOrigin: true,
         secure: false,

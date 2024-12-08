@@ -131,8 +131,10 @@ app.get("/", (req, res) => {
   res.send("Hello from the backend!");
 });
 
-// Start the server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Only listen if not in serverless environment
+if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
 
 module.exports = app;

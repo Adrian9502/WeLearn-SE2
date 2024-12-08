@@ -13,7 +13,7 @@ pre {
 /* sweet alert custom */
 @font-face {
   font-family: "Retro Gaming";
-  src: url("../../../../data/font/Retro\ Gaming.ttf");
+  src: url("/RetroGaming.ttf");
 }
 .swal-font {
   font-family: "Retro Gaming";

@@ -1,14 +1,14 @@
 @font-face {
   font-family: "Kemco";
-  src: url("../../data/font/Kemco Pixel Bold.ttf") format("truetype");
+  src: url("/Kemco Pixel Bold.ttf") format("truetype");
 }
 @font-face {
   font-family: "DePixelKlein";
-  src: url("../../data/font/DePixelKlein.ttf") format("truetype");
+  src: url("/DePixelKlein.ttf") format("truetype");
 }
 @font-face {
   font-family: "PressStart2p";
-  src: url("../../data/font/PressStart2P.ttf") format("truetype");
+  src: url("/PressStart2P.ttf") format("truetype");
 }
 .kemco-font {
   font-family: "Kemco", sans-serif;

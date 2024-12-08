@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { MdAdminPanelSettings } from "react-icons/md";
-
-import axios from "axios";
+import api from "../../utils/axios";
 import {
   LineChart,
   Line,
@@ -75,11 +74,11 @@ export default function AdminDashboard() {
     const fetchData = async () => {
       try {
         // fetch all users
-        const fetchUser = await axios.get("/api/users");
+        const fetchUser = await api.get("/api/users");
         // fetch all admins
-        const fetchAdmin = await axios.get("/api/admins");
+        const fetchAdmin = await api.get("/api/admins");
         // fetch all quizzes
-        const fetchQuizzes = await axios.get("/api/quizzes");
+        const fetchQuizzes = await api.get("/api/quizzes");
 
         const users = fetchUser.data;
         const admin = fetchAdmin.data;
@@ -89,7 +88,7 @@ export default function AdminDashboard() {
         const totalQuizzes = quizzes.length;
 
         // Fetch completion rate
-        const fetchCompletionRate = await axios.get(
+        const fetchCompletionRate = await api.get(
           "/api/progress/completion-stats"
         );
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import ManageUsersModal from "./ManageUsersModal";
 import DashboardManager from "../DashboardManager";
-import axios from "axios";
+import api from "../../../utils/axios";
 
 // MAIN COMPONENT
 const ManageUsers = () => {
@@ -27,7 +27,7 @@ const ManageUsers = () => {
   const fetchUserData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get("/api/users");
+      const response = await api.get("/api/users");
 
       const transformedData = response.data.map((user) => ({
         ID: user._id,

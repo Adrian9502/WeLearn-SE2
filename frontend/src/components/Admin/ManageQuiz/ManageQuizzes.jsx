@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import ManageQuizzesModal from "./ManageQuizzesModal";
 import DashboardManager from "../DashboardManager";
-import axios from "axios";
+import api from "../../../utils/axios";
 
 // MAIN COMPONENT
 const ManageQuizzes = () => {
@@ -27,7 +27,7 @@ const ManageQuizzes = () => {
   const fetchQuizData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get("/api/quizzes");
+      const response = await api.get("/api/quizzes");
 
       const transformedData = response.data.map((quiz) => ({
         ID: quiz._id,

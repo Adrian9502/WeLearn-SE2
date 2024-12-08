@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../User/UserContext";
 import Swal from "sweetalert2";
-import axios from "axios";
+import api from "../../../utils/axios";
 import validateField from "./admin-validation";
 import {
   User,
@@ -131,7 +131,7 @@ export default function AdminLogin() {
           {}
         );
         const endpoint = isLogin ? "/api/login/admin" : "/api/register/admin";
-        const response = await axios.post(endpoint, payload);
+        const response = await api.post(endpoint, payload);
 
         if (isLogin) {
           // Handle successful login

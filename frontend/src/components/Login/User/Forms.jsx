@@ -1,12 +1,11 @@
 import React, { useState, useCallback, useEffect } from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { useUser } from "../../User/UserContext";
 import { IoIosClose } from "react-icons/io";
 import { Eye, EyeOff } from "lucide-react";
 import validateFormField from "./validation";
-
+import api from "../../../utils/axios";
 const Forms = ({
   isRegister,
   errors,
@@ -46,7 +45,7 @@ const Forms = ({
     setLoading(true);
     try {
       const { username, password } = formData;
-      const response = await axios.post("/api/login/user", {
+      const response = await api.post("/api/login/user", {
         username,
         password,
       });
@@ -85,7 +84,7 @@ const Forms = ({
     setLoading(true);
     try {
       const { fullName, username, email, password, dob } = formData;
-      await axios.post("/api/register/user", {
+      await api.post("/api/register/user", {
         fullName,
         username,
         email,

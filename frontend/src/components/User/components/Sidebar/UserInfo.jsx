@@ -3,7 +3,7 @@ import { FaTrophy, FaSignOutAlt, FaChartLine } from "react-icons/fa";
 import { FaGift } from "react-icons/fa6";
 import PropTypes from "prop-types";
 import ProfilePictureModal from "./ProfilePicture/ProfilePictureModal";
-import axios from "axios";
+import api from "../../../utils/axios";
 export default function UserInfo({
   onLogout,
   username,
@@ -28,7 +28,7 @@ export default function UserInfo({
     const fetchUserProfile = async () => {
       try {
         const timestamp = new Date().getTime();
-        const response = await axios.get(
+        const response = await api.get(
           `/api/users/${userId}/profile-picture?t=${timestamp}`,
           {
             baseURL: BASE_URL,
@@ -55,7 +55,7 @@ export default function UserInfo({
       const formData = new FormData();
       formData.append("profilePicture", newPicture);
 
-      const response = await axios.post(
+      const response = await api.post(
         `/api/users/${userId}/profile-picture`,
         formData,
         {

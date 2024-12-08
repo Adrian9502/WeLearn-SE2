@@ -25,7 +25,14 @@ const adminModel = require("./models/adminModel");
 
 // ----------------MIDDLEWARE-----------------
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+  const allowedOrigins = [
+    "https://welearngame.vercel.app",
+    "http://localhost:5173",
+  ];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
   res.header("Access-Control-Allow-Credentials", "true");
   res.header(
     "Access-Control-Allow-Headers",
@@ -36,7 +43,7 @@ app.use((req, res, next) => {
 });
 app.use(
   cors({
-    origin: ["https://welearngame.vercel.app"],
+    origin: ["https://welearngame.vercel.app", "http://localhost:5173"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],

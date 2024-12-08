@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "./Sidebar";
 import Swal from "sweetalert2";
-import axios from "axios";
+import api from "../../utils/axios";
 import Title from "./components/Sidebar/Title";
 import Placeholder from "./components/Quiz/Placeholder";
 import { useUser } from "./UserContext";
@@ -101,7 +101,7 @@ export default function UserDashboard() {
   useEffect(() => {
     const fetchProgress = async () => {
       try {
-        const response = await axios.get(
+        const response = await api.get(
           `/api/progress/user/${user.userId}/summary`
         );
         setUserProgress(response.data.quizzes);
@@ -126,7 +126,7 @@ export default function UserDashboard() {
   const updateProgress = async (isCorrect, timeSpent) => {
     try {
       // Make the progress update API call
-      await axios.post(
+      await api.post(
         `/api/progress/${user.userId}/${selectedQuiz._id}/answer`,
         {
           questionId: selectedQuiz._id,
@@ -139,7 +139,7 @@ export default function UserDashboard() {
 
       if (isCorrect) {
         // Update coins
-        const updatedUser = await axios.put(`/api/users/${user.userId}/coins`, {
+        const updatedUser = await api.put(`/api/users/${user.userId}/coins`, {
           coins: 50,
           operation: "add",
         });
@@ -269,7 +269,7 @@ export default function UserDashboard() {
             setIsQuizCompleted(true);
             resetQuizState();
             // update the progress
-            const response = await axios.post(
+            const response = await api.post(
               `/api/progress/${user.userId}/${selectedQuiz._id}/answer`,
               {
                 questionId: selectedQuiz._id,
@@ -403,7 +403,7 @@ export default function UserDashboard() {
     }).then(async (result) => {
       if (result.isConfirmed && user.coins >= 300) {
         try {
-          const response = await axios.put(`/api/users/${user.userId}/coins`, {
+          const response = await api.put(`/api/users/${user.userId}/coins`, {
             coins: 300,
             operation: "subtract",
           });

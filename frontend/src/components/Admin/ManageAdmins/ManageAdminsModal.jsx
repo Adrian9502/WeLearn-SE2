@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../../utils/axios";
 import Swal from "sweetalert2";
 import PropTypes from "prop-types";
 import { IoCloseOutline } from "react-icons/io5";
@@ -161,7 +161,7 @@ const ManageAdminsModal = ({
     const action = apiActions[type];
 
     try {
-      const response = await axios({
+      const response = await api({
         method: action.method,
         url: action.endpoint,
         data: formData,

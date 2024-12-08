@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import ManageAdminsModal from "./ManageAdminsModal";
 import DashboardManager from "../DashboardManager";
-import axios from "axios";
+import api from "../../../utils/axios";
 
 // MAIN COMPONENT
 const ManageAdmins = () => {
@@ -27,7 +27,7 @@ const ManageAdmins = () => {
   const fetchAdminData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get("/api/admins");
+      const response = await api.get("/api/admins");
       const transformedData = response.data.map((admin) => ({
         ID: admin._id,
         Profile: admin.profilePicture,

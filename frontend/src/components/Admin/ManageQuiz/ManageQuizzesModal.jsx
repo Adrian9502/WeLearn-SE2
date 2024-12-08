@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+
 import Swal from "sweetalert2";
 import PropTypes from "prop-types";
 import { IoCloseOutline } from "react-icons/io5";
 import validateField from "./utils/validation";
 import InputField from "./components/InputField";
 import TextAreaField from "./components/TextAreaField";
+import api from "../../../utils/axios";
 // ---- BASE API URL ----
 const API_BASE_URL = "/api/quizzes";
 
@@ -135,7 +136,7 @@ const ManageQuizzesModal = ({
     const action = apiActions[type];
 
     try {
-      const response = await axios({
+      const response = await api({
         method: action.method,
         url: action.endpoint,
         data: formData,

@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { RiLogoutBoxLine, RiMenuLine, RiCloseLine } from "react-icons/ri";
 import { MdAdminPanelSettings } from "react-icons/md";
 import Links from "./components/AdminSidebar/Links";
-import axios from "axios";
+import api from "../../utils/axios";
 import Swal from "sweetalert2";
 const AdminSidebar = () => {
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ const AdminSidebar = () => {
       try {
         const adminId = localStorage.getItem("adminId");
         if (adminId) {
-          const response = await axios.get(
+          const response = await api.get(
             `/api/admins/${adminId}/profile-picture`,
             {
               withCredentials: true,
@@ -64,7 +64,7 @@ const AdminSidebar = () => {
       });
 
       if (result.isConfirmed) {
-        await axios.post("/api/logout", {}, { withCredentials: true });
+        await api.post("/api/logout", {}, { withCredentials: true });
 
         // Clear localStorage
         localStorage.removeItem("adminId");
@@ -146,7 +146,7 @@ const AdminSidebar = () => {
       formData.append("profilePicture", file);
 
       const adminId = localStorage.getItem("adminId");
-      const response = await axios.put(
+      const response = await api.put(
         `/api/admins/${adminId}/profile-picture`,
         formData,
         {

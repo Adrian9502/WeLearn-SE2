@@ -8,6 +8,7 @@ const { GridFsStorage } = require("multer-gridfs-storage");
 const multer = require("multer");
 const crypto = require("crypto");
 const path = require("path");
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 // Initialize express app
 const app = express();
 

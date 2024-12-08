@@ -3,7 +3,7 @@ import { FaTrophy, FaSignOutAlt, FaChartLine } from "react-icons/fa";
 import { FaGift } from "react-icons/fa6";
 import PropTypes from "prop-types";
 import ProfilePictureModal from "./ProfilePicture/ProfilePictureModal";
-import api from "../../../utils/axios";
+import api from "../../../../utils/axios";
 export default function UserInfo({
   onLogout,
   username,

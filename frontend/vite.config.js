@@ -7,12 +7,13 @@ export default defineConfig({
     host: true,
     port: 5173,
     proxy: {
+      // Proxy for all API routes
       "/api": {
         target: "https://welearn-api.vercel.app",
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path,
       },
+      // Proxy for uploads
       "/uploads": {
         target: "https://welearn-api.vercel.app",
         changeOrigin: true,

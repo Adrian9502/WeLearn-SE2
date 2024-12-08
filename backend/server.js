@@ -47,13 +47,24 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ---------MONGODB CONNECTION----------------
-connectDB()
-  .then(() => {
+const startServer = async () => {
+  try {
+    // Initialize MongoDB connection
+    await connectDB();
     console.log("MongoDB connection initialized");
-  })
-  .catch((err) => {
-    console.error("Error initializing MongoDB:", err);
-  });
+
+    // Return the configured app
+    return app;
+  } catch (err) {
+    console.error("Failed to initialize server:", err);
+    // Don't exit the process in production
+    if (process.env.NODE_ENV !== "production") {
+      process.exit(1);
+    }
+    return app; // Still return app, but in an error state
+  }
+};
+
 // ----------------SESSION CONFIGURATION----------------
 app.use(
   session({
@@ -69,13 +80,19 @@ app.use(
   })
 );
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    message: "Something broke!",
+  console.error("Error occurred:", err);
+
+  // Send a more graceful error response
+  res.status(err.status || 500).json({
+    success: false,
+    message:
+      process.env.NODE_ENV === "production"
+        ? "An error occurred, please try again later"
+        : err.message,
     error:
-      process.env.NODE_ENV === "development"
-        ? err.message
-        : "Internal server error",
+      process.env.NODE_ENV === "production"
+        ? "Internal server error"
+        : err.stack,
   });
 });
 app.options("*", cors());
@@ -135,7 +152,15 @@ app.get("/", (req, res) => {
 // Only listen if not in serverless environment
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  startServer().then((app) => {
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  });
 }
 
-module.exports = app;
+// For serverless deployment
+module.exports = startServer();
+
+// Add a catch-all route handler
+app.use("*", (req, res) => {
+  res.status(200).send("Hello from the backend!");
+});

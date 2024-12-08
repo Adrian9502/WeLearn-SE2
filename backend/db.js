@@ -3,6 +3,7 @@ const { GridFsStorage } = require("multer-gridfs-storage");
 const multer = require("multer");
 const crypto = require("crypto");
 const path = require("path");
+const config = require("./config");
 
 let gfs;
 let isConnected = false;
@@ -10,45 +11,56 @@ let isConnected = false;
 // Set strictQuery to false to prepare for Mongoose 7
 mongoose.set("strictQuery", false);
 
-const connectDB = async () => {
+const connectDB = async (retries = 5) => {
   if (isConnected) {
     console.log("Using existing database connection");
     return;
   }
 
-  // Enhanced debug logging
-  console.log("Environment:", process.env.NODE_ENV);
-  console.log("MONGODB_URI exists:", !!process.env.MONGODB_URI);
-  console.log("Available env vars:", Object.keys(process.env));
+  console.log("Config status:", {
+    hasMongoUri: !!config.mongodb_uri,
+    environment: config.node_env,
+  });
 
-  if (!process.env.MONGODB_URI) {
-    throw new Error("Please define the MONGODB_URI environment variable");
+  if (!config.mongodb_uri) {
+    console.error("MongoDB URI is not configured");
+    return null; // Don't throw, just return null
   }
 
-  try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-    });
-    isConnected = true;
-    console.log("Database connected successfully");
-    // Initialize GridFS
-    gfs = new mongoose.mongo.GridFSBucket(conn.connection.db, {
-      bucketName: "uploads",
-    });
-    console.log("GridFS Bucket Initialized");
-
-    return conn;
-  } catch (error) {
-    console.error(`MongoDB connection error: ${error.message}`);
-    // Don't exit the process in production
-    if (process.env.NODE_ENV === "production") {
-      console.error("Database connection failed, but keeping process alive");
-      return null;
-    } else {
-      process.exit(1);
+  while (retries > 0) {
+    try {
+      const conn = await mongoose.connect(config.mongodb_uri, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        serverSelectionTimeoutMS: 5000,
+        socketTimeoutMS: 45000,
+      });
+      isConnected = true;
+      console.log("Database connected successfully");
+      // Initialize GridFS
+      gfs = new mongoose.mongo.GridFSBucket(conn.connection.db, {
+        bucketName: "uploads",
+      });
+      console.log("GridFS Bucket Initialized");
+      return conn;
+    } catch (error) {
+      console.error(
+        `MongoDB connection attempt failed (${retries} retries left):`,
+        error.message
+      );
+      retries--;
+      if (retries === 0) {
+        if (process.env.NODE_ENV === "production") {
+          console.error(
+            "All connection attempts failed, but keeping process alive"
+          );
+          return null;
+        } else {
+          throw error;
+        }
+      }
+      // Wait for 1 second before retrying
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
 };

@@ -35,7 +35,7 @@ This MERN stack application is an interactive quiz platform designed to help stu
 
 ## 🛠 Tools used for Testing
 
-- **Postman**: Jest
+- **Jest**: 
 
 ## 📦 Prerequisites
 

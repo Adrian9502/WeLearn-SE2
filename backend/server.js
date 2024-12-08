@@ -8,6 +8,8 @@ const { GridFsStorage } = require("multer-gridfs-storage");
 const multer = require("multer");
 const crypto = require("crypto");
 const path = require("path");
+const fs = require("fs").promises;
+const MongoStore = require("connect-mongo");
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 // Initialize express app
 const app = express();
@@ -78,6 +80,10 @@ app.use(
     secret: process.env.SESSION_SECRET || "your-secret-key",
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGODB_URI,
+      ttl: 24 * 60 * 60, // Session TTL (1 day)
+    }),
     cookie: {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
@@ -133,8 +139,13 @@ app.use(
         "Cross-Origin-Resource-Policy": "cross-origin",
       });
     },
+    fallthrough: true, // Allow falling through if file not found
   })
 );
+// Add a fallback route for uploads in production
+app.use("/uploads", (req, res) => {
+  res.status(404).json({ message: "File not found" });
+});
 // ---------- LOGOUT ROUTE --------------------
 app.post("/api/logout", (req, res) => {
   req.session.destroy((err) => {
@@ -171,3 +182,14 @@ module.exports = startServer();
 app.use("*", (req, res) => {
   res.status(200).send("Hello from the backend!");
 });
+
+// Before setting up routes
+const setupUploadsDirectory = async () => {
+  if (process.env.NODE_ENV !== "production") {
+    try {
+      await fs.mkdir(path.join(__dirname, "uploads"), { recursive: true });
+    } catch (error) {
+      console.log("Uploads directory already exists or couldn't be created");
+    }
+  }
+};

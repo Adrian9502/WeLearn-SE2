@@ -16,6 +16,11 @@ const connectDB = async () => {
     return;
   }
 
+  // Enhanced debug logging
+  console.log("Environment:", process.env.NODE_ENV);
+  console.log("MONGODB_URI exists:", !!process.env.MONGODB_URI);
+  console.log("Available env vars:", Object.keys(process.env));
+
   if (!process.env.MONGODB_URI) {
     throw new Error("Please define the MONGODB_URI environment variable");
   }

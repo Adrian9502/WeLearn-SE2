@@ -6,10 +6,18 @@ const path = require("path");
 
 let gfs;
 let isConnected = false;
+
+// Set strictQuery to false to prepare for Mongoose 7
+mongoose.set("strictQuery", false);
+
 const connectDB = async () => {
   if (isConnected) {
     console.log("Using existing database connection");
     return;
+  }
+
+  if (!process.env.MONGODB_URI) {
+    throw new Error("Please define the MONGODB_URI environment variable");
   }
 
   try {
@@ -30,7 +38,13 @@ const connectDB = async () => {
     return conn;
   } catch (error) {
     console.error(`MongoDB connection error: ${error.message}`);
-    process.exit(1);
+    // Don't exit the process in production
+    if (process.env.NODE_ENV === "production") {
+      console.error("Database connection failed, but keeping process alive");
+      return null;
+    } else {
+      process.exit(1);
+    }
   }
 };
 

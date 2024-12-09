@@ -73,7 +73,7 @@ app.use((req, res, next) => {
 
 // Update CORS configuration
 const corsOptions = {
-  origin: FRONTEND_URL,
+  origin: ["http://localhost:5173", "https://welearngame.vercel.app"],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],

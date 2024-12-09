@@ -1,5 +1,14 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://welearn-api.vercel.app/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
   "headers": [
     {
       "source": "/api/(.*)",
@@ -7,7 +16,7 @@
         { "key": "Access-Control-Allow-Credentials", "value": "true" },
         {
           "key": "Access-Control-Allow-Origin",
-          "value": "https://welearn-api.vercel.app"
+          "value": "https://welearngame.vercel.app"
         },
         {
           "key": "Access-Control-Allow-Methods",

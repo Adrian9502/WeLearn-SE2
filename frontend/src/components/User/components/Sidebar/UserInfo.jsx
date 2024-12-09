@@ -3,7 +3,7 @@ import { FaTrophy, FaSignOutAlt, FaChartLine } from "react-icons/fa";
 import { FaGift } from "react-icons/fa6";
 import PropTypes from "prop-types";
 import ProfilePictureModal from "./ProfilePicture/ProfilePictureModal";
-import api, { uploadApi } from "../../../../utils/axios";
+import api from "../../../../utils/axios";
 export default function UserInfo({
   onLogout,
   username,
@@ -20,8 +20,6 @@ export default function UserInfo({
   const [currentPicture, setCurrentPicture] = useState(null);
   const defaultProfilePic =
     "https://cdn-icons-png.freepik.com/512/6858/6858441.png";
-  //  ---------- BASE URL FOR API -------------
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
   //  ---------- FETCH USER PROFILE -------------
   useEffect(() => {

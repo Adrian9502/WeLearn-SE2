@@ -1,9 +1,7 @@
 const express = require("express");
 const adminModel = require("../models/adminModel");
 const router = express.Router();
-const upload = require("../config/storage");
 const cloudinary = require("../config/cloudinary");
-const path = require("path");
 
 // GET ALL ADMIN DATA
 router.get("/", async (req, res) => {
@@ -268,28 +266,42 @@ router.post("/profile-picture/:id", async (req, res) => {
       return res.status(400).json({ message: "No image data provided" });
     }
 
+    // Validate admin exists
     const admin = await adminModel.findById(adminId);
     if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
     }
 
-    // Upload to Cloudinary with proper error handling
+    // Log Cloudinary configuration status
+    console.log("Cloudinary Config Status:", {
+      hasCloudName: !!process.env.CLOUDINARY_CLOUD_NAME,
+      hasApiKey: !!process.env.CLOUDINARY_API_KEY,
+      hasApiSecret: !!process.env.CLOUDINARY_API_SECRET,
+    });
+
     try {
+      // Upload to Cloudinary with proper error handling
       const uploadResponse = await cloudinary.uploader.upload(base64Image, {
         folder: "admin-profile-pictures",
-        public_id: `${adminId}_profile_pic`,
+        public_id: `admin_${adminId}_profile_pic`,
         overwrite: true,
+        resource_type: "auto",
         transformation: [
           { width: 400, height: 400, crop: "limit" },
-          { quality: "auto:low" },
+          { quality: "auto:good" },
         ],
       });
+
+      if (!uploadResponse || !uploadResponse.secure_url) {
+        throw new Error("Failed to get secure URL from Cloudinary");
+      }
 
       // Update admin's profile picture URL
       admin.profilePicture = uploadResponse.secure_url;
       await admin.save();
 
       res.json({
+        success: true,
         profilePicture: uploadResponse.secure_url,
         message: "Profile picture updated successfully",
       });
@@ -298,6 +310,11 @@ router.post("/profile-picture/:id", async (req, res) => {
       return res.status(500).json({
         message: "Failed to upload to cloud storage",
         error: cloudinaryError.message,
+        config: {
+          cloudName: !!process.env.CLOUDINARY_CLOUD_NAME,
+          apiKey: !!process.env.CLOUDINARY_API_KEY,
+          apiSecret: !!process.env.CLOUDINARY_API_SECRET,
+        },
       });
     }
   } catch (error) {

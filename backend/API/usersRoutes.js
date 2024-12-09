@@ -262,24 +262,45 @@ router.post("/profile-picture/:id", async (req, res) => {
       return res.status(400).json({ message: "No image data provided" });
     }
 
+    // Validate user exists
     const user = await userModel.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const uploadResponse = await cloudinary.uploader.upload(base64Image, {
-      folder: "profile-pictures",
-      public_id: `${userId}_profile_pic`,
-      overwrite: true,
-    });
+    try {
+      // Upload to Cloudinary with proper error handling
+      const uploadResponse = await cloudinary.uploader.upload(base64Image, {
+        folder: "profile-pictures",
+        public_id: `user_${userId}_profile_pic`,
+        overwrite: true,
+        resource_type: "auto",
+        transformation: [
+          { width: 400, height: 400, crop: "limit" },
+          { quality: "auto:good" },
+        ],
+      });
 
-    user.profilePicture = uploadResponse.secure_url;
-    await user.save();
+      if (!uploadResponse || !uploadResponse.secure_url) {
+        throw new Error("Failed to get secure URL from Cloudinary");
+      }
 
-    res.json({
-      profilePicture: uploadResponse.secure_url,
-      message: "Profile picture updated successfully",
-    });
+      // Update user's profile picture URL
+      user.profilePicture = uploadResponse.secure_url;
+      await user.save();
+
+      res.json({
+        success: true,
+        profilePicture: uploadResponse.secure_url,
+        message: "Profile picture updated successfully",
+      });
+    } catch (cloudinaryError) {
+      console.error("Cloudinary upload error:", cloudinaryError);
+      return res.status(500).json({
+        message: "Failed to upload to cloud storage",
+        error: cloudinaryError.message,
+      });
+    }
   } catch (error) {
     console.error("Profile picture upload error:", error);
     res.status(500).json({

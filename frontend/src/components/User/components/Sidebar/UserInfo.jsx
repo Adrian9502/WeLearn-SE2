@@ -58,6 +58,11 @@ export default function UserInfo({
           const base64data = reader.result;
           console.log("Uploading image for user:", userId);
 
+          // First, check if the base64 data is valid
+          if (!base64data || !base64data.startsWith("data:image")) {
+            throw new Error("Invalid image data");
+          }
+
           const response = await api.post(
             `/api/users/profile-picture/${userId}`,
             {
@@ -67,13 +72,13 @@ export default function UserInfo({
               headers: {
                 "Content-Type": "application/json",
               },
+              timeout: 60000, // Increase timeout to 60 seconds
             }
           );
 
           console.log("Upload complete:", response.data);
           if (response.data.profilePicture) {
             setCurrentPicture(response.data.profilePicture);
-
             if (onUserDataUpdate) {
               onUserDataUpdate({
                 ...userData,

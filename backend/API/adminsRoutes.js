@@ -1,9 +1,10 @@
 const express = require("express");
 const adminModel = require("../models/adminModel");
 const router = express.Router();
-const multer = require("multer");
+const upload = require("../config/storage");
+const cloudinary = require("../config/cloudinary");
 const path = require("path");
-const fs = require("fs").promises;
+
 // GET ALL ADMIN DATA
 router.get("/", async (req, res) => {
   try {
@@ -109,196 +110,217 @@ router.delete("/:id", async (req, res) => {
       .json({ message: "Error deleting admin", error: error.message });
   }
 });
+
 // ------------------ PROFILE PICTURE ------------
-// Helper functions
-const deleteOldProfilePicture = async (profilePictureUrl) => {
-  if (!profilePictureUrl || profilePictureUrl.startsWith("https://")) return;
+router.put(
+  "/:id/profile-picture",
+  upload.single("profilePicture"),
+  async (req, res) => {
+    // Set CORS headers explicitly
+    const allowedOrigins = process.env.ALLOWED_ORIGINS.split(",");
+    const origin = req.headers.origin;
 
-  try {
-    const relativePath = profilePictureUrl.startsWith("/")
-      ? profilePictureUrl.slice(1)
-      : profilePictureUrl;
-    const fullPath = path.join(process.cwd(), relativePath);
-    await fs.access(fullPath);
-    await fs.unlink(fullPath);
-    console.log("Successfully deleted old profile picture:", fullPath);
-  } catch (error) {
-    console.error("Error deleting old profile picture:", error);
-  }
-};
-
-const createUploadDirs = async () => {
-  const uploadPath = path.join(
-    process.cwd(),
-    "uploads",
-    "profile-pictures",
-    "admin"
-  );
-  try {
-    await fs.access(uploadPath);
-  } catch {
-    await fs.mkdir(uploadPath, { recursive: true });
-    console.log("Created upload directories");
-  }
-};
-
-// Initialize upload directories
-createUploadDirs();
-
-// Configure multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/profile-pictures/admin");
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const extension = path.extname(file.originalname);
-    cb(null, `admin-${req.params.id}-${uniqueSuffix}${extension}`);
-  },
-});
-
-const upload = multer({
-  storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
-    if (!allowedTypes.includes(file.mimetype)) {
-      return cb(
-        new Error("Invalid file type. Only JPEG, PNG and GIF are allowed."),
-        false
-      );
+    if (allowedOrigins.includes(origin)) {
+      res.header("Access-Control-Allow-Origin", origin);
     }
-    cb(null, true);
-  },
-}).single("profilePicture");
-
-// Routes
-router.get("/:id/profile-picture", async (req, res) => {
-  try {
-    const admin = await adminModel
-      .findById(req.params.id)
-      .select("profilePicture");
-    if (!admin) {
-      return res.status(404).json({
-        profilePicture:
-          "https://cdn-icons-png.freepik.com/512/6858/6858441.png",
-        message: "Admin not found",
-      });
-    }
-
-    if (!admin.profilePicture) {
-      return res.json({
-        profilePicture:
-          "https://cdn-icons-png.freepik.com/512/6858/6858441.png",
-        message: "No profile picture found",
-      });
-    }
-
-    // Handle external URLs
-    if (admin.profilePicture.startsWith("https://")) {
-      return res.json({ profilePicture: admin.profilePicture });
-    }
-
-    // Verify local file exists
-    const relativePath = admin.profilePicture.startsWith("/")
-      ? admin.profilePicture.slice(1)
-      : admin.profilePicture;
-    const fullPath = path.join(process.cwd(), relativePath);
+    res.header("Access-Control-Allow-Credentials", "true");
 
     try {
-      await fs.access(fullPath);
-      return res.json({
-        profilePicture: admin.profilePicture,
-        message: "Profile picture retrieved successfully",
+      console.log(
+        "Profile picture upload request received for admin:",
+        req.params.id
+      );
+      console.log("File received:", req.file);
+
+      // File validation
+      if (!req.file) {
+        return res.status(400).json({
+          message: "No file uploaded",
+          error: "File is required",
+        });
+      }
+
+      // File type validation
+      const allowedMimeTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
+      if (!allowedMimeTypes.includes(req.file.mimetype)) {
+        return res.status(400).json({
+          message: "Invalid file type",
+          allowedTypes: allowedMimeTypes,
+        });
+      }
+
+      // File size validation
+      const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+      if (req.file.buffer.length > MAX_FILE_SIZE) {
+        return res.status(400).json({
+          message: "File size exceeds 5MB limit",
+          maxSize: MAX_FILE_SIZE,
+        });
+      }
+
+      // Validate admin exists
+      const admin = await adminModel.findById(req.params.id);
+      if (!admin) {
+        return res.status(404).json({ message: "Admin not found" });
+      }
+
+      try {
+        // Upload to Cloudinary with additional error handling
+        const result = await uploadToCloudinary(req.file.buffer);
+        console.log("Cloudinary upload result:", {
+          url: result.secure_url,
+          publicId: result.public_id,
+          format: result.format,
+        });
+
+        if (!result || !result.secure_url) {
+          throw new Error("Failed to get secure URL from Cloudinary");
+        }
+
+        // Update admin's profile picture URL in database
+        const updatedAdmin = await adminModel.findByIdAndUpdate(
+          req.params.id,
+          {
+            profilePicture: result.secure_url,
+          },
+          { new: true }
+        );
+
+        if (!updatedAdmin) {
+          throw new Error("Failed to update admin profile picture");
+        }
+
+        res.json({
+          message: "Profile picture updated successfully",
+          profilePicture: result.secure_url,
+          admin: {
+            _id: updatedAdmin._id,
+            name: updatedAdmin.name,
+            profilePicture: updatedAdmin.profilePicture,
+          },
+        });
+      } catch (uploadError) {
+        console.error("Error during upload process:", {
+          message: uploadError.message,
+          stack: uploadError.stack,
+        });
+        return res.status(500).json({
+          message: "Error processing upload",
+          error:
+            process.env.NODE_ENV === "production"
+              ? "Upload failed"
+              : uploadError.message,
+        });
+      }
+    } catch (error) {
+      console.error("Error in profile picture upload:", {
+        message: error.message,
+        stack: error.stack,
       });
-    } catch {
-      // Return default picture if file doesn't exist
-      const defaultPicture =
-        "https://cdn-icons-png.freepik.com/512/6858/6858441.png";
-      await adminModel.findByIdAndUpdate(req.params.id, {
-        profilePicture: defaultPicture,
+      res.status(500).json({
+        message: "Error updating profile picture",
+        error: process.env.NODE_ENV === "production" ? null : error.message,
       });
+    }
+  }
+);
+
+// GET route for profile picture
+router.get("/:id/profile-picture", async (req, res) => {
+  const defaultPicture =
+    "https://cdn-icons-png.freepik.com/512/6858/6858441.png";
+
+  try {
+    const admin = await adminModel.findById(req.params.id);
+
+    if (!admin || !admin.profilePicture) {
       return res.json({
         profilePicture: defaultPicture,
-        message: "File not found, returned default picture",
+        message: "Using default picture",
+      });
+    }
+
+    return res.json({
+      profilePicture: admin.profilePicture,
+      message: "Profile picture URL retrieved",
+    });
+  } catch (error) {
+    console.error("Profile picture error:", error);
+    return res.json({
+      profilePicture: defaultPicture,
+      message: "Error retrieving picture, using default",
+    });
+  }
+});
+
+// Profile picture upload route
+router.post("/profile-picture/:id", async (req, res) => {
+  try {
+    const adminId = req.params.id;
+    const base64Image = req.body.image;
+
+    if (!base64Image) {
+      return res.status(400).json({ message: "No image data provided" });
+    }
+
+    const admin = await adminModel.findById(adminId);
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    // Upload to Cloudinary with proper error handling
+    try {
+      const uploadResponse = await cloudinary.uploader.upload(base64Image, {
+        folder: "admin-profile-pictures",
+        public_id: `${adminId}_profile_pic`,
+        overwrite: true,
+        transformation: [
+          { width: 400, height: 400, crop: "limit" },
+          { quality: "auto:low" },
+        ],
+      });
+
+      // Update admin's profile picture URL
+      admin.profilePicture = uploadResponse.secure_url;
+      await admin.save();
+
+      res.json({
+        profilePicture: uploadResponse.secure_url,
+        message: "Profile picture updated successfully",
+      });
+    } catch (cloudinaryError) {
+      console.error("Cloudinary upload error:", cloudinaryError);
+      return res.status(500).json({
+        message: "Failed to upload to cloud storage",
+        error: cloudinaryError.message,
       });
     }
   } catch (error) {
-    console.error("Error retrieving profile picture:", error);
-    return res.status(500).json({
-      profilePicture: "https://cdn-icons-png.freepik.com/512/6858/6858441.png",
-      message: "Error retrieving profile picture",
+    console.error("Profile picture upload error:", error);
+    res.status(500).json({
+      message: "Failed to upload profile picture",
       error: error.message,
     });
   }
 });
 
-router.put("/:id/profile-picture", async (req, res) => {
-  upload(req, res, async function (err) {
-    if (err) {
-      return res.status(400).json({
-        success: false,
-        message: err.message,
-      });
-    }
+// Add OPTIONS route for preflight requests
+router.options("/:id/profile-picture", (req, res) => {
+  const allowedOrigins = process.env.ALLOWED_ORIGINS.split(",");
+  const origin = req.headers.origin;
 
-    try {
-      if (!req.file) {
-        return res.status(400).json({
-          success: false,
-          message: "No file uploaded",
-        });
-      }
-
-      const admin = await adminModel.findById(req.params.id);
-      if (!admin) {
-        await fs.unlink(req.file.path);
-        return res.status(404).json({
-          success: false,
-          message: "Admin not found",
-        });
-      }
-
-      const oldProfilePicture = admin.profilePicture;
-      const profilePicture = `/uploads/profile-pictures/admin/${req.file.filename}`;
-
-      const updatedAdmin = await adminModel
-        .findByIdAndUpdate(req.params.id, { profilePicture }, { new: true })
-        .select("profilePicture");
-
-      if (!updatedAdmin) {
-        await fs.unlink(req.file.path);
-        return res.status(404).json({
-          success: false,
-          message: "Admin update failed",
-        });
-      }
-
-      await deleteOldProfilePicture(oldProfilePicture);
-
-      res.status(200).json({
-        success: true,
-        profilePicture: updatedAdmin.profilePicture,
-        message: "Profile picture updated successfully",
-      });
-    } catch (error) {
-      if (req.file) {
-        try {
-          await fs.unlink(req.file.path);
-        } catch (unlinkError) {
-          console.error("Error deleting uploaded file:", unlinkError);
-        }
-      }
-
-      res.status(500).json({
-        success: false,
-        message: "Error updating profile picture",
-        error: error.message,
-      });
-    }
-  });
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Methods", "GET, PUT, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.status(204).send();
 });
 
 module.exports = router;

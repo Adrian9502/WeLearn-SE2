@@ -3,7 +3,7 @@ import { FaTrophy, FaSignOutAlt, FaChartLine } from "react-icons/fa";
 import { FaGift } from "react-icons/fa6";
 import PropTypes from "prop-types";
 import ProfilePictureModal from "./ProfilePicture/ProfilePictureModal";
-import api from "../../../../utils/axios";
+import api, { uploadApi } from "../../../../utils/axios";
 export default function UserInfo({
   onLogout,
   username,
@@ -27,18 +27,16 @@ export default function UserInfo({
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const timestamp = new Date().getTime();
-        const response = await api.get(
-          `/api/users/${userId}/profile-picture?t=${timestamp}`,
-          {
-            baseURL: BASE_URL,
-            responseType: "blob",
-            withCredentials: true,
-          }
-        );
+        const response = await api.get(`/api/users/${userId}/profile-picture`, {
+          withCredentials: true,
+        });
 
-        const imageUrl = URL.createObjectURL(response.data);
-        setCurrentPicture(imageUrl);
+        // Response now contains the URL directly
+        if (response.data && response.data.profilePicture) {
+          setCurrentPicture(response.data.profilePicture);
+        } else {
+          setCurrentPicture(defaultProfilePic);
+        }
       } catch (error) {
         console.error("Error fetching profile picture:", error);
         setCurrentPicture(defaultProfilePic);
@@ -50,43 +48,110 @@ export default function UserInfo({
     }
   }, [userId]);
   //  ---------- FUNCTION TO UPDATE PROFILE PICTURE -------------
-  const handlePictureUpdate = async (newPicture) => {
+  const handlePictureUpdate = async (file) => {
     try {
-      const formData = new FormData();
-      formData.append("profilePicture", newPicture);
+      const compressedFile = await compressImage(file);
 
-      const response = await api.post(
-        `/api/users/${userId}/profile-picture`,
-        formData,
-        {
-          baseURL: BASE_URL,
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true,
+      // Convert file to base64 for Cloudinary
+      const reader = new FileReader();
+      reader.readAsDataURL(compressedFile);
+      reader.onloadend = async () => {
+        try {
+          const base64data = reader.result;
+          console.log("Uploading image for user:", userId);
+
+          const response = await api.post(
+            `/api/users/profile-picture/${userId}`,
+            {
+              image: base64data,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          console.log("Upload complete:", response.data);
+          if (response.data.profilePicture) {
+            setCurrentPicture(response.data.profilePicture);
+
+            if (onUserDataUpdate) {
+              onUserDataUpdate({
+                ...userData,
+                profilePicture: response.data.profilePicture,
+              });
+            }
+          } else {
+            throw new Error("No profile picture URL in response");
+          }
+        } catch (error) {
+          console.error("Upload error details:", error);
+          alert(
+            error.response?.data?.message ||
+              "Failed to update profile picture. Please try again."
+          );
         }
-      );
+      };
 
-      if (response.data.success) {
-        // Generate a new URL with a unique timestamp to prevent caching
-        const timestamp = new Date().getTime();
-        const imageUrl = `${BASE_URL}/api/users/${userId}/profile-picture?t=${timestamp}`;
-
-        // Use the new URL immediately
-        setCurrentPicture(imageUrl);
-
-        // Optional: Force a re-render by triggering a state update
-        if (onUserDataUpdate) {
-          onUserDataUpdate({
-            ...userData,
-            profilePicture: imageUrl,
-          });
-        }
-      }
+      reader.onerror = () => {
+        console.error("Error reading file");
+        alert("Error reading file. Please try again.");
+      };
     } catch (error) {
-      console.error("Error updating profile picture:", error);
-      throw error;
+      console.error("Image compression error:", error);
+      alert("Failed to compress image. Please try again.");
     }
+  };
+
+  // Helper function to compress images
+  const compressImage = async (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              resolve(
+                new File([blob], file.name, {
+                  type: "image/jpeg",
+                  lastModified: Date.now(),
+                })
+              );
+            },
+            "image/jpeg",
+            0.7
+          );
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
   };
   //  ---------- RETURN JSX -------------
   return (
@@ -113,12 +178,10 @@ export default function UserInfo({
                   <img
                     src={currentPicture || defaultProfilePic}
                     alt={`${username}'s profile`}
-                    crossOrigin="anonymous"
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      console.error("Error loading image:", e);
-                      e.target.src =
-                        "https://cdn-icons-png.freepik.com/512/6858/6858441.png";
+                      console.error("Error loading image");
+                      e.target.src = defaultProfilePic;
                     }}
                   />
 

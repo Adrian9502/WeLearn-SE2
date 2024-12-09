@@ -6,9 +6,12 @@ const router = express.Router();
 const multer = require("multer");
 const path = require("path");
 const mongoose = require("mongoose");
-const { GridFsStorage } = require("multer-gridfs-storage");
 const crypto = require("crypto");
 const { getGfs } = require("../db");
+const upload = require("../config/storage");
+const uploadToCloudinary = require("../utils/uploadToCloudinary");
+const cloudinary = require("../config/cloudinary");
+
 // Constants
 const SALT_ROUNDS = 10;
 
@@ -250,213 +253,90 @@ router.put("/:id/coins", async (req, res) => {
 });
 
 // ------------------ PROFILE PICTURE ------------
-// Storage configuration
-const storage = new GridFsStorage({
-  url: process.env.MONGODB_URI,
-  file: (req, file) => {
-    return new Promise((resolve, reject) => {
-      crypto.randomBytes(16, (err, buf) => {
-        if (err) return reject(err);
-
-        const filename = buf.toString("hex") + path.extname(file.originalname);
-        const fileInfo = {
-          filename: filename,
-          bucketName: "uploads",
-          metadata: {
-            userId: req.params.id,
-            contentType: file.mimetype,
-          },
-        };
-        resolve(fileInfo);
-      });
-    });
-  },
-});
-
-const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
-    if (!allowedTypes.includes(file.mimetype)) {
-      const error = new Error(
-        "Invalid file type. Only JPEG, PNG and GIF are allowed."
-      );
-      error.code = "INVALID_FILE_TYPE";
-      return cb(error, false);
-    }
-    cb(null, true);
-  },
-});
-
-// Upload route
-router.post(
-  "/:id/profile-picture",
-  upload.single("profilePicture"),
-  async (req, res) => {
-    try {
-      // Validate user ID
-      if (!req.params.id || !mongoose.Types.ObjectId.isValid(req.params.id)) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid user ID",
-        });
-      }
-
-      if (!req.file) {
-        console.log("No file received");
-        return res.status(400).json({
-          success: false,
-          message: "Please upload a file",
-        });
-      }
-
-      console.log("File received:", {
-        id: req.file.id,
-        filename: req.file.filename,
-        size: req.file.size,
-        mimetype: req.file.mimetype,
-      });
-
-      const user = await userModel.findById(req.params.id);
-      if (!user) {
-        console.log("User not found:", req.params.id);
-        return res.status(404).json({
-          success: false,
-          message: "User not found",
-        });
-      }
-
-      // Delete old profile picture if it exists
-      if (
-        user.profilePicture &&
-        mongoose.Types.ObjectId.isValid(user.profilePicture)
-      ) {
-        try {
-          const oldFileId = new mongoose.Types.ObjectId(user.profilePicture);
-          const gfs = getGfs();
-
-          if (gfs) {
-            const existingFile = await mongoose.connection.db
-              .collection("uploads.files")
-              .findOne({ _id: oldFileId });
-
-            if (existingFile) {
-              await gfs.delete(oldFileId);
-              console.log("Old profile picture deleted:", oldFileId);
-            } else {
-              console.log("Old profile picture not found in GridFS");
-            }
-          }
-        } catch (error) {
-          console.error("Error processing old file:", error);
-        }
-      }
-
-      // Update user with new file id
-      user.profilePicture = req.file.id;
-      await user.save();
-
-      res.status(200).json({
-        success: true,
-        message: "Profile picture updated successfully",
-        profilePicture: `/api/users/${user._id}/profile-picture`,
-        profilePictureId: req.file.id,
-      });
-    } catch (error) {
-      console.error("Upload processing error:", error);
-      res.status(500).json({
-        success: false,
-        message: "Error processing upload",
-      });
-    }
-  }
-);
-
-// GET route
-router.get("/:id/profile-picture", async (req, res) => {
+router.post("/profile-picture/:id", async (req, res) => {
   try {
-    // Validate user ID
-    if (!req.params.id || !mongoose.Types.ObjectId.isValid(req.params.id)) {
-      console.log("Invalid user ID:", req.params.id);
-      return res.sendFile(
-        path.join(__dirname, "../uploads/default-profile.png")
-      );
+    const userId = req.params.id;
+    const base64Image = req.body.image;
+
+    if (!base64Image) {
+      return res.status(400).json({ message: "No image data provided" });
     }
+
+    // Validate user exists
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Upload to Cloudinary
+    const uploadResponse = await cloudinary.uploader.upload(base64Image, {
+      folder: "profile-pictures",
+      public_id: `${userId}_profile_pic`,
+      overwrite: true,
+      transformation: [
+        { width: 400, height: 400, crop: "limit" },
+        { quality: "auto:low" },
+      ],
+    });
+
+    // Update user's profile picture URL
+    user.profilePicture = uploadResponse.secure_url;
+    await user.save();
+
+    res.json({
+      profilePicture: uploadResponse.secure_url,
+      message: "Profile picture updated successfully",
+    });
+  } catch (error) {
+    console.error("Profile picture upload error:", error);
+    res.status(500).json({
+      message: "Failed to upload profile picture",
+      error: error.message,
+    });
+  }
+});
+
+// GET route for profile picture
+router.get("/:id/profile-picture", async (req, res) => {
+  const defaultPicture =
+    "https://cdn-icons-png.freepik.com/512/6858/6858441.png";
+
+  try {
+    // Set CORS headers explicitly
+    res.header(
+      "Access-Control-Allow-Origin",
+      process.env.FRONTEND_URL || "http://localhost:5173"
+    );
+    res.header("Access-Control-Allow-Credentials", "true");
 
     const user = await userModel.findById(req.params.id);
 
     if (!user || !user.profilePicture) {
-      console.log("No user or profile picture found, sending default");
-      return res.sendFile(
-        path.join(__dirname, "../uploads/default-profile.png")
-      );
-    }
-
-    // Validate profile picture ID
-    if (!mongoose.Types.ObjectId.isValid(user.profilePicture)) {
-      console.log("Invalid profile picture ID:", user.profilePicture);
-      return res.sendFile(
-        path.join(__dirname, "../uploads/default-profile.png")
-      );
-    }
-
-    const fileId = new mongoose.Types.ObjectId(user.profilePicture);
-
-    const gfs = getGfs();
-    if (!gfs) {
-      console.log("GridFS not initialized, sending default");
-      return res.sendFile(
-        path.join(__dirname, "../uploads/default-profile.png")
-      );
-    }
-
-    // Check if file exists in GridFS
-    const file = await mongoose.connection.db
-      .collection("uploads.files")
-      .findOne({ _id: fileId });
-
-    if (!file) {
-      console.log("No GridFS file found, sending default");
-      // Update user to remove invalid profile picture reference
-      await userModel.findByIdAndUpdate(user._id, {
-        $unset: { profilePicture: 1 },
+      return res.json({
+        profilePicture: defaultPicture,
+        message: "Using default picture",
       });
-      return res.sendFile(
-        path.join(__dirname, "../uploads/default-profile.png")
-      );
     }
 
-    // Set proper content type
-    res.set({
-      "Access-Control-Allow-Origin": req.headers.origin || "*",
-      "Access-Control-Allow-Credentials": "true",
-      "Cross-Origin-Resource-Policy": "cross-origin",
-      "Content-Type": file.contentType || "image/jpeg",
-    });
-    // Stream the file
-    const downloadStream = gfs.openDownloadStream(fileId);
-    downloadStream.pipe(res);
-
-    downloadStream.on("error", (error) => {
-      console.error("Stream error:", error);
-      res.set({
-        "Access-Control-Allow-Origin": req.headers.origin || "*",
-        "Access-Control-Allow-Credentials": "true",
-        "Cross-Origin-Resource-Policy": "cross-origin",
-        "Content-Type": "image/png",
-      });
-      res.sendFile(path.join(__dirname, "../uploads/default-profile.png"));
+    // Return the profile picture URL
+    return res.json({
+      profilePicture: user.profilePicture,
+      message: "Profile picture URL retrieved",
     });
   } catch (error) {
     console.error("Profile picture error:", error);
-    res.set({
-      "Access-Control-Allow-Origin": req.headers.origin || "*",
-      "Access-Control-Allow-Credentials": "true",
-      "Cross-Origin-Resource-Policy": "cross-origin",
-      "Content-Type": "image/png",
+
+    // Set CORS headers for error response as well
+    res.header(
+      "Access-Control-Allow-Origin",
+      process.env.FRONTEND_URL || "http://localhost:5173"
+    );
+    res.header("Access-Control-Allow-Credentials", "true");
+
+    return res.json({
+      profilePicture: defaultPicture,
+      message: "Error retrieving picture, using default",
     });
-    res.sendFile(path.join(__dirname, "../uploads/default-profile.png"));
   }
 });
 

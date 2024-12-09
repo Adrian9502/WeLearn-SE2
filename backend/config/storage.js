@@ -1,20 +1,25 @@
 const multer = require("multer");
 const path = require("path");
 
-const storage =
-  process.env.NODE_ENV === "production"
-    ? // Production storage (implement cloud storage here)
-      multer.memoryStorage()
-    : // Development storage (local filesystem)
-      multer.diskStorage({
-        destination: function (req, file, cb) {
-          cb(null, path.join(__dirname, "../uploads/"));
-        },
-        filename: function (req, file, cb) {
-          cb(null, Date.now() + "-" + file.originalname);
-        },
-      });
+// Use memory storage for both production and development
+// because we'll stream the file to Cloudinary
+const storage = multer.memoryStorage();
 
-const upload = multer({ storage: storage });
+// File filter to only allow images
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image/")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Not an image! Please upload an image."), false);
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+});
 
 module.exports = upload;

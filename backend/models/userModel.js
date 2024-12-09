@@ -11,9 +11,8 @@ const userSchema = new mongoose.Schema(
     dob: { type: Date, required: true },
     coins: { type: Number, default: 600 },
     profilePicture: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "uploads.files",
-      default: null,
+      type: String,
+      default: "",
     },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },

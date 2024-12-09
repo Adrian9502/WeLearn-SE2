@@ -7,15 +7,24 @@ export default defineConfig({
     host: true,
     port: 5173,
     proxy: {
-      // Proxy for all API routes
       "/api": {
-        target: "https://welearn-api.vercel.app",
+        target: "http://localhost:5000",
         changeOrigin: true,
         secure: false,
+        configure: (proxy, options) => {
+          proxy.on("error", (err, req, res) => {
+            console.log("Proxy error:", err);
+            if (!res.headersSent) {
+              res.writeHead(500, {
+                "Content-Type": "application/json",
+              });
+              res.end(JSON.stringify({ error: "Proxy error" }));
+            }
+          });
+        },
       },
-      // Proxy for uploads
       "/uploads": {
-        target: "https://welearn-api.vercel.app",
+        target: "http://localhost:5000",
         changeOrigin: true,
         secure: false,
       },

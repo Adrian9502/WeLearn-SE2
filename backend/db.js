@@ -3,7 +3,12 @@ const { GridFsStorage } = require("multer-gridfs-storage");
 const multer = require("multer");
 const crypto = require("crypto");
 const path = require("path");
-const config = require("./config");
+const dotenv = require("dotenv");
+
+// Load environment variables in development
+if (process.env.NODE_ENV !== "production") {
+  dotenv.config();
+}
 
 let gfs;
 let isConnected = false;
@@ -17,19 +22,26 @@ const connectDB = async (retries = 5) => {
     return;
   }
 
-  console.log("Config status:", {
-    hasMongoUri: !!config.mongodb_uri,
-    environment: config.node_env,
-  });
+  console.log("Environment:", process.env.NODE_ENV);
+  console.log(
+    "MongoDB URI status:",
+    process.env.MONGODB_URI ? "Defined" : "Undefined"
+  );
 
-  if (!config.mongodb_uri) {
-    console.error("MongoDB URI is not configured");
-    return null; // Don't throw, just return null
+  if (!process.env.MONGODB_URI) {
+    const error = new Error(
+      "MongoDB URI is not configured. Check your environment variables."
+    );
+    console.error(error.message);
+    if (process.env.NODE_ENV === "production") {
+      return null;
+    }
+    throw error;
   }
 
   while (retries > 0) {
     try {
-      const conn = await mongoose.connect(config.mongodb_uri, {
+      const conn = await mongoose.connect(process.env.MONGODB_URI, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
         serverSelectionTimeoutMS: 5000,

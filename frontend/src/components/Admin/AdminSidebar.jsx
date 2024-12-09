@@ -14,6 +14,9 @@ const AdminSidebar = () => {
   const [profilePicture, setProfilePicture] = useState("");
   const [isHovering, setIsHovering] = useState(false);
   const fileInputRef = useRef(null);
+  const defaultProfilePic =
+    "https://cdn-icons-png.freepik.com/512/6858/6858441.png";
+
   useEffect(() => {
     const originalTitle = document.title;
     document.title = "WeLearn - Admin";
@@ -27,13 +30,19 @@ const AdminSidebar = () => {
             `/api/admins/${adminId}/profile-picture`,
             {
               withCredentials: true,
+              timeout: 5000, // Reduce timeout to 5 seconds
             }
           );
-          setProfilePicture(response.data.profilePicture);
+
+          if (response.data && response.data.profilePicture) {
+            setProfilePicture(response.data.profilePicture);
+          } else {
+            setProfilePicture(defaultProfilePic);
+          }
         }
       } catch (error) {
         console.error("Error fetching profile picture:", error);
-        setProfilePicture("/uploads/default-profile.png"); // Fallback to default
+        setProfilePicture(defaultProfilePic);
       }
     };
 
@@ -99,91 +108,131 @@ const AdminSidebar = () => {
     setIsOpen(!isOpen);
   };
 
-  const handleProfilePictureUpdate = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Validate file type
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
-    if (!allowedTypes.includes(file.type)) {
-      Swal.fire({
-        title: "Error",
-        text: "Please select a valid image file (JPEG, PNG, or GIF)",
-        icon: "error",
-        background: "#1e293b",
-        color: "#fff",
-      });
-      return;
-    }
-
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      Swal.fire({
-        title: "Error",
-        text: "File size must be less than 5MB",
-        icon: "error",
-        background: "#1e293b",
-        color: "#fff",
-      });
-      return;
-    }
-
-    // Show loading state
-    Swal.fire({
-      title: "Uploading...",
-      text: "Please wait while we update your profile picture",
-      allowOutsideClick: false,
-      showConfirmButton: false,
-      background: "#1e293b",
-      color: "#fff",
-      willOpen: () => {
-        Swal.showLoading();
-      },
-    });
-
+  const handlePictureUpdate = async (event) => {
     try {
-      const formData = new FormData();
-      formData.append("profilePicture", file);
+      const file = event.target.files[0];
+      if (!file) {
+        console.error("No file selected");
+        return;
+      }
 
-      const adminId = localStorage.getItem("adminId");
-      const response = await api.put(
-        `/api/admins/${adminId}/profile-picture`,
-        formData,
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+      const compressedFile = await compressImage(file);
+
+      // Convert file to base64 for Cloudinary
+      const reader = new FileReader();
+      reader.readAsDataURL(compressedFile);
+      reader.onloadend = async () => {
+        try {
+          const base64data = reader.result;
+          const adminId = localStorage.getItem("adminId");
+          console.log("Uploading image for admin:", adminId);
+
+          const response = await api.post(
+            `/api/admins/profile-picture/${adminId}`,
+            {
+              image: base64data,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          console.log("Upload complete:", response.data);
+          if (response.data.profilePicture) {
+            setProfilePicture(response.data.profilePicture);
+          } else {
+            throw new Error("No profile picture URL in response");
+          }
+        } catch (error) {
+          console.error("Upload error details:", error);
+          alert(
+            error.response?.data?.message ||
+              "Failed to update profile picture. Please try again."
+          );
         }
-      );
-      console.log(response.data.profilePicture);
+      };
 
-      setProfilePicture(
-        response.data.profilePicture.startsWith("http")
-          ? response.data.profilePicture
-          : response.data.profilePicture
-      );
-
-      Swal.fire({
-        title: "Success",
-        text: "Profile picture updated successfully",
-        icon: "success",
-        background: "#1e293b",
-        color: "#fff",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      reader.onerror = () => {
+        console.error("Error reading file");
+        alert("Error reading file. Please try again.");
+      };
     } catch (error) {
-      console.error("Error updating profile picture:", error);
-      Swal.fire({
-        title: "Error",
-        text: "Failed to update profile picture. Please try again.",
-        icon: "error",
-        background: "#1e293b",
-        color: "#fff",
-      });
+      console.error("Image compression error:", error);
+      alert("Failed to compress image. Please try again.");
     }
   };
+
+  // Helper function to compress images
+  const compressImage = async (file) => {
+    return new Promise((resolve, reject) => {
+      if (!file || !(file instanceof Blob)) {
+        reject(new Error("Invalid file"));
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error("Failed to compress image"));
+                return;
+              }
+              resolve(
+                new File([blob], file.name || "profile.jpg", {
+                  type: "image/jpeg",
+                  lastModified: Date.now(),
+                })
+              );
+            },
+            "image/jpeg",
+            0.7
+          );
+        };
+
+        img.onerror = () => {
+          reject(new Error("Failed to load image"));
+        };
+
+        img.src = event.target.result;
+      };
+
+      reader.onerror = () => {
+        reject(new Error("Failed to read file"));
+      };
+
+      reader.readAsDataURL(file);
+    });
+  };
+
   return (
     <>
       {/* Mobile Menu Button */}
@@ -205,7 +254,7 @@ const AdminSidebar = () => {
         ref={fileInputRef}
         className="hidden"
         accept="image/jpeg,image/png,image/gif"
-        onChange={handleProfilePictureUpdate}
+        onChange={handlePictureUpdate}
       />
       {/* Backdrop for mobile */}
       {isOpen && (
@@ -244,12 +293,12 @@ const AdminSidebar = () => {
               >
                 <img
                   data-testid="admin-profile-image"
-                  src={profilePicture || "/uploads/default-profile.png"}
+                  src={profilePicture || defaultProfilePic}
                   alt="Admin Profile"
                   className="w-[80px] h-[80px] rounded-full object-cover border-2 border-cyan-400 transition-opacity duration-200"
                   onError={(e) => {
-                    e.target.src =
-                      "https://cdn-icons-png.freepik.com/512/6858/6858441.png";
+                    console.error("Error loading image");
+                    e.target.src = defaultProfilePic;
                   }}
                 />
 

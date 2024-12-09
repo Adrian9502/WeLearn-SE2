@@ -14,28 +14,49 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 // Initialize express app
 const app = express();
 
-dotenv.config();
+// Load environment variables
+if (process.env.NODE_ENV !== "production") {
+  const result = dotenv.config();
+  if (result.error) {
+    console.error("Error loading .env file:", result.error);
+  }
+}
+
+// Add environment variable validation
+const requiredEnvVars = [
+  "MONGODB_URI",
+  "JWT_SECRET",
+  "CLOUDINARY_CLOUD_NAME",
+  "CLOUDINARY_API_KEY",
+  "CLOUDINARY_API_SECRET",
+];
+
+requiredEnvVars.forEach((varName) => {
+  if (!process.env[varName]) {
+    console.error(`Missing required environment variable: ${varName}`);
+  }
+});
 
 const PUBLIC_URL = process.env.PUBLIC_URL || "https://welearn-api.vercel.app";
-
-// ----------------MODEL----------------------
-// USER MODEL
-const userModel = require("./models/userModel");
-// ADMIN MODEL
-const adminModel = require("./models/adminModel");
-// --------------------------------------------
 
 // ----------------MIDDLEWARE-----------------
 app.use((req, res, next) => {
   const allowedOrigins = [
     "https://welearngame.vercel.app",
     "http://localhost:5173",
+    "https://res.cloudinary.com",
   ];
   const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
+
+  // Special handling for Cloudinary requests
+  if (req.url.includes("cloudinary.com")) {
+    res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header("Vary", "Origin");
+  } else if (allowedOrigins.includes(origin)) {
     res.header("Access-Control-Allow-Origin", origin);
   }
-  res.header("Access-Control-Allow-Credentials", "true");
+
   res.header(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept, Authorization"
@@ -43,15 +64,36 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   next();
 });
-app.use(
-  cors({
-    origin: ["https://welearngame.vercel.app", "http://localhost:5173"],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    exposedHeaders: ["Content-Disposition"],
-  })
-);
+
+// Update CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      "http://localhost:5173",
+      "https://welearngame.vercel.app",
+      "https://res.cloudinary.com",
+    ];
+
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    if (
+      allowedOrigins.indexOf(origin) !== -1 ||
+      origin.includes("localhost") ||
+      origin.includes("cloudinary.com")
+    ) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -108,7 +150,6 @@ app.use((err, req, res, next) => {
         : err.stack,
   });
 });
-app.options("*", cors());
 
 // ---------- IMPORT ROUTES ------------------
 const registerRoutes = require("./API/registerRoutes");
@@ -129,67 +170,86 @@ app.use("/api/quizzes", quizRoutes);
 app.use("/api/progress", userProgressRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/rewards", rewardsRoutes);
-// for default profile picture
-app.use(
-  "/uploads",
-  express.static(path.join(__dirname, "uploads"), {
-    setHeaders: (res) => {
-      res.set({
-        "Access-Control-Allow-Origin": "*",
-        "Cross-Origin-Resource-Policy": "cross-origin",
-      });
-    },
-    fallthrough: true, // Allow falling through if file not found
-  })
-);
-// Add a fallback route for uploads in production
-app.use("/uploads", (req, res) => {
-  res.status(404).json({ message: "File not found" });
-});
+
 // ---------- LOGOUT ROUTE --------------------
 app.post("/api/logout", (req, res) => {
   req.session.destroy((err) => {
     if (err) {
       return res.status(500).json({ message: "Failed to log out" });
     }
-    res.clearCookie("connect.sid"); // Clear the session cookie
+    res.clearCookie("connect.sid");
     res.status(200).json({ message: "Logged out successfully" });
   });
 });
+
+// Request logging middleware
 app.use((req, res, next) => {
   console.log(`Request received: ${req.method} ${req.url}`);
   next();
 });
 
-// --------------------------------------
-// Sample route - for testing
-app.get("/", (req, res) => {
-  res.send("Hello from the backend!");
+// Update static files middleware
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "uploads"), {
+    setHeaders: (res) => {
+      const allowedOrigins = [
+        "http://localhost:5173",
+        "https://welearngame.vercel.app",
+      ];
+      res.set({
+        "Access-Control-Allow-Origin": allowedOrigins[0],
+        "Cross-Origin-Resource-Policy": "cross-origin",
+        "Access-Control-Allow-Credentials": "true",
+      });
+    },
+    fallthrough: true,
+  })
+);
+
+// Add a fallback for default profile picture
+app.get("/uploads/default-profile.png", (req, res) => {
+  res.sendFile(path.join(__dirname, "uploads", "default-profile.png"));
 });
 
-// Only listen if not in serverless environment
-if (require.main === module) {
-  const PORT = process.env.PORT || 5000;
-  startServer().then((app) => {
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Fallback for uploads
+app.use("/uploads", (req, res) => {
+  res.status(404).json({ message: "File not found" });
+});
+
+// Basic route for health check
+app.get("/", (req, res) => {
+  res.send("API is running");
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error("Error occurred:", err);
+  res.status(err.status || 500).json({
+    success: false,
+    message:
+      process.env.NODE_ENV === "production" ? "An error occurred" : err.message,
+    error: process.env.NODE_ENV === "production" ? null : err.stack,
   });
-}
+});
+
+// Catch-all route should be last
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
 // For serverless deployment
 module.exports = startServer();
 
-// Add a catch-all route handler
-app.use("*", (req, res) => {
-  res.status(200).send("Hello from the backend!");
+// Before setting up routes
+
+// Add error handling for uncaught exceptions
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught Exception:", error);
 });
 
-// Before setting up routes
-const setupUploadsDirectory = async () => {
-  if (process.env.NODE_ENV !== "production") {
-    try {
-      await fs.mkdir(path.join(__dirname, "uploads"), { recursive: true });
-    } catch (error) {
-      console.log("Uploads directory already exists or couldn't be created");
-    }
-  }
-};
+process.on("unhandledRejection", (error) => {
+  console.error("Unhandled Rejection:", error);
+});

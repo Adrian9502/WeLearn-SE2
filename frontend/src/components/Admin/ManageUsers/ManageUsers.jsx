@@ -29,30 +29,70 @@ const ManageUsers = () => {
     try {
       const response = await api.get("/api/users");
 
-      const transformedData = response.data.map((user) => ({
-        ID: user._id,
-        Profile: `/api/users/${user._id}/profile-picture`,
-        Name: user.fullName,
-        Coins: user.coins,
-        Username: user.username,
-        Email: user.email,
-        "Date of birth": new Date(user.dob).toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }),
-        Role: user.isAdmin ? "Admin" : "User",
-        "Date created": new Date(user.createdAt).toLocaleString("en-US", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        }),
-      }));
+      // Fetch profile pictures for each user
+      const usersWithProfiles = await Promise.all(
+        response.data.map(async (user) => {
+          try {
+            const profileResponse = await api.get(
+              `/api/users/${user._id}/profile-picture`
+            );
+            return {
+              ID: user._id,
+              Profile:
+                profileResponse.data.profilePicture ||
+                "https://cdn-icons-png.freepik.com/512/6858/6858441.png",
+              Name: user.fullName,
+              Coins: user.coins,
+              Username: user.username,
+              Email: user.email,
+              "Date of birth": new Date(user.dob).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              }),
+              Role: user.isAdmin ? "Admin" : "User",
+              "Date created": new Date(user.createdAt).toLocaleString("en-US", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+              }),
+            };
+          } catch (error) {
+            console.error(
+              `Error fetching profile for user ${user._id}:`,
+              error
+            );
+            return {
+              // Return user data with default profile picture
+              ID: user._id,
+              Profile: "https://cdn-icons-png.freepik.com/512/6858/6858441.png",
+              Name: user.fullName,
+              Coins: user.coins,
+              Username: user.username,
+              Email: user.email,
+              "Date of birth": new Date(user.dob).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              }),
+              Role: user.isAdmin ? "Admin" : "User",
+              "Date created": new Date(user.createdAt).toLocaleString("en-US", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+              }),
+            };
+          }
+        })
+      );
 
-      setUserData(transformedData);
+      setUserData(usersWithProfiles);
     } catch (err) {
       setError("Failed to fetch: " + err.message);
     } finally {

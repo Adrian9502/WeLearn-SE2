@@ -262,24 +262,17 @@ router.post("/profile-picture/:id", async (req, res) => {
       return res.status(400).json({ message: "No image data provided" });
     }
 
-    // Validate user exists
     const user = await userModel.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Upload to Cloudinary
     const uploadResponse = await cloudinary.uploader.upload(base64Image, {
       folder: "profile-pictures",
       public_id: `${userId}_profile_pic`,
       overwrite: true,
-      transformation: [
-        { width: 400, height: 400, crop: "limit" },
-        { quality: "auto:low" },
-      ],
     });
 
-    // Update user's profile picture URL
     user.profilePicture = uploadResponse.secure_url;
     await user.save();
 
@@ -302,13 +295,6 @@ router.get("/:id/profile-picture", async (req, res) => {
     "https://cdn-icons-png.freepik.com/512/6858/6858441.png";
 
   try {
-    // Set CORS headers explicitly
-    res.header(
-      "Access-Control-Allow-Origin",
-      process.env.FRONTEND_URL || "http://localhost:5173"
-    );
-    res.header("Access-Control-Allow-Credentials", "true");
-
     const user = await userModel.findById(req.params.id);
 
     if (!user || !user.profilePicture) {
@@ -318,21 +304,12 @@ router.get("/:id/profile-picture", async (req, res) => {
       });
     }
 
-    // Return the profile picture URL
     return res.json({
       profilePicture: user.profilePicture,
       message: "Profile picture URL retrieved",
     });
   } catch (error) {
     console.error("Profile picture error:", error);
-
-    // Set CORS headers for error response as well
-    res.header(
-      "Access-Control-Allow-Origin",
-      process.env.FRONTEND_URL || "http://localhost:5173"
-    );
-    res.header("Access-Control-Allow-Credentials", "true");
-
     return res.json({
       profilePicture: defaultPicture,
       message: "Error retrieving picture, using default",

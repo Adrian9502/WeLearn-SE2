@@ -188,33 +188,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Update static files middleware
-app.use(
-  "/uploads",
-  express.static(path.join(__dirname, "uploads"), {
-    setHeaders: (res) => {
-      const allowedOrigins = [
-        "http://localhost:5173",
-        "https://welearngame.vercel.app",
-      ];
-      res.set({
-        "Access-Control-Allow-Origin": allowedOrigins[0],
-        "Cross-Origin-Resource-Policy": "cross-origin",
-        "Access-Control-Allow-Credentials": "true",
-      });
-    },
-    fallthrough: true,
-  })
-);
-
 // Add a fallback for default profile picture
 app.get("/uploads/default-profile.png", (req, res) => {
-  res.sendFile(path.join(__dirname, "uploads", "default-profile.png"));
-});
-
-// Fallback for uploads
-app.use("/uploads", (req, res) => {
-  res.status(404).json({ message: "File not found" });
+  res.json({
+    profilePicture: "https://cdn-icons-png.freepik.com/512/6858/6858441.png",
+  });
 });
 
 // Basic route for health check

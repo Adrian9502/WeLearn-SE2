@@ -268,11 +268,24 @@ router.post("/profile-picture/:id", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Log Cloudinary configuration status
+    const cloudinaryConfig = cloudinary.config();
+    console.log("Cloudinary Config Status:", {
+      hasCloudName: !!cloudinaryConfig.cloud_name,
+      hasApiKey: !!cloudinaryConfig.api_key,
+      hasApiSecret: !!cloudinaryConfig.api_secret,
+    });
+
     try {
+      // Validate base64 image
+      if (!base64Image.startsWith("data:image")) {
+        throw new Error("Invalid image format");
+      }
+
       // Upload to Cloudinary with proper error handling
       const uploadResponse = await cloudinary.uploader.upload(base64Image, {
         folder: "profile-pictures",
-        public_id: `user_${userId}_profile_pic`,
+        public_id: `user_${userId}_profile_pic_${Date.now()}`,
         overwrite: true,
         resource_type: "auto",
         transformation: [
@@ -299,6 +312,11 @@ router.post("/profile-picture/:id", async (req, res) => {
       return res.status(500).json({
         message: "Failed to upload to cloud storage",
         error: cloudinaryError.message,
+        config: {
+          cloudName: !!process.env.CLOUDINARY_CLOUD_NAME,
+          apiKey: !!process.env.CLOUDINARY_API_KEY,
+          apiSecret: !!process.env.CLOUDINARY_API_SECRET,
+        },
       });
     }
   } catch (error) {

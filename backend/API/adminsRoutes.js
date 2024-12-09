@@ -290,17 +290,23 @@ router.post("/profile-picture/:id", async (req, res) => {
     }
 
     // Log Cloudinary configuration status
+    const cloudinaryConfig = cloudinary.config();
     console.log("Cloudinary Config Status:", {
-      hasCloudName: !!process.env.CLOUDINARY_CLOUD_NAME,
-      hasApiKey: !!process.env.CLOUDINARY_API_KEY,
-      hasApiSecret: !!process.env.CLOUDINARY_API_SECRET,
+      hasCloudName: !!cloudinaryConfig.cloud_name,
+      hasApiKey: !!cloudinaryConfig.api_key,
+      hasApiSecret: !!cloudinaryConfig.api_secret,
     });
 
     try {
+      // Validate base64 image
+      if (!base64Image.startsWith("data:image")) {
+        throw new Error("Invalid image format");
+      }
+
       // Upload to Cloudinary with proper error handling
       const uploadResponse = await cloudinary.uploader.upload(base64Image, {
         folder: "admin-profile-pictures",
-        public_id: `admin_${adminId}_profile_pic`,
+        public_id: `admin_${adminId}_profile_pic_${Date.now()}`,
         overwrite: true,
         resource_type: "auto",
         transformation: [

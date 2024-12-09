@@ -1,4 +1,10 @@
 const cloudinary = require("cloudinary").v2;
+const dotenv = require("dotenv");
+
+// Load environment variables in development
+if (process.env.NODE_ENV !== "production") {
+  dotenv.config();
+}
 
 // Check if required environment variables are present
 const requiredVars = [
@@ -10,6 +16,7 @@ const requiredVars = [
 requiredVars.forEach((varName) => {
   if (!process.env[varName]) {
     console.error(`Missing required environment variable: ${varName}`);
+    throw new Error(`Missing required environment variable: ${varName}`);
   }
 });
 
@@ -25,6 +32,13 @@ cloudinary.config({
 const verifyConfig = () => {
   try {
     const config = cloudinary.config();
+    const isConfigValid =
+      config.cloud_name && config.api_key && config.api_secret;
+
+    if (!isConfigValid) {
+      throw new Error("Invalid Cloudinary configuration");
+    }
+
     console.log("Cloudinary Configuration:", {
       hasCloudName: !!config.cloud_name,
       hasApiKey: !!config.api_key,
@@ -33,7 +47,7 @@ const verifyConfig = () => {
     return true;
   } catch (error) {
     console.error("Cloudinary Configuration Error:", error);
-    return false;
+    throw error;
   }
 };
 

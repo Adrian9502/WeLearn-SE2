@@ -72,7 +72,7 @@ export default function UserInfo({
               headers: {
                 "Content-Type": "application/json",
               },
-              timeout: 60000, // Increase timeout to 60 seconds
+              timeout: 60000, // 60 seconds timeout
             }
           );
 
@@ -90,10 +90,12 @@ export default function UserInfo({
           }
         } catch (error) {
           console.error("Upload error details:", error);
-          alert(
+          const errorMessage =
             error.response?.data?.message ||
-              "Failed to update profile picture. Please try again."
-          );
+            error.response?.data?.error ||
+            error.message ||
+            "Failed to update profile picture. Please try again.";
+          alert(errorMessage);
         }
       };
 

@@ -59,15 +59,11 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.code === "ERR_NETWORK") {
-      console.error("Network Error - Is the backend server running?");
-      console.error("Backend should be running at:", baseURL);
+    if (error.response?.status === 404) {
+      console.error("Resource not found:", error.config.url);
+    } else if (error.code === "ERR_NETWORK") {
+      console.error("Network error - API might be down");
     }
-    console.error("Response Error:", {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
-    });
     return Promise.reject(error);
   }
 );

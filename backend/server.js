@@ -39,6 +39,12 @@ requiredEnvVars.forEach((varName) => {
 
 const PUBLIC_URL = process.env.PUBLIC_URL || "https://welearn-api.vercel.app";
 
+// At the top of your file
+const isProduction = process.env.NODE_ENV === "production";
+const FRONTEND_URL = isProduction
+  ? "https://welearngame.vercel.app"
+  : "http://localhost:5173";
+
 // ----------------MIDDLEWARE-----------------
 app.use((req, res, next) => {
   const allowedOrigins = [
@@ -67,26 +73,7 @@ app.use((req, res, next) => {
 
 // Update CORS configuration
 const corsOptions = {
-  origin: function (origin, callback) {
-    const allowedOrigins = [
-      "http://localhost:5173",
-      "https://welearngame.vercel.app",
-      "https://res.cloudinary.com",
-    ];
-
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-
-    if (
-      allowedOrigins.indexOf(origin) !== -1 ||
-      origin.includes("localhost") ||
-      origin.includes("cloudinary.com")
-    ) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: FRONTEND_URL,
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -205,13 +192,18 @@ app.use((err, req, res, next) => {
   console.error("Error occurred:", err);
   res.status(err.status || 500).json({
     success: false,
-    message:
-      process.env.NODE_ENV === "production" ? "An error occurred" : err.message,
-    error: process.env.NODE_ENV === "production" ? null : err.stack,
+    message: isProduction ? "An error occurred" : err.message,
+    error: isProduction ? null : err.stack,
   });
 });
 
-// Catch-all route should be last
+// Add a catch-all route for production 404s
+app.use("*", (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+  });
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

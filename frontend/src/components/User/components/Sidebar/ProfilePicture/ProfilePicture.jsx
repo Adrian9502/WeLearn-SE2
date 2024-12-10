@@ -1,23 +1,42 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-export default function ProfilePicture({ userId, username }) {
-  const [imgError, setImgError] = useState(false);
+import api from "../../../../../utils/axios";
 
-  if (imgError) {
-    return (
-      <div className="rounded-full w-10 h-10 overflow-hidden">
-        <img src={`/default-profile.png`} className="w-10 h-10 object-cover" />
-      </div>
-    );
-  }
+export default function ProfilePicture({ userId, username }) {
+  const [profilePicture, setProfilePicture] = useState(null);
+  const defaultProfilePic =
+    "https://cdn-icons-png.freepik.com/512/6858/6858441.png";
+
+  useEffect(() => {
+    const fetchProfilePicture = async () => {
+      try {
+        const response = await api.get(`/api/users/${userId}/profile-picture`);
+        if (response.data && response.data.profilePicture) {
+          setProfilePicture(response.data.profilePicture);
+        } else {
+          setProfilePicture(defaultProfilePic);
+        }
+      } catch (error) {
+        console.error(`Error fetching profile picture for ${username}:`, error);
+        setProfilePicture(defaultProfilePic);
+      }
+    };
+
+    if (userId) {
+      fetchProfilePicture();
+    }
+  }, [userId, username]);
 
   return (
     <div className="rounded-full w-10 h-10 overflow-hidden">
       <img
-        src={`/api/users/${userId}/profile-picture`}
+        src={profilePicture || defaultProfilePic}
         alt={`${username}'s profile`}
         className="w-full h-full object-cover"
-        onError={() => setImgError(true)}
+        onError={(e) => {
+          console.error("Error loading profile picture");
+          e.target.src = defaultProfilePic;
+        }}
       />
     </div>
   );

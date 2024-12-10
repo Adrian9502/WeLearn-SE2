@@ -31,6 +31,7 @@ export default function Sidebar({
   const userId = user?.userId;
   const [userQuizCompleted, setUserQuizCompleted] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // ----- FETCH USER DATA -----
   const fetchUserData = async () => {
@@ -53,23 +54,22 @@ export default function Sidebar({
   // ----- FETCH USER QUIZ PROGRESS -----
   const fetchUserQuizProgress = async () => {
     try {
+      setIsLoading(true);
       const response = await fetch(`/api/progress/user/${userId}/summary`);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      // Parse the JSON from the response
       const data = await response.json();
-
-      // Calculate the count of completed and not completed quizzes
       const answeredQuizzesCount = data.quizzes.reduce((count, quiz) => {
         return quiz.completed ? count + 1 : count;
       }, 0);
 
-      // Update the states for completed and not completed quizzes
       setUserQuizCompleted(answeredQuizzesCount);
     } catch (error) {
       console.error("Error fetching user progress:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
   // ----- USE EFFECTS -----
@@ -301,12 +301,22 @@ export default function Sidebar({
               />
               <div className="text-center space-y-2">
                 <span className="text-white sm:text-lg">Completed</span>
-                <div className="text-2xl sm:text-3xl font-game">
-                  <span className="text-yellow-400">{userQuizCompleted}</span>
-                  <span className="text-white mx-2">of</span>
-                  <span className="text-yellow-400">{totalQuizzes}</span>
-                </div>
-                <span className="text-white lg:text-lg">exercises</span>
+                {isLoading ? (
+                  <div className="flex flex-col items-center justify-center py-2">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-yellow-400"></div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-2xl sm:text-3xl font-game">
+                      <span className="text-yellow-400">
+                        {userQuizCompleted}
+                      </span>
+                      <span className="text-white mx-2">of</span>
+                      <span className="text-yellow-400">{totalQuizzes}</span>
+                    </div>
+                    <span className="text-white lg:text-lg">exercises</span>
+                  </>
+                )}
               </div>
             </div>
 

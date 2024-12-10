@@ -15,11 +15,13 @@ export default function RankingsDisplay({ onClose }) {
   });
   const [activeTab, setActiveTab] = useState("quizCompletion");
   const { user } = useUser();
+  const [loading, setLoading] = useState(true);
 
   // ----- USE EFFECTS -----
   useEffect(() => {
     const fetchRankings = async () => {
       try {
+        setLoading(true);
         const response = await fetch("/api/progress/rankings");
         const data = await response.json();
 
@@ -34,6 +36,8 @@ export default function RankingsDisplay({ onClose }) {
         setRankings(processedRankings);
       } catch (error) {
         console.error("Error fetching rankings:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -42,32 +46,36 @@ export default function RankingsDisplay({ onClose }) {
 
   //  ---------- RENDER RANKING COMPONENT -------------
   const renderRankingList = (rankingData, categoryConfig) => {
-    const placeholderRankings =
-      rankingData.length === 0
-        ? [
-            {
-              userId: "placeholder1",
-              username: "- - - - - -",
-              [categoryConfig.scoreField]: 0,
-            },
-            {
-              userId: "placeholder2",
-              username: "- - - - - -",
-              [categoryConfig.scoreField]: 0,
-            },
-            {
-              userId: "placeholder3",
-              username: "- - - - - -",
-              [categoryConfig.scoreField]: 0,
-            },
-          ]
-        : rankingData;
+    // Loading state
+    if (loading) {
+      return (
+        <div className="flex flex-col items-center justify-center space-y-4 py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-400"></div>
+          <p className="text-slate-300">Loading rankings...</p>
+        </div>
+      );
+    }
+
+    // Empty state
+    if (!rankingData || rankingData.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+          <div className="text-6xl mb-4">🏆</div>
+          <h3 className="text-xl text-yellow-400 font-bold mb-2">
+            No Rankings Yet
+          </h3>
+          <p className="text-slate-300">
+            Be the first to achieve a ranking in this category!
+          </p>
+        </div>
+      );
+    }
+
+    // Rankings list
     return (
       <div className="space-y-4">
-        {placeholderRankings.map((rankUser, index) => {
-          const isPlaceholder = rankUser.userId.startsWith("placeholder");
-          const isCurrentUser =
-            !isPlaceholder && rankUser.userId === user?.userId;
+        {rankingData.map((rankUser, index) => {
+          const isCurrentUser = rankUser.userId === user?.userId;
 
           return (
             <div

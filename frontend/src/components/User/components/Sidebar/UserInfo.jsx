@@ -4,6 +4,8 @@ import { FaGift } from "react-icons/fa6";
 import PropTypes from "prop-types";
 import ProfilePictureModal from "./ProfilePicture/ProfilePictureModal";
 import api from "../../../../utils/axios";
+import Swal from "sweetalert2";
+
 export default function UserInfo({
   onLogout,
   username,
@@ -20,16 +22,17 @@ export default function UserInfo({
   const [currentPicture, setCurrentPicture] = useState(null);
   const defaultProfilePic =
     "https://cdn-icons-png.freepik.com/512/6858/6858441.png";
+  const [isLoadingPicture, setIsLoadingPicture] = useState(true);
 
   //  ---------- FETCH USER PROFILE -------------
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
+        setIsLoadingPicture(true);
         const response = await api.get(`/api/users/${userId}/profile-picture`, {
           withCredentials: true,
         });
 
-        // Response now contains the URL directly
         if (response.data && response.data.profilePicture) {
           setCurrentPicture(response.data.profilePicture);
         } else {
@@ -38,6 +41,8 @@ export default function UserInfo({
       } catch (error) {
         console.error("Error fetching profile picture:", error);
         setCurrentPicture(defaultProfilePic);
+      } finally {
+        setIsLoadingPicture(false);
       }
     };
 
@@ -48,6 +53,26 @@ export default function UserInfo({
   //  ---------- FUNCTION TO UPDATE PROFILE PICTURE -------------
   const handlePictureUpdate = async (file) => {
     try {
+      // Show loading alert
+      Swal.fire({
+        title: "Processing Image",
+        html: "Please wait while we process your image...",
+        width: 500,
+        padding: "1em",
+        color: "#c3e602",
+        background:
+          "#fff url(https://cdn.vectorstock.com/i/1000v/38/53/pixel-art-style-purple-gradient-background-vector-8473853.jpg",
+        customClass: {
+          popup: "swal-font",
+          confirmButton: "btn primary",
+          cancelButton: "btn show-btn",
+        },
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
       const compressedFile = await compressImage(file);
 
       // Convert file to base64 for Cloudinary
@@ -58,9 +83,24 @@ export default function UserInfo({
           const base64data = reader.result;
           console.log("Uploading image for user:", userId);
 
-          // First, check if the base64 data is valid
+          // Validate image data
           if (!base64data || !base64data.startsWith("data:image")) {
-            throw new Error("Invalid image data");
+            Swal.fire({
+              icon: "error",
+              title: "Invalid Image",
+              text: "Please select a valid image file.",
+              width: 500,
+              padding: "1em",
+              color: "#c3e602",
+              background:
+                "url(https://cdn.vectorstock.com/i/1000v/38/53/pixel-art-style-purple-gradient-background-vector-8473853.jpg",
+              customClass: {
+                popup: "swal-font",
+                confirmButton: "btn primary",
+                cancelButton: "btn show-btn",
+              },
+            });
+            return;
           }
 
           const response = await api.post(
@@ -72,7 +112,7 @@ export default function UserInfo({
               headers: {
                 "Content-Type": "application/json",
               },
-              timeout: 60000, // 60 seconds timeout
+              timeout: 60000,
             }
           );
 
@@ -85,6 +125,25 @@ export default function UserInfo({
                 profilePicture: response.data.profilePicture,
               });
             }
+
+            // Show success message
+            Swal.fire({
+              icon: "success",
+              title: "Profile Picture Updated!",
+              text: "Your profile picture has been successfully updated.",
+              width: 500,
+              padding: "1em",
+              color: "#c3e602",
+              background:
+                "url(https://cdn.vectorstock.com/i/1000v/38/53/pixel-art-style-purple-gradient-background-vector-8473853.jpg",
+              customClass: {
+                popup: "swal-font",
+                confirmButton: "btn primary",
+                cancelButton: "btn show-btn",
+              },
+              timer: 2000,
+              showConfirmButton: false,
+            });
           } else {
             throw new Error("No profile picture URL in response");
           }
@@ -95,17 +154,36 @@ export default function UserInfo({
             error.response?.data?.error ||
             error.message ||
             "Failed to update profile picture. Please try again.";
-          alert(errorMessage);
+
+          Swal.fire({
+            icon: "error",
+            title: "Upload Failed",
+            text: errorMessage,
+            background: "#1e293b",
+            color: "#fff",
+          });
         }
       };
 
       reader.onerror = () => {
         console.error("Error reading file");
-        alert("Error reading file. Please try again.");
+        Swal.fire({
+          icon: "error",
+          title: "File Error",
+          text: "Error reading the image file. Please try again.",
+          background: "#1e293b",
+          color: "#fff",
+        });
       };
     } catch (error) {
       console.error("Image compression error:", error);
-      alert("Failed to compress image. Please try again.");
+      Swal.fire({
+        icon: "error",
+        title: "Compression Failed",
+        text: "Failed to compress image. Please try again with a different image.",
+        background: "#1e293b",
+        color: "#fff",
+      });
     }
   };
 
@@ -180,22 +258,30 @@ export default function UserInfo({
             >
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-purple-500 to-yellow-400 rounded-full p-1">
                 <div className="w-full h-full rounded-full overflow-hidden relative">
-                  <img
-                    src={currentPicture || defaultProfilePic}
-                    alt={`${username}'s profile`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      console.error("Error loading image");
-                      e.target.src = defaultProfilePic;
-                    }}
-                  />
+                  {isLoadingPicture ? (
+                    <div className="w-full h-full flex items-center justify-center bg-slate-800">
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-yellow-400"></div>
+                    </div>
+                  ) : (
+                    <img
+                      src={currentPicture || defaultProfilePic}
+                      alt={`${username}'s profile`}
+                      className="w-full h-full object-cover transition-opacity duration-200"
+                      onError={(e) => {
+                        console.error("Error loading image");
+                        e.target.src = defaultProfilePic;
+                      }}
+                    />
+                  )}
 
-                  {/* Hover overlay */}
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 rounded-full group-hover:opacity-100 transition-opacity duration-200">
-                    <span className="text-center text-white text-xs">
-                      Change Picture
-                    </span>
-                  </div>
+                  {/* Hover overlay - only show when not loading */}
+                  {!isLoadingPicture && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 rounded-full group-hover:opacity-100 transition-opacity duration-200">
+                      <span className="text-center text-white text-xs">
+                        Change Picture
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>{" "}
             </div>

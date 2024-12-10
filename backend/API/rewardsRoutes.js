@@ -94,8 +94,18 @@ router.post("/:userId/claim", validateObjectId, async (req, res) => {
       });
     }
 
-    // Add this validation block right after the required fields check
+    // Parse the date and set to midnight
     const claimDateTime = new Date(claimDate);
+    claimDateTime.setHours(0, 0, 0, 0);
+
+    // Validate the date is valid
+    if (isNaN(claimDateTime.getTime())) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid date format",
+      });
+    }
+
     const expectedReward = getRewardAmount(claimDateTime);
 
     // Validate reward amount matches day type
@@ -103,6 +113,8 @@ router.post("/:userId/claim", validateObjectId, async (req, res) => {
       return res.status(400).json({
         success: false,
         error: "Invalid reward amount for this day",
+        expected: expectedReward,
+        received: rewardAmount,
       });
     }
 
@@ -114,9 +126,6 @@ router.post("/:userId/claim", validateObjectId, async (req, res) => {
         error: "User not found",
       });
     }
-
-    // Set hours to midnight for comparison
-    claimDateTime.setHours(0, 0, 0, 0);
 
     // Find or create daily reward document
     let dailyReward = await DailyReward.findOne({ userId: user._id });
@@ -150,7 +159,7 @@ router.post("/:userId/claim", validateObjectId, async (req, res) => {
     });
     await dailyReward.save();
 
-    return res.status(200).json({
+    return res.json({
       success: true,
       newCoins: user.coins,
       claimedDate: claimDateTime,

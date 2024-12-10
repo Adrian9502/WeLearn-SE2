@@ -119,28 +119,25 @@ const DailyRewards = ({
       const isWeekend = today.getDay() === 0 || today.getDay() === 6;
       const amount = isWeekend ? 50 : 25;
 
+      // Format the date to ISO string and handle timezone
+      const claimDate = new Date(today);
+      claimDate.setHours(0, 0, 0, 0);
+
       const response = await fetch(`/api/rewards/${userId}/claim`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          claimDate: today,
+          claimDate: claimDate.toISOString(),
           rewardAmount: amount,
         }),
       });
 
-      const responseText = await response.text();
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error("JSON parsing error:", parseError);
-        throw new Error("Invalid server response: " + responseText);
-      }
+      const data = await response.json(); // Change this from text to json
 
       if (!response.ok) {
-        throw new Error(data.details || "Failed to claim reward");
+        throw new Error(data.error || "Failed to claim reward");
       }
 
       if (data.success) {
@@ -171,6 +168,8 @@ const DailyRewards = ({
         text: error.message || "Failed to claim reward. Please try again.",
         icon: "error",
         confirmButtonText: "OK",
+        background: "#1e293b",
+        color: "#fff",
       });
     }
   }, [canClaim, claimedDates, onRewardClaimed, today, userId]);

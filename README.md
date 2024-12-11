@@ -25,7 +25,7 @@ This MERN stack application is an interactive quiz platform designed to help stu
 ![Alt Text](./ranking-gif.gif)
 
 ## LIVE LINK 🚀
-- welearngame.vercel.app
+- [welearngame](https://welearngame.vercel.app)
 
 ### ACCESS ADMIN DASHBOARD at /admin
 
@@ -53,6 +53,24 @@ This MERN stack application is an interactive quiz platform designed to help stu
 - Node.js (v14.0.0 or later)
 - MongoDB (v4.4 or later)
 - npm (v6.0.0 or later)
+
+## 🌈 Available Quiz Categories
+
+### Sorting Algorithms
+- Bubble Sort
+- Insertion Sort
+- Merge Sort
+- Selection Sort
+
+### Binary Operations
+- Addition
+- Subtraction
+- Alphabet Conversions
+
+## 🏆 Difficulty Levels
+- Easy
+- Medium
+- Hard
 
 ## 🔧 Installation
 
@@ -102,28 +120,6 @@ npm start
 cd frontend
 npm start
 ```
-
-## 🌈 Available Quiz Categories
-
-### Sorting Algorithms
-
-- Bubble Sort
-- Insertion Sort
-- Merge Sort
-- Selection Sort
-
-### Binary Operations
-
-- Addition
-- Subtraction
-- Alphabet Conversions
-
-## 🏆 Difficulty Levels
-
-- Easy
-- Medium
-- Hard
-
 ## 📝 Database Schema
 
 ### Quiz Model
@@ -163,6 +159,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 - bontojohnadrian@gmail.com
 
 ## Our Team
+![Alt Text](./image.png)
 
 - John Adrian B. Bonto - Full Stack Developer
 - Derwin P. Elsenique - Research Paper Scientist
@@ -171,3 +168,6 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 Project Link: [https://github.com/Adrian9502/WeLearn-SE2](https://github.com/Adrian9502/WeLearn-SE2)
 Live Link: [https://welearn.vercel.app/](https://welearn.vercel.app/)
+
+### Big credit to [Pixels](https://www.pixels.xyz) for our inspired login UI!
+

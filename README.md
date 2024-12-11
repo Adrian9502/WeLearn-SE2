@@ -17,12 +17,18 @@ This MERN stack application is an interactive quiz platform designed to help stu
 - Daily Rewards System
 
 ## 🌟 Website Overview 
-![Alt Text](./overview.png)
-![Alt Text](./overview-1.png)
-![Alt Text](./overview-2.png)
-![Alt Text](./playing-gif.gif)
-![Alt Text](./progress-gif.gif)
-![Alt Text](./ranking-gif.gif)
+### USER
+![Overview](./overview.png)
+![Overview](./overview-1.png)
+![Overview](./overview-2.png)
+
+
+### ADMIN
+![Admin Overview](./image_2024-12-11_211426441.png)
+![Admin Overview](./image_2024-12-11_211528767.png)
+![Admin Overview](./image_2024-12-11_211546093.png)
+![Admin Overview](./image_2024-12-11_211557471.png)
+
 
 ## LIVE LINK 🚀
 - [welearngame](https://welearngame.vercel.app)

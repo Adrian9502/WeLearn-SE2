@@ -261,10 +261,12 @@ router.get("/rankings", async (req, res) => {
     const users = Array.from(userProgressMap.values());
 
     return res.status(200).json({
-      completionRankings: [...users].sort(
-        (a, b) => b.completedQuizzes - a.completedQuizzes
-      ),
-      timeRankings: [...users].sort((a, b) => a.averageTime - b.averageTime),
+      completionRankings: [...users]
+        .filter((user) => user.completedQuizzes > 0) // Only include users who completed at least one quiz
+        .sort((a, b) => b.completedQuizzes - a.completedQuizzes),
+      timeRankings: [...users]
+        .filter((user) => user.completedQuizzes > 0) // Only include users who completed quizzes
+        .sort((a, b) => a.averageTime - b.averageTime),
       coinRankings: [...users].sort((a, b) => b.coins - a.coins),
       consistencyRankings: [...users].sort(
         (a, b) => b.consecutiveDays - a.consecutiveDays

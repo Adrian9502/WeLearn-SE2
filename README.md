@@ -8,7 +8,6 @@ This MERN stack application is an interactive quiz platform designed to help stu
 
 - Multiple quiz categories (Sorting Algorithms, Binary Operations)
 - Difficulty levels (Easy, Medium, Hard)
-- Automatic quiz ID generation
 - Comprehensive quiz management
 - Total of 240 quizzes
 - User Progress Tracking

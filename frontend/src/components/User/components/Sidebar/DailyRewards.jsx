@@ -116,6 +116,16 @@ const DailyRewards = ({
     if (!canClaim) return;
 
     try {
+      // Show loading alert
+      Swal.fire({
+        title: "Processing Claim",
+        html: "Please wait...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
       const isWeekend = today.getDay() === 0 || today.getDay() === 6;
       const amount = isWeekend ? 50 : 25;
 
@@ -134,17 +144,21 @@ const DailyRewards = ({
         }),
       });
 
-      const data = await response.json(); // Change this from text to json
+      const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to claim reward");
       }
 
       if (data.success) {
-        setClaimedDates([...claimedDates, today]);
+        // Update local state immediately
+        const newClaimDate = new Date(data.claimedDate);
+        setClaimedDates((prevDates) => [...prevDates, newClaimDate]);
         setCanClaim(false);
 
         onRewardClaimed(data.newCoins);
+
+        // Close loading alert and show success message
         Swal.fire({
           title: "Reward Claimed!",
           text: `+${amount} coins added to your balance`,
@@ -160,6 +174,9 @@ const DailyRewards = ({
           },
           timer: 3000,
         });
+
+        // Refresh the claimed dates from server
+        checkLastClaim();
       }
     } catch (error) {
       console.error("Error claiming reward:", error);
@@ -172,7 +189,7 @@ const DailyRewards = ({
         color: "#fff",
       });
     }
-  }, [canClaim, claimedDates, onRewardClaimed, today, userId]);
+  }, [canClaim, today, userId, onRewardClaimed, checkLastClaim]);
 
   const renderCalendarCell = useCallback(
     (date, index) => {

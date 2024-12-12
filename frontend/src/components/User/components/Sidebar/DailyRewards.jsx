@@ -86,22 +86,27 @@ const DailyRewards = ({
 
       const data = await response.json();
 
-      if (data.claimedDates) {
-        const parsedClaimedDates = data.claimedDates.map((date) => {
-          const d = new Date(date);
-          d.setUTCHours(0, 0, 0, 0);
-          return d;
-        });
+      if (data.claimedDates && data.claimedDates.length > 0) {
+        const parsedClaimedDates = data.claimedDates.map(
+          (date) => new Date(date)
+        );
+
+        // Sort claimed dates to get the most recent
+        parsedClaimedDates.sort((a, b) => b - a);
+
         setClaimedDates(parsedClaimedDates);
 
-        // Check if today is already claimed using UTC comparison
+        // Check if today is already claimed
         const todayClaimed = parsedClaimedDates.some((claimedDate) =>
           isSameDate(claimedDate, today)
         );
 
+        // Explicitly set canClaim based on today's claim status
         setCanClaim(!todayClaimed);
       } else {
+        // No claimed dates, so can claim
         setCanClaim(true);
+        setClaimedDates([]);
       }
     } catch (error) {
       console.error("Error checking last claim:", error);
@@ -111,18 +116,9 @@ const DailyRewards = ({
         icon: "error",
         confirmButtonText: "OK",
       });
+      setCanClaim(true);
     }
   }, [userId, today]);
-
-  // Modify isSameDate to use UTC
-  const isSameDate = (date1, date2) => {
-    if (!date1 || !date2) return false;
-    return (
-      date1.getUTCFullYear() === date2.getUTCFullYear() &&
-      date1.getUTCMonth() === date2.getUTCMonth() &&
-      date1.getUTCDate() === date2.getUTCDate()
-    );
-  };
 
   const claimReward = useCallback(async () => {
     if (!canClaim) return;
@@ -136,6 +132,8 @@ const DailyRewards = ({
         didOpen: () => {
           Swal.showLoading();
         },
+        // Prevent closing the alert
+        showConfirmButton: false,
       });
 
       const isWeekend = today.getDay() === 0 || today.getDay() === 6;
@@ -163,9 +161,17 @@ const DailyRewards = ({
       }
 
       if (data.success) {
-        // Update local state immediately
-        const newClaimDate = new Date(data.claimedDate);
-        setClaimedDates((prevDates) => [...prevDates, newClaimDate]);
+        // Explicitly update states
+        setClaimedDates((prevDates) => {
+          // Ensure we're not adding a duplicate date
+          const newClaimDate = new Date(data.claimedDate);
+          const isAlreadyClaimed = prevDates.some((date) =>
+            isSameDate(date, newClaimDate)
+          );
+          return isAlreadyClaimed ? prevDates : [...prevDates, newClaimDate];
+        });
+
+        // Explicitly set canClaim to false
         setCanClaim(false);
 
         onRewardClaimed(data.newCoins);
@@ -186,12 +192,13 @@ const DailyRewards = ({
           },
           timer: 3000,
         });
-
-        // Refresh the claimed dates from server
-        checkLastClaim();
       }
     } catch (error) {
       console.error("Error claiming reward:", error);
+
+      // Close any existing Swal alerts before showing error
+      Swal.close();
+
       Swal.fire({
         title: "Error",
         text: error.message || "Failed to claim reward. Please try again.",
@@ -201,7 +208,7 @@ const DailyRewards = ({
         color: "#fff",
       });
     }
-  }, [canClaim, today, userId, onRewardClaimed, checkLastClaim]);
+  }, [canClaim, today, userId, onRewardClaimed]);
 
   const renderCalendarCell = useCallback(
     (date, index) => {

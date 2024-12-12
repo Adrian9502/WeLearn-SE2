@@ -207,7 +207,6 @@ const DailyRewards = ({
       return (
         <div
           key={index}
-          onClick={isToday && canClaim ? claimReward : undefined}
           className={`
             relative sm:py-2 py-1 px-2 sm:px-3 rounded-lg bg-gradient-to-r transition-all duration-200
             ${
@@ -216,12 +215,12 @@ const DailyRewards = ({
                 : ""
             }
             ${
-              isToday && canClaim
-                ? "from-purple-600 to-indigo-700 border-2 border-pink-400 cursor-pointer"
+              (isToday && canClaim) || (isToday && isClaimed)
+                ? "from-green-600/60 to-green-700/70 border border-green-500"
                 : ""
             }
             ${
-              isClaimed
+              isClaimed && !isToday
                 ? "from-green-600/60 to-green-700/70 border border-green-500"
                 : ""
             }
@@ -231,6 +230,7 @@ const DailyRewards = ({
                 : ""
             }
           `}
+          onClick={isToday && canClaim ? claimReward : undefined}
         >
           <div className="text-center">
             <div className="text-base sm:text-lg font-medium text-indigo-100">
@@ -249,7 +249,7 @@ const DailyRewards = ({
           </div>
 
           {/* Status Badge */}
-          {isClaimed && (
+          {(isClaimed || (isToday && !canClaim)) && (
             <div className="inset-0 flex items-center p-1 justify-center bg-green-950/20 rounded-lg">
               <span className="text-green-400 text-xs">✓ Claimed</span>
             </div>

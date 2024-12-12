@@ -51,6 +51,7 @@ const getRewardAmount = (date) => {
 // Returns the last claim details for the user
 router.get("/:userId/last-claim", validateObjectId, async (req, res) => {
   try {
+    // First, verify the user exists
     const user = await userModel.findById(req.params.userId);
     if (!user) {
       return res.status(404).json({
@@ -64,14 +65,13 @@ router.get("/:userId/last-claim", validateObjectId, async (req, res) => {
     });
 
     if (!dailyReward || dailyReward.claimedDates.length === 0) {
-      return res.json({ lastClaim: null, claimedDates: [] });
+      return res.json({ lastClaim: null });
     }
 
-    // Ensure dates are sorted in descending order
+    // Sort claimed dates in descending order and get the most recent
     const sortedClaims = dailyReward.claimedDates.sort(
       (a, b) => b.date - a.date
     );
-
     res.json({
       lastClaim: sortedClaims[0].date,
       claimedDates: sortedClaims.map((claim) => claim.date),

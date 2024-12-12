@@ -87,12 +87,14 @@ const DailyRewards = ({
       const data = await response.json();
 
       if (data.claimedDates) {
-        const parsedClaimedDates = data.claimedDates.map(
-          (date) => new Date(date)
-        );
+        const parsedClaimedDates = data.claimedDates.map((date) => {
+          const d = new Date(date);
+          d.setUTCHours(0, 0, 0, 0);
+          return d;
+        });
         setClaimedDates(parsedClaimedDates);
 
-        // Check if today is already claimed
+        // Check if today is already claimed using UTC comparison
         const todayClaimed = parsedClaimedDates.some((claimedDate) =>
           isSameDate(claimedDate, today)
         );
@@ -111,6 +113,16 @@ const DailyRewards = ({
       });
     }
   }, [userId, today]);
+
+  // Modify isSameDate to use UTC
+  const isSameDate = (date1, date2) => {
+    if (!date1 || !date2) return false;
+    return (
+      date1.getUTCFullYear() === date2.getUTCFullYear() &&
+      date1.getUTCMonth() === date2.getUTCMonth() &&
+      date1.getUTCDate() === date2.getUTCDate()
+    );
+  };
 
   const claimReward = useCallback(async () => {
     if (!canClaim) return;

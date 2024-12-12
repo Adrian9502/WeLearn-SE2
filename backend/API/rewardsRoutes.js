@@ -86,46 +86,9 @@ router.post("/:userId/claim", validateObjectId, async (req, res) => {
   try {
     const { rewardAmount, claimDate } = req.body;
 
-    // Validate required fields
-    if (!rewardAmount || !claimDate) {
-      return res.status(400).json({
-        success: false,
-        error: "Missing required fields: rewardAmount and claimDate",
-      });
-    }
-
-    // Parse the date and set to midnight
+    // Parse the date and set to midnight in UTC
     const claimDateTime = new Date(claimDate);
-    claimDateTime.setHours(0, 0, 0, 0);
-
-    // Validate the date is valid
-    if (isNaN(claimDateTime.getTime())) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid date format",
-      });
-    }
-
-    const expectedReward = getRewardAmount(claimDateTime);
-
-    // Validate reward amount matches day type
-    if (rewardAmount !== expectedReward) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid reward amount for this day",
-        expected: expectedReward,
-        received: rewardAmount,
-      });
-    }
-
-    // Find user first
-    const user = await userModel.findById(req.params.userId);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        error: "User not found",
-      });
-    }
+    claimDateTime.setUTCHours(0, 0, 0, 0);
 
     // Find or create daily reward document
     let dailyReward = await DailyReward.findOne({ userId: user._id });
@@ -133,10 +96,10 @@ router.post("/:userId/claim", validateObjectId, async (req, res) => {
       dailyReward = new DailyReward({ userId: user._id, claimedDates: [] });
     }
 
-    // Check if already claimed on this date
+    // Strict date comparison using UTC
     const existingClaim = dailyReward.claimedDates.find((claim) => {
       const existingClaimDate = new Date(claim.date);
-      existingClaimDate.setHours(0, 0, 0, 0);
+      existingClaimDate.setUTCHours(0, 0, 0, 0);
       return existingClaimDate.getTime() === claimDateTime.getTime();
     });
 

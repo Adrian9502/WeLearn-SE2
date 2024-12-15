@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
+import { useUser } from "../../../UserContext";
+
 const ProfilePictureModal = ({
   isOpen,
   onClose,
@@ -12,6 +14,8 @@ const ProfilePictureModal = ({
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const { user, updateUser } = useUser();
+  const PROFILE_PICTURE_COST = 500;
 
   useEffect(() => {
     if (!isOpen) {
@@ -54,15 +58,37 @@ const ProfilePictureModal = ({
       return;
     }
 
+    if (user.coins < PROFILE_PICTURE_COST) {
+      setError(
+        `You need ${PROFILE_PICTURE_COST} coins to change your profile picture`
+      );
+      return;
+    }
+
     setIsUploading(true);
     setError(null);
     setUploadProgress(0);
 
     try {
       await onUpdate(selectedFile);
-      onClose(); // Close modal after successful upload
-      setSelectedFile(null); // Reset selected file
-      setPreviewUrl(null); // Reset preview
+
+      const newCoins = user.coins - PROFILE_PICTURE_COST;
+      updateUser({ coins: newCoins });
+
+      await fetch(`/api/users/${userId}/coins`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          coins: PROFILE_PICTURE_COST,
+          operation: "subtract",
+        }),
+      });
+
+      onClose();
+      setSelectedFile(null);
+      setPreviewUrl(null);
     } catch (error) {
       console.error("Error uploading file:", error);
       setError(
@@ -91,6 +117,14 @@ const ProfilePictureModal = ({
         <h2 className="text-center text-sm text-yellow-400 mb-4 sm:text-lg">
           Update Profile Picture
         </h2>
+        <div className="text-center text-xs text-slate-200 mb-4">
+          <div className="flex items-center w-fit mx-auto p-1 rounded-lg bg-fuchsia-600 border-yellow-500 text-base border-2 justify-center">
+            <img src="/coin.gif" className="w-6 h-6" alt="" /> -
+            {PROFILE_PICTURE_COST} coins
+          </div>
+          <br />
+          <div className="p-1">Your balance: {user?.coins || 0} coins</div>
+        </div>
 
         {previewUrl && (
           <div className="">
@@ -131,7 +165,11 @@ const ProfilePictureModal = ({
             </div>
           )}
 
-          {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
+          {error && (
+            <div className="text-yellow-300 text-xs p-2 text-center bg-red-500 rounded-xl sm:text-sm mt-2">
+              {error}
+            </div>
+          )}
 
           <div className="flex justify-center space-x-2 pt-4">
             <button

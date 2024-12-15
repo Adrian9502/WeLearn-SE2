@@ -78,29 +78,35 @@ export default function Sidebar({
       fetchUserQuizProgress();
     }
   }, [userId, userQuizCompleted, refreshQuizProgress]);
-
+  // ----- ORGANIZE QUIZZES -----
   const organizedQuizzes = useMemo(() => {
+    console.log("Organizing quizzes:", quizzes); // Debug log
+
     const categorizedQuizzes = {};
 
     quizzes.forEach((quiz) => {
-      // Organize by category
-      if (!categorizedQuizzes[quiz.category]) {
-        categorizedQuizzes[quiz.category] = {};
+      const { category, type, difficulty } = quiz;
+
+      // Initialize category if it doesn't exist
+      if (!categorizedQuizzes[category]) {
+        categorizedQuizzes[category] = {};
       }
 
-      // Organize by type within category
-      if (!categorizedQuizzes[quiz.category][quiz.type]) {
-        categorizedQuizzes[quiz.category][quiz.type] = {};
+      // Initialize type if it doesn't exist
+      if (!categorizedQuizzes[category][type]) {
+        categorizedQuizzes[category][type] = {};
       }
 
-      // Organize by difficulty within type
-      if (!categorizedQuizzes[quiz.category][quiz.type][quiz.difficulty]) {
-        categorizedQuizzes[quiz.category][quiz.type][quiz.difficulty] = [];
+      // Initialize difficulty array if it doesn't exist
+      if (!categorizedQuizzes[category][type][difficulty.toLowerCase()]) {
+        categorizedQuizzes[category][type][difficulty.toLowerCase()] = [];
       }
 
-      categorizedQuizzes[quiz.category][quiz.type][quiz.difficulty].push(quiz);
+      // Add quiz to appropriate array
+      categorizedQuizzes[category][type][difficulty.toLowerCase()].push(quiz);
     });
 
+    console.log("Organized quizzes structure:", categorizedQuizzes); // Debug log
     return categorizedQuizzes;
   }, [quizzes]);
   // ----- COMPUTE TOTAL QUIZZES -----
@@ -131,30 +137,117 @@ export default function Sidebar({
     }));
   }, []);
   // set color based on difficulty
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty.toLowerCase()) {
-      case "easy":
-        return {
-          parent: "bg-green-700/30",
-          button: "from-green-600 to-green-700 hover:to-green-600",
-        };
-      case "medium":
-        return {
-          parent: "bg-yellow-700/30",
-          button: "from-yellow-600 to-yellow-700 hover:to-yellow-600",
-        };
-      case "hard":
-        return {
-          parent: "bg-red-700/30",
-          button: "from-red-600 to-red-700 hover:to-red-600",
-        };
-      default:
-        return {
-          parent: "bg-blue-700/30",
-          button: "from-blue-600 to-blue-700 hover:to-blue-600",
-        };
+  const getDifficultyColor = (difficulty, isLocked = false) => {
+    const baseColors = {
+      easy: {
+        parent: "bg-green-700/30",
+        button: "from-green-600 to-green-700 hover:to-green-600",
+      },
+      medium: {
+        parent: "bg-yellow-700/30",
+        button: "from-yellow-600 to-yellow-700 hover:to-yellow-600",
+      },
+      hard: {
+        parent: "bg-red-700/30",
+        button: "from-red-600 to-red-700 hover:to-red-600",
+      },
+    };
+
+    const colors = baseColors[difficulty.toLowerCase()] || {
+      parent: "bg-blue-700/30",
+      button: "from-blue-600 to-blue-700 hover:to-blue-600",
+    };
+
+    if (isLocked) {
+      return {
+        parent: `${colors.parent} opacity-50`,
+        button: `${colors.button} opacity-50`,
+      };
     }
+
+    return colors;
   };
+  // ---- CHECK IF THE OTHER DIFFICULTY ARE UNLOCKED
+  const isDifficultyUnlocked = useCallback(
+    (category, type, currentDifficulty) => {
+      try {
+        const difficultyOrder = ["easy", "medium", "hard"];
+        const currentDifficultyIndex = difficultyOrder.indexOf(
+          currentDifficulty.toLowerCase()
+        );
+
+        // Debug current check
+        console.log("Checking difficulty unlock:", {
+          category,
+          type,
+          currentDifficulty,
+          currentDifficultyIndex,
+        });
+
+        // Easy is always unlocked
+        if (currentDifficultyIndex === 0) {
+          return true;
+        }
+
+        const previousDifficulty = difficultyOrder[currentDifficultyIndex - 1];
+
+        // Debug organized quizzes structure
+        console.log("Available quizzes:", {
+          category: organizedQuizzes[category],
+          type: organizedQuizzes[category]?.[type],
+          difficulties:
+            organizedQuizzes[category]?.[type]?.[previousDifficulty],
+        });
+
+        const previousDifficultyQuizzes =
+          organizedQuizzes[category]?.[type]?.[previousDifficulty] || [];
+
+        console.log("Previous difficulty quizzes:", {
+          difficulty: previousDifficulty,
+          quizzes: previousDifficultyQuizzes,
+          count: previousDifficultyQuizzes.length,
+        });
+
+        // Check completion status
+        const completedQuizzes = previousDifficultyQuizzes.filter((quiz) => {
+          const isCompleted = userProgress?.some(
+            (progress) =>
+              progress.quizId?._id === quiz._id && progress.completed === true
+          );
+
+          console.log(`Quiz completion check:`, {
+            quizId: quiz._id,
+            quizTitle: quiz.title,
+            isCompleted,
+            matchingProgress: userProgress?.find(
+              (p) => p.quizId?._id === quiz._id
+            ),
+          });
+
+          return isCompleted;
+        });
+
+        const isUnlocked =
+          completedQuizzes.length === previousDifficultyQuizzes.length &&
+          previousDifficultyQuizzes.length > 0;
+
+        console.log("Unlock calculation:", {
+          type,
+          difficulty: currentDifficulty,
+          previousDifficulty,
+          totalQuizzes: previousDifficultyQuizzes.length,
+          completedQuizzes: completedQuizzes.length,
+          isUnlocked,
+        });
+
+        return isUnlocked;
+      } catch (error) {
+        console.error("Error in isDifficultyUnlocked:", error);
+        return false;
+      }
+    },
+    [organizedQuizzes, userProgress]
+  );
   // Render nested quiz navigation
   const renderQuizNavigation = () => {
     return Object.entries(organizedQuizzes).map(([category, types]) => (
@@ -188,43 +281,90 @@ export default function Sidebar({
             </div>
 
             {isExpanded.types?.[type] &&
-              Object.entries(difficulties).map(([difficulty, quizList]) => (
-                <div
-                  key={difficulty}
-                  className={`mt-2 pb-2 w-[96%] mx-auto rounded-xl ${
-                    getDifficultyColor(difficulty).parent || "bg-blue-100/20"
-                  }`}
-                >
-                  <div
-                    onClick={() => toggleExpand("difficulties", difficulty)}
-                    className={`px-2.5 bg-gradient-to-r text-center text-white 
-                      ${
-                        getDifficultyColor(difficulty).button ||
-                        "bg-blue-600 hover:bg-blue-700"
-                      } 
-                      btn rounded-lg 
-                      py-3 cursor-pointer uppercase text-center tracking-wider
-                      transition-colors duration-200
-                      shadow-md`}
-                  >
-                    {difficulty}
-                  </div>
+              Object.entries(difficulties).map(([difficulty, quizList]) => {
+                // Check if difficulty is unlocked
+                const isUnlocked = isDifficultyUnlocked(
+                  category,
+                  type,
+                  difficulty
+                );
 
-                  {isExpanded.difficulties?.[difficulty] && (
-                    <div className="mt-2 space-y-3">
-                      {quizList.map((quiz) => (
-                        <QuizItem
-                          key={quiz._id}
-                          quiz={quiz}
-                          onClick={() => onQuizSelect(quiz)}
-                          userProgress={userProgress}
-                          completedQuizzes={completedQuizzes}
-                        />
-                      ))}
+                return (
+                  <div
+                    key={difficulty}
+                    className={`mt-2 pb-2 w-[96%] mx-auto rounded-xl ${
+                      getDifficultyColor(difficulty, !isUnlocked).parent
+                    }`}
+                  >
+                    <div
+                      onClick={() => {
+                        if (isUnlocked) {
+                          toggleExpand("difficulties", difficulty);
+                        } else {
+                          // Get the count of completed quizzes and total quizzes for the previous difficulty
+                          const previousDifficulty =
+                            difficulty.toLowerCase() === "medium"
+                              ? "easy"
+                              : "medium";
+                          const previousQuizzes =
+                            organizedQuizzes[category]?.[type]?.[
+                              previousDifficulty
+                            ] || [];
+                          const completedCount =
+                            userProgress?.filter((progress) =>
+                              previousQuizzes.some(
+                                (quiz) =>
+                                  quiz._id === progress.quizId?._id &&
+                                  progress.completed
+                              )
+                            ).length || 0;
+
+                          Swal.fire({
+                            icon: "warning",
+                            title: "Difficulty Locked",
+                            html:
+                              `Complete all ${previousDifficulty} quizzes first!<br><br>` +
+                              `Progress: ${completedCount}/${previousQuizzes.length} completed`,
+                            confirmButtonText: "OK, Cool",
+                            confirmButtonColor: "#3085d6",
+                            width: 500,
+                            padding: "1em",
+                            color: "#c3e602",
+                            background:
+                              "#fff url(https://images.pond5.com/pixel-sky-pixel-background-cloud-footage-226558718_iconl.jpeg)",
+                            customClass: {
+                              popup: "swal-font",
+                              confirmButton: "btn primary",
+                              cancelButton: "btn show-btn",
+                            },
+                          });
+                        }
+                      }}
+                      className={`px-2.5 bg-gradient-to-r text-center text-white 
+                        ${getDifficultyColor(difficulty, !isUnlocked).button} 
+                        btn rounded-lg py-3 cursor-pointer uppercase text-center tracking-wider
+                        transition-colors duration-200 shadow-md
+                        ${!isUnlocked ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                      {difficulty} {!isUnlocked && "🔒"}
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    {isExpanded.difficulties?.[difficulty] && isUnlocked && (
+                      <div className="mt-2 space-y-3">
+                        {quizList.map((quiz) => (
+                          <QuizItem
+                            key={quiz._id}
+                            quiz={quiz}
+                            onClick={() => onQuizSelect(quiz)}
+                            userProgress={userProgress}
+                            completedQuizzes={completedQuizzes}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
           </div>
         ))}
       </div>
@@ -258,6 +398,25 @@ export default function Sidebar({
       }
     });
   }, [navigate]);
+
+  useEffect(() => {
+    console.log("Current userProgress:", userProgress);
+  }, [userProgress]);
+
+  useEffect(() => {
+    if (userProgress && organizedQuizzes) {
+      console.log("Debug State:", {
+        userProgress,
+        organizedQuizzes,
+        completedQuizzes: userProgress
+          .filter((p) => p.completed)
+          .map((p) => ({
+            id: p.quizId?._id,
+            title: p.quizId?.title,
+          })),
+      });
+    }
+  }, [userProgress, organizedQuizzes]);
 
   return (
     <aside

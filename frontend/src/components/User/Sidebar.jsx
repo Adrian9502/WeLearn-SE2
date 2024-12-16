@@ -80,8 +80,6 @@ export default function Sidebar({
   }, [userId, userQuizCompleted, refreshQuizProgress]);
   // ----- ORGANIZE QUIZZES -----
   const organizedQuizzes = useMemo(() => {
-    console.log("Organizing quizzes:", quizzes); // Debug log
-
     const categorizedQuizzes = {};
 
     quizzes.forEach((quiz) => {
@@ -106,7 +104,6 @@ export default function Sidebar({
       categorizedQuizzes[category][type][difficulty.toLowerCase()].push(quiz);
     });
 
-    console.log("Organized quizzes structure:", categorizedQuizzes); // Debug log
     return categorizedQuizzes;
   }, [quizzes]);
   // ----- COMPUTE TOTAL QUIZZES -----
@@ -176,14 +173,6 @@ export default function Sidebar({
           currentDifficulty.toLowerCase()
         );
 
-        // Debug current check
-        console.log("Checking difficulty unlock:", {
-          category,
-          type,
-          currentDifficulty,
-          currentDifficultyIndex,
-        });
-
         // Easy is always unlocked
         if (currentDifficultyIndex === 0) {
           return true;
@@ -191,22 +180,8 @@ export default function Sidebar({
 
         const previousDifficulty = difficultyOrder[currentDifficultyIndex - 1];
 
-        // Debug organized quizzes structure
-        console.log("Available quizzes:", {
-          category: organizedQuizzes[category],
-          type: organizedQuizzes[category]?.[type],
-          difficulties:
-            organizedQuizzes[category]?.[type]?.[previousDifficulty],
-        });
-
         const previousDifficultyQuizzes =
           organizedQuizzes[category]?.[type]?.[previousDifficulty] || [];
-
-        console.log("Previous difficulty quizzes:", {
-          difficulty: previousDifficulty,
-          quizzes: previousDifficultyQuizzes,
-          count: previousDifficultyQuizzes.length,
-        });
 
         // Check completion status
         const completedQuizzes = previousDifficultyQuizzes.filter((quiz) => {
@@ -215,30 +190,12 @@ export default function Sidebar({
               progress.quizId?._id === quiz._id && progress.completed === true
           );
 
-          console.log(`Quiz completion check:`, {
-            quizId: quiz._id,
-            quizTitle: quiz.title,
-            isCompleted,
-            matchingProgress: userProgress?.find(
-              (p) => p.quizId?._id === quiz._id
-            ),
-          });
-
           return isCompleted;
         });
 
         const isUnlocked =
           completedQuizzes.length === previousDifficultyQuizzes.length &&
           previousDifficultyQuizzes.length > 0;
-
-        console.log("Unlock calculation:", {
-          type,
-          difficulty: currentDifficulty,
-          previousDifficulty,
-          totalQuizzes: previousDifficultyQuizzes.length,
-          completedQuizzes: completedQuizzes.length,
-          isUnlocked,
-        });
 
         return isUnlocked;
       } catch (error) {
@@ -398,25 +355,6 @@ export default function Sidebar({
       }
     });
   }, [navigate]);
-
-  useEffect(() => {
-    console.log("Current userProgress:", userProgress);
-  }, [userProgress]);
-
-  useEffect(() => {
-    if (userProgress && organizedQuizzes) {
-      console.log("Debug State:", {
-        userProgress,
-        organizedQuizzes,
-        completedQuizzes: userProgress
-          .filter((p) => p.completed)
-          .map((p) => ({
-            id: p.quizId?._id,
-            title: p.quizId?.title,
-          })),
-      });
-    }
-  }, [userProgress, organizedQuizzes]);
 
   return (
     <aside

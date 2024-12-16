@@ -81,7 +81,6 @@ export default function UserInfo({
       reader.onloadend = async () => {
         try {
           const base64data = reader.result;
-          console.log("Uploading image for user:", userId);
 
           // Validate image data
           if (!base64data || !base64data.startsWith("data:image")) {
@@ -116,7 +115,6 @@ export default function UserInfo({
             }
           );
 
-          console.log("Upload complete:", response.data);
           if (response.data.profilePicture) {
             setCurrentPicture(response.data.profilePicture);
             if (onUserDataUpdate) {

@@ -15,21 +15,23 @@ This MERN stack application is an interactive quiz platform designed to help stu
 - Ranking System
 - Daily Rewards System
 
-## 🌟 Website Overview 
-### USER
-![Overview](./overview.png)
-![Overview](./overview-1.png)
-![Overview](./overview-2.png)
+## 🌟 Website Overview
 
+### USER
+
+![Overview](pictures/overview.png)
+![Overview](pictures/overview-1.png)
+![Overview](pictures/overview-2.png)
 
 ### ADMIN
-![Admin Overview](./image_2024-12-11_211426441.png)
-![Admin Overview](./image_2024-12-11_211528767.png)
-![Admin Overview](./image_2024-12-11_211546093.png)
-![Admin Overview](./image_2024-12-11_211557471.png)
 
+![Admin Overview](pictures/image_2024-12-11_211426441.png)
+![Admin Overview](pictures/image_2024-12-11_211528767.png)
+![Admin Overview](pictures/image_2024-12-11_211546093.png)
+![Admin Overview](pictures/image_2024-12-11_211557471.png)
 
 ## LIVE LINK 🚀
+
 - [welearngame](https://welearngame.vercel.app)
 
 ### ACCESS ADMIN DASHBOARD at /admin
@@ -51,7 +53,7 @@ This MERN stack application is an interactive quiz platform designed to help stu
 
 ## 🛠 Tools used for Testing
 
-- **Jest**: 
+- **Jest**:
 
 ## 📦 Prerequisites
 
@@ -62,17 +64,20 @@ This MERN stack application is an interactive quiz platform designed to help stu
 ## 🌈 Available Quiz Categories
 
 ### Sorting Algorithms
+
 - Bubble Sort
 - Insertion Sort
 - Merge Sort
 - Selection Sort
 
 ### Binary Operations
+
 - Addition
 - Subtraction
 - Alphabet Conversions
 
 ## 🏆 Difficulty Levels
+
 - Easy
 - Medium
 - Hard
@@ -125,6 +130,7 @@ npm start
 cd frontend
 npm start
 ```
+
 ## 📝 Database Schema
 
 ### Quiz Model
@@ -164,7 +170,8 @@ Distributed under the MIT License. See `LICENSE` for more information.
 - bontojohnadrian@gmail.com
 
 ## Our Team
-![Alt Text](./image.png)
+
+![Alt Text](pictures/image.png)
 
 - John Adrian B. Bonto - Full Stack Developer
 - Derwin P. Elsenique - Research Paper Scientist
@@ -175,4 +182,3 @@ Project Link: [https://github.com/Adrian9502/WeLearn-SE2](https://github.com/Adr
 Live Link: [https://welearn.vercel.app/](https://welearn.vercel.app/)
 
 ### Big credit to [Pixels](https://www.pixels.xyz) for our inspired login UI!
-

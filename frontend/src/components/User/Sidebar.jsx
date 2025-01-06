@@ -20,11 +20,14 @@ export default function Sidebar({
 }) {
   // ----- NAVIGATION -----
   const navigate = useNavigate();
+
   // ----- STATE -----
-  const [isExpanded, setIsExpanded] = useState({
-    types: {},
-    difficulties: {},
+  const [activeItems, setActiveItems] = useState({
+    category: null,
+    type: null,
+    difficulty: null,
   });
+
   const quizzes = useQuizzes();
   const { user } = useUser();
   const username = user?.username;
@@ -43,14 +46,19 @@ export default function Sidebar({
       console.error("Error fetching user data:", error);
     }
   };
+
   // ----- HANDLE USER DATA UPDATE -----
   const handleUserDataUpdate = (newUserData) => {
     setUserData(newUserData);
   };
+
   // ----- USE EFFECT TO FETCH USER DATA -----
   useEffect(() => {
-    fetchUserData();
+    if (userId) {
+      fetchUserData();
+    }
   }, [userId]);
+
   // ----- FETCH USER QUIZ PROGRESS -----
   const fetchUserQuizProgress = async () => {
     try {
@@ -72,40 +80,72 @@ export default function Sidebar({
       setIsLoading(false);
     }
   };
+
   // ----- USE EFFECTS -----
   useEffect(() => {
     if (userId) {
       fetchUserQuizProgress();
     }
   }, [userId, userQuizCompleted, refreshQuizProgress]);
+
   // ----- ORGANIZE QUIZZES -----
   const organizedQuizzes = useMemo(() => {
     const categorizedQuizzes = {};
 
+    const difficultyOrder = {
+      easy: 0,
+      medium: 1,
+      hard: 2,
+    };
+
     quizzes.forEach((quiz) => {
       const { category, type, difficulty } = quiz;
 
-      // Initialize category if it doesn't exist
       if (!categorizedQuizzes[category]) {
         categorizedQuizzes[category] = {};
       }
-
-      // Initialize type if it doesn't exist
       if (!categorizedQuizzes[category][type]) {
         categorizedQuizzes[category][type] = {};
       }
-
-      // Initialize difficulty array if it doesn't exist
       if (!categorizedQuizzes[category][type][difficulty.toLowerCase()]) {
         categorizedQuizzes[category][type][difficulty.toLowerCase()] = [];
       }
 
-      // Add quiz to appropriate array
       categorizedQuizzes[category][type][difficulty.toLowerCase()].push(quiz);
+    });
+
+    // Sort quizzes within each difficulty level
+    Object.keys(categorizedQuizzes).forEach((category) => {
+      Object.keys(categorizedQuizzes[category]).forEach((type) => {
+        // Sort difficulties
+        const sortedDifficulties = Object.entries(
+          categorizedQuizzes[category][type]
+        )
+          .sort(
+            ([diffA], [diffB]) =>
+              difficultyOrder[diffA] - difficultyOrder[diffB]
+          )
+          .reduce((acc, [diff, quizzes]) => {
+            acc[diff] = quizzes;
+            return acc;
+          }, {});
+
+        categorizedQuizzes[category][type] = sortedDifficulties;
+
+        // Then sort quizzes within each difficulty
+        Object.keys(sortedDifficulties).forEach((difficulty) => {
+          sortedDifficulties[difficulty].sort((a, b) => {
+            const numA = parseInt(a.title.match(/\d+/)?.[0] || 0);
+            const numB = parseInt(b.title.match(/\d+/)?.[0] || 0);
+            return numA - numB;
+          });
+        });
+      });
     });
 
     return categorizedQuizzes;
   }, [quizzes]);
+
   // ----- COMPUTE TOTAL QUIZZES -----
   const totalQuizzes = useMemo(() => {
     return Object.values(organizedQuizzes).reduce(
@@ -123,17 +163,33 @@ export default function Sidebar({
       0
     );
   }, [organizedQuizzes]);
+
   // ----- TOGGLE EXPAND STATE FOR NESTED NAVIGATION -----
   const toggleExpand = useCallback((level, key) => {
-    setIsExpanded((prev) => ({
-      ...prev,
-      [level]: {
-        ...prev[level],
-        [key]: !prev[level]?.[key],
-      },
-    }));
+    setActiveItems((prev) => {
+      // If clicking the same item, close it
+      if (prev[level] === key) {
+        return {
+          ...prev,
+          [level]: null,
+          // Reset lower levels when closing a parent
+          ...(level === "category" && { type: null, difficulty: null }),
+          ...(level === "type" && { difficulty: null }),
+        };
+      }
+
+      // If clicking a different item, switch to it
+      return {
+        ...prev,
+        [level]: key,
+        // Reset lower levels when changing parent
+        ...(level === "category" && { type: null, difficulty: null }),
+        ...(level === "type" && { difficulty: null }),
+      };
+    });
   }, []);
-  // set color based on difficulty
+
+  // ----- GET DIFFICULTY COLOR -----
   const getDifficultyColor = (difficulty, isLocked = false) => {
     const baseColors = {
       easy: {
@@ -164,6 +220,7 @@ export default function Sidebar({
 
     return colors;
   };
+
   // ---- CHECK IF THE OTHER DIFFICULTY ARE UNLOCKED
   const isDifficultyUnlocked = useCallback(
     (category, type, currentDifficulty) => {
@@ -173,31 +230,24 @@ export default function Sidebar({
           currentDifficulty.toLowerCase()
         );
 
-        // Easy is always unlocked
-        if (currentDifficultyIndex === 0) {
-          return true;
-        }
+        if (currentDifficultyIndex === 0) return true;
 
         const previousDifficulty = difficultyOrder[currentDifficultyIndex - 1];
-
         const previousDifficultyQuizzes =
           organizedQuizzes[category]?.[type]?.[previousDifficulty] || [];
 
-        // Check completion status
         const completedQuizzes = previousDifficultyQuizzes.filter((quiz) => {
           const isCompleted = userProgress?.some(
             (progress) =>
               progress.quizId?._id === quiz._id && progress.completed === true
           );
-
           return isCompleted;
         });
 
-        const isUnlocked =
+        return (
           completedQuizzes.length === previousDifficultyQuizzes.length &&
-          previousDifficultyQuizzes.length > 0;
-
-        return isUnlocked;
+          previousDifficultyQuizzes.length > 0
+        );
       } catch (error) {
         console.error("Error in isDifficultyUnlocked:", error);
         return false;
@@ -205,29 +255,22 @@ export default function Sidebar({
     },
     [organizedQuizzes, userProgress]
   );
-  // Render nested quiz navigation
+
+  // ----- RENDER QUIZ NAVIGATION -----
   const renderQuizNavigation = () => {
     return Object.entries(organizedQuizzes).map(([category, types]) => (
       <div
         key={category}
-        className="relative bg-gradient-to-b from-gray-950 to-neutral-950 border-4 border-purple-600 rounded-lg p-3 mb-4 
-        overflow-hidden 
-        "
+        className="relative bg-gradient-to-b from-gray-950 to-neutral-950 border-4 border-purple-600 rounded-lg p-3 mb-4 overflow-hidden"
       >
-        <h2
-          className="text-2xl text-center text-yellow-400 mb-4 
-          tracking-wider drop-shadow-[2px_2px_0_rgba(0,0,0,0.8)]"
-        >
+        <h2 className="text-2xl text-center text-yellow-400 mb-4 tracking-wider drop-shadow-[2px_2px_0_rgba(0,0,0,0.8)]">
           {category}
         </h2>
 
         {Object.entries(types).map(([type, difficulties]) => (
-          <div
-            key={type}
-            className="mt-3 mb-2 diagonal rounded-xl bg-indigo-900"
-          >
+          <div key={type} className="mt-3 mb-2 rounded-xl diagonal">
             <div
-              onClick={() => toggleExpand("types", type)}
+              onClick={() => toggleExpand("type", type)}
               className="relative text-lg sm:text-xl text-slate-100 text-center 
               bg-gradient-to-r from-violet-700 to-purple-800 btn rounded-lg 
               sm:p-3 p-2 cursor-pointer uppercase tracking-wider
@@ -237,9 +280,8 @@ export default function Sidebar({
               {type}
             </div>
 
-            {isExpanded.types?.[type] &&
+            {activeItems.type === type &&
               Object.entries(difficulties).map(([difficulty, quizList]) => {
-                // Check if difficulty is unlocked
                 const isUnlocked = isDifficultyUnlocked(
                   category,
                   type,
@@ -249,16 +291,15 @@ export default function Sidebar({
                 return (
                   <div
                     key={difficulty}
-                    className={`mt-2 pb-2 w-[96%] mx-auto rounded-xl ${
+                    className={`mt-2 pb-2 w-[93%] mx-auto rounded-xl ${
                       getDifficultyColor(difficulty, !isUnlocked).parent
                     }`}
                   >
                     <div
                       onClick={() => {
                         if (isUnlocked) {
-                          toggleExpand("difficulties", difficulty);
+                          toggleExpand("difficulty", difficulty);
                         } else {
-                          // Get the count of completed quizzes and total quizzes for the previous difficulty
                           const previousDifficulty =
                             difficulty.toLowerCase() === "medium"
                               ? "easy"
@@ -301,13 +342,13 @@ export default function Sidebar({
                         ${getDifficultyColor(difficulty, !isUnlocked).button} 
                         btn rounded-lg py-3 cursor-pointer uppercase text-center tracking-wider
                         transition-colors duration-200 shadow-md
-                        ${!isUnlocked ? "opacity-50 cursor-not-allowed" : ""}`}
+                        ${!isUnlocked ? "opacity-90 cursor-not-allowed" : ""}`}
                     >
                       {difficulty} {!isUnlocked && "🔒"}
                     </div>
 
-                    {isExpanded.difficulties?.[difficulty] && isUnlocked && (
-                      <div className="mt-2 space-y-3">
+                    {activeItems.difficulty === difficulty && isUnlocked && (
+                      <div className="mt-2 px-1 space-y-3">
                         {quizList.map((quiz) => (
                           <QuizItem
                             key={quiz._id}
@@ -327,6 +368,7 @@ export default function Sidebar({
       </div>
     ));
   };
+
   // ----- LOGOUT HANDLER -----
   const handleLogout = useCallback(() => {
     ["authToken", "userRole", "username", "coins", "userId"].forEach((key) =>

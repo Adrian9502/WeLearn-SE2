@@ -10,7 +10,6 @@ const QuizControls = ({
   handleShowAnswer,
   isQuizCompleted,
   formatTime,
-  time,
   hasStarted,
   handleStart,
   handleAnswerChange,

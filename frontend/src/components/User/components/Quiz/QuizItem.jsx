@@ -20,18 +20,18 @@ export default function QuizItem({
           relative btn bg-gradient-to-r overflow-hidden rounded-lg
           ${
             isCompleted
-              ? "from-emerald-500 to-emerald-600 cursor-not-allowed"
-              : "from-yellow-600 to-amber-600/80 hover:to-yellow-700 cursor-pointer"
+              ? "from-green-600 to-emerald-700 cursor-not-allowed"
+              : "from-red-600 to-red-700 cursor-pointer"
           }
           transform transition-all duration-200
-          sm:p-3 p-2 shadow-lg`}
+          sm:py-3 sm:px-2 p-2 shadow-lg`}
     >
-      <div className="flex justify-between items-center">
+      <div className="flex justify-center gap-1 items-center">
         <span className="text-white">{quiz.title}</span>
         {isCompleted && (
           <div className="flex items-center">
-            <div className="sm:w-6 sm:h-6 h-5 w-5 bg-green-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold">✓</span>
+            <div className="sm:w-4 sm:h-4 h-5 w-5 bg-green-500 rounded-full flex items-center justify-center">
+              <span className="text-white text-xs font-bold">✓</span>
             </div>
           </div>
         )}

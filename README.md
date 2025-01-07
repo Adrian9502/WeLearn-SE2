@@ -2,7 +2,7 @@
 
 ## 🚀 Project Overview
 
-This MERN stack application is an interactive quiz platform designed to help students and enthusiasts learn and practice sorting algorithms and binary operations through engaging, structured quizzes.
+WeLearn is an interactive web platform designed to help students and enthusiasts master sorting algorithms and binary operations through engaging quizzes. Developed as part of a Software Engineering 2 project, it leverages the MERN stack (MongoDB, Express.js, React.js, Node.js) and includes key features such as user progress tracking, a ranking system, and daily rewards.
 
 ### 🌟 Key Features
 
@@ -15,69 +15,56 @@ This MERN stack application is an interactive quiz platform designed to help stu
 - Ranking System
 - Daily Rewards System
 
-## 🌟 Website Overview
+# 🌟 Website Overview
 
-### USER
-
+# USER
 ![Overview](pictures/overview.png)
 ![Overview](pictures/overview-1.png)
 ![Overview](pictures/overview-2.png)
 
-### ADMIN
-
+# ADMIN
 ![Admin Overview](pictures/image_2024-12-11_211426441.png)
 ![Admin Overview](pictures/image_2024-12-11_211528767.png)
 ![Admin Overview](pictures/image_2024-12-11_211546093.png)
 ![Admin Overview](pictures/image_2024-12-11_211557471.png)
 
 ## LIVE LINK 🚀
-
 - [welearngame](https://welearngame.vercel.app)
 
-### ACCESS ADMIN DASHBOARD at /admin
-
+### ACCESS ADMIN DASHBOARD at https://welearngame.vercel.app/admin (for production) or http://localhost:5173/admin (for development)
 - Username: admin123
 - Password: Admin123!@#
 
 ### ACCESS USER DASHBOARD
-
 - Username: johnDoe123
 - Password: johnDoe123@
 
 ## 🛠 Tech Stack
-
 - **Frontend**: React.js, Tailwind CSS
 - **Backend**: Node.js, Express.js
 - **Database**: MongoDB
-- **ODM**: Mongoose
 
 ## 🛠 Tools used for Testing
-
 - **Jest**:
 
 ## 📦 Prerequisites
-
 - Node.js (v14.0.0 or later)
 - MongoDB (v4.4 or later)
 - npm (v6.0.0 or later)
 
 ## 🌈 Available Quiz Categories
-
 ### Sorting Algorithms
-
 - Bubble Sort
 - Insertion Sort
 - Merge Sort
 - Selection Sort
 
 ### Binary Operations
-
 - Addition
 - Subtraction
 - Alphabet Conversions
 
 ## 🏆 Difficulty Levels
-
 - Easy
 - Medium
 - Hard
@@ -108,11 +95,17 @@ npm install
 ## 🗃 Database Configuration
 
 1. Create a `.env` file in the backend directory
-2. Add your MongoDB connection string:
+2. Add the following environment variables
+Copy and paste the code below into the .env file and replace the placeholder values (<...>) with your actual configuration details:
 
 ```
-MONGODB_URI=your_mongodb_connection_string
-PORT=5000
+CLOUDINARY_API_SECRET = <replace with cloudinary api key>
+MONGODB_URI = <replace with mongodb uri>
+JWT_SECRET = <replace with your secured jwt secret key>
+API_BASE_URL = https://welearn-api.vercel.app
+PUBLIC_URL = https://welearn-api.vercel.app
+CLOUDINARY_CLOUD_NAME = <replace with your cloudinary cloud name>
+CLOUDINARY_API_KEY = <replace with your cloudinary api key>
 ```
 
 ## 🚀 Running the Application
@@ -128,7 +121,7 @@ npm start
 
 ```bash
 cd frontend
-npm start
+npm run dev
 ```
 
 ## 📝 Database Schema
@@ -181,4 +174,4 @@ Distributed under the MIT License. See `LICENSE` for more information.
 Project Link: [https://github.com/Adrian9502/WeLearn-SE2](https://github.com/Adrian9502/WeLearn-SE2)
 Live Link: [https://welearn.vercel.app/](https://welearn.vercel.app/)
 
-### Big credit to [Pixels](https://www.pixels.xyz) for our inspired login UI!
+Big credit to [Pixels](https://www.pixels.xyz) for our inspired login UI!

@@ -164,7 +164,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Our Team
 
-![Alt Text](pictures/image.png)
+![Alt Text](pictures/image_2024-12-17_213443971.png)
 
 - John Adrian B. Bonto - Full Stack Developer
 - Derwin P. Elsenique - Research Paper Scientist

@@ -74,7 +74,7 @@ WeLearn is an interactive web platform designed to help students and enthusiasts
 ### Clone the Repository
 
 ```bash
-git clone git@github.com:Adrian9502/WeLearn-SE2.git
+git clone https://github.com/Adrian9502/WeLearn-SE2
 cd WeLearn-SE2
 ```
 
